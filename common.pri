@@ -197,4 +197,5 @@ linux*-g++*:QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 DEPENDPATH += . $$SOURCE_DIR
 INCLUDEPATH += $$SOURCE_DIR/src/global
 
-!symbian:!wince*:DEFINES += QTM_PLUGIN_PATH=\\\"$$replace(QT_MOBILITY_PLUGINS, \\\\, /)\\\"
+!symbian:!wince*:!android:DEFINES += QTM_PLUGIN_PATH=\\\"$$replace(QT_MOBILITY_PLUGINS, \\\\, /)\\\"
+android:DEFINES += QTM_PLUGIN_PATH=\\\"/data/local/plugins\\\"

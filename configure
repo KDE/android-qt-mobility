@@ -240,7 +240,10 @@ while [ "$#" -gt 0 ]; do
         -meego)
             LINUX_TARGET=meego
             ;;
-        -sdk)
+          -android)
+            LINUX_TARGET=android
+	    ;;
+      -sdk)
             MAC_SDK="$2"
             shift
             ;;
@@ -357,6 +360,8 @@ if [ -n "$LINUX_TARGET" ]; then
         echo "CONFIG+=maemo6" >> "$CONFIG_IN"
     elif [ "$LINUX_TARGET" = "meego" ]; then
         echo "CONFIG+=meego" >> "$CONFIG_IN"
+    elif [ "$LINUX_TARGET" = "android" ]; then
+        echo "CONFIG+=android" >> "$CONFIG_IN"
     fi
 fi
 

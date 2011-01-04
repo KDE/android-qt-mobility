@@ -5,7 +5,7 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = samplephonebook
+TARGET = libsamplephonebook.so
 include(../examples.pri)
 DEPENDPATH += .
 INCLUDEPATH += . \

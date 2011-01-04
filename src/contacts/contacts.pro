@@ -106,6 +106,9 @@ maemo5|maemo6 {
 wince* {
     isEmpty(CONTACTS_DEFAULT_ENGINE): CONTACTS_DEFAULT_ENGINE=wince
 }
+android {
+    isEmpty(CONTACTS_DEFAULT_ENGINE): CONTACTS_DEFAULT_ENGINE=android
+}
 
 symbian {
     isEmpty(CONTACTS_DEFAULT_ENGINE): CONTACTS_DEFAULT_ENGINE=symbian
