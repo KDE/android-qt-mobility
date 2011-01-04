@@ -1,10 +1,26 @@
+/****************************************************************************
+**
+** Copyright 2010 Elektrobit(EB)(http://www.elektrobit.com)
+**
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+**
+****************************************************************************/
 //JNI file to Interact With Java
+
 #include <android/log.h>
-#include<QtCore>
-#include<jni.h>
+#include <QtCore>
+#include <jni.h>
 
 #include "qcontactandroidbackend_p.h"
-#include"qcontactabook_p.h"
+#include "qcontactabook_p.h"
 #include "qtcontacts.h"
 #include "contactsjni.h"
 
@@ -66,6 +82,7 @@ static const char *QtAddressDataClassPathName = "com/nokia/qt/android/AddressDat
 static const char *QtNameDataClassPathName = "com/nokia/qt/android/NameData";
 static const char *QtOrganizationalDataClassPathName = "com/nokia/qt/android/OrganizationalData";
 static QtContactsJNI::FieldID javaFieldIds;
+
 static int setQtApplicationObject(JNIEnv* env)
 {
     jclass qtAndroidContactClass;
@@ -442,6 +459,7 @@ namespace QtContactsJNI
     }
 
 };
+
 static int registerNatives(JNIEnv* env)
 {
     if (!registerNativeMethods(env, QtAndroidContactsClassPathName))
@@ -449,6 +467,7 @@ static int registerNatives(JNIEnv* env)
 
     return JNI_TRUE;
 }
+
 typedef union {
     JNIEnv* nativeEnvironment;
     void* venv;
