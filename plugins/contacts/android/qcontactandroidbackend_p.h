@@ -41,10 +41,6 @@
 
 #ifndef QCONTACTANDROIDBACKEND_P_H
 #define QCONTACTANDROIDBACKEND_P_H
-
-#include "qcontactmanager.h"
-#include "qcontactmanager_p.h"
-
 #include <QMap>
 #include <QString>
 #include <QList>
@@ -54,13 +50,10 @@
 #include "qtcontacts.h"
 #include "qcontactabook_p.h"
 #include "qcontactchangeset.h"
-
-
+#include "qcontactmanager.h"
+#include "qcontactmanager_p.h"
 
 QTM_USE_NAMESPACE
-
-
-
 class Q_DECL_EXPORT ContactAndroidFactory : public QObject, public QContactManagerEngineFactory
 {
   Q_OBJECT
@@ -134,15 +127,19 @@ class QContactAndroidEngine : public QContactManagerEngine
     bool isFilterSupported(const QContactFilter& filter) const;
     QList<QVariant::Type> supportedDataTypes() const;
     QStringList supportedContactTypes() const {return (QStringList() << QContactType::TypeContact);}
-    
+    void requestDestroyed(QContactAbstractRequest *req);
+    bool startRequest(QContactAbstractRequest *req);
+    bool cancelRequest(QContactAbstractRequest *req);
+    bool waitForRequestProgress(QContactAbstractRequest* req, int msecs);
+    bool waitForRequestFinished(QContactAbstractRequest* req, int msecs);
 
-    
+  private slots:
+    void performAsynchronousOperation();
 
-    
-  private:  
-
+  private:
+    QQueue<QContactAbstractRequest*> m_asynchronousOperations; // async requests to be performed.
     QSharedDataPointer<QContactAndroidEngineData> d;
 };
 
-#endif
+#endif // QCONTACTANDROIDBACKEND_P_H
 

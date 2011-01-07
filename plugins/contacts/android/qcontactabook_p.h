@@ -46,26 +46,21 @@
 #include <QMutex>
 
 #include "qtcontacts.h"
-
-
+#include "contactsjni.h"
 #undef signals
 
-
-#include "contactsjni.h"
-
 QTM_USE_NAMESPACE
-
 #define QANDROID_DEBUG qWarning()<<__FILE__<<__LINE__
 
 class QContactABook : public QObject
 {
   Q_OBJECT
-  
-public:  
+
+public:
   QContactABook(QObject* parent = 0);
   ~QContactABook();
   void callInitPhoneBook();
-  
+
   QList<QContactLocalId> contactIds(const QContactFilter& filter, const QList<QContactSortOrder>& sortOrders, QContactManager::Error* error) const;
   QContact* getQContact(const QContactLocalId& contactId, QContactManager::Error* error) const;
   bool saveContact(QContact* contact, QContactManager::Error* error);
@@ -74,41 +69,50 @@ public:
   const QString getDisplayName(const QContact& contact) const;
 
   QContactLocalId selfContactId(QContactManager::Error* errors) const;
-  QContactName* getNameDetail(QtContactsJNI::MyContacts & contact) const;
-  QContact* convert(QtContactsJNI::MyContacts & contact) const;
-  QList<QContactPhoneNumber*> getPhoneDetail(QtContactsJNI::MyContacts & eContact) const;
-  QList<QContactEmailAddress*> getEmailDetail(QtContactsJNI::MyContacts & contact) const;
-  QContactNote* getNoteDetail(QtContactsJNI::MyContacts & contact) const;
-  QList<QContactAddress*> getAddressDetail(QtContactsJNI::MyContacts & contact) const;
-  QList<QContactOrganization*> getOrganizationDetail(QtContactsJNI::MyContacts & contact) const;
-  QList<QContactUrl*> getUrlDetail(QtContactsJNI::MyContacts & contact) const;
-  QContactBirthday* getBirthdayDetail(QtContactsJNI::MyContacts & contact) const;
-  QContactAnniversary* getAnniVersaryDetail(QtContactsJNI::MyContacts & contact) const;
-  QContactNickname* getNicknameDetail(QtContactsJNI::MyContacts & contact) const;
-  QContactGuid* getGuidDetail(QtContactsJNI::MyContacts & contact) const;
+  QContactName* getNameDetail(QtContactsJNI::Contacts & contact) const;
+  QContact* convert(QtContactsJNI::Contacts & contact) const;
+  QList<QContactPhoneNumber*> getPhoneDetail(QtContactsJNI::Contacts & eContact) const;
+  QList<QContactEmailAddress*> getEmailDetail(QtContactsJNI::Contacts & contact) const;
+  QContactNote* getNoteDetail(QtContactsJNI::Contacts & contact) const;
+  QList<QContactAddress*> getAddressDetail(QtContactsJNI::Contacts & contact) const;
+  QList<QContactOrganization*> getOrganizationDetail(QtContactsJNI::Contacts & contact) const;
+  QList<QContactUrl*> getUrlDetail(QtContactsJNI::Contacts & contact) const;
+  QContactBirthday* getBirthdayDetail(QtContactsJNI::Contacts & contact) const;
+  QContactAnniversary* getAnniVersaryDetail(QtContactsJNI::Contacts & contact) const;
+  QContactNickname* getNicknameDetail(QtContactsJNI::Contacts & contact) const;
+  QContactGuid* getGuidDetail(QtContactsJNI::Contacts & contact) const;
+  void getOnlineAccountAndPresenceDetails(QtContactsJNI::Contacts & contact,
+                                                        QList<QContactOnlineAccount*>& onlineAccounts,
+                                                        QList<QContactPresence*>& presences) const;
 
+  void setEmailDetail(QtContactsJNI::Contacts & contact, const QContactEmailAddress& detail);
+  void setNameDetail(QtContactsJNI::Contacts & contact, const QContactName& detail);
+  void setPhoneDetail(QtContactsJNI::Contacts & contact, const QContactPhoneNumber& detail);
+  void setAddressDetail(QtContactsJNI::Contacts & contact, const QContactAddress& detail);
+  void setBirthdayDetail(QtContactsJNI::Contacts & contact, const QContactBirthday& detail);
+  void setAnniversaryDetail(QtContactsJNI::Contacts & contact, const QContactAnniversary& detail);
+  void setOrganizationDetail(QtContactsJNI::Contacts & contact, const QContactOrganization& detail);
+  void setNicknameDetail(QtContactsJNI::Contacts & contact, const QContactNickname& detail);
+  void setNoteDetail(QtContactsJNI::Contacts & contact, const QContactNote& detail);
+  void setUrlDetail(QtContactsJNI::Contacts & contact, const QContactUrl& detail);
+  void setOnlineAccountDetail(QtContactsJNI::Contacts & contact, const QContactOnlineAccount& detail) const;
 
 Q_SIGNALS:
   void contactsAdded(const QList<QContactLocalId>& contactIds);
   void contactsChanged(const QList<QContactLocalId>& contactIds);
   void contactsRemoved(const QList<QContactLocalId>& contactIds);
-  void jobSavingCompleted();
-  void jobRemovingCompleted();
-  
+
 public:
   /* Members used by callbacks */
   void _contactsAdded(const QList<QContactLocalId>& contactIds ){ emit contactsAdded(contactIds); }
   void _contactsRemoved(const QList<QContactLocalId>& contactIds ){ emit contactsRemoved(contactIds); }
   void _contactsChanged(const QList<QContactLocalId>& contactIds ){ emit contactsChanged(contactIds); }
-  void _jobSavingCompleted(){ emit jobSavingCompleted(); }
-  void _jobRemovingCompleted(){ emit jobRemovingCompleted(); }
-  
+
 private:
   void initAddressBook();
   bool setDetailValues(const QVariantMap& data, QContactDetail* detail) const;
-  QMap<QContactLocalId,QtContactsJNI::MyContacts> m_contactsMap;
-  
+  QMap<QContactLocalId,QContact*> m_qContactsmap;
 
  };
 
-#endif
+#endif // QCONTACTABOOK_P_H

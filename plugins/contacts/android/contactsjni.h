@@ -13,15 +13,16 @@
 **
 **
 ****************************************************************************/
-//JNI file to Interact With Java
 
 #ifndef CONTACTSJNI_H
 #define CONTACTSJNI_H
+
 #include <QObject>
 #include <jni.h>
-#include "qtcontacts.h"
-QTM_USE_NAMESPACE
 
+#include "qtcontacts.h"
+
+QTM_USE_NAMESPACE
 namespace QtContactsJNI
 {
     struct PhoneNumber
@@ -58,32 +59,46 @@ namespace QtContactsJNI
         QString m_prefix;
         QString m_suffix;
     };
-
-    class MyContacts
+    struct OnlineAccount
     {
-    public: QString m_displayName;
+        QString m_acoountUri;
+        QString m_status;
+        QString m_customProtocol;
+        long m_timeStamp;
+        int m_presence;
+        int m_protocol;
+        int m_type;
+    };
+
+
+    class Contacts
+    {
+    public:
+            QString m_displayName;
             NameData m_names;
             QList<PhoneNumber> m_phonenumber;
             QList<EmailData> m_email;
             QString m_note;
             QList<AddressData> m_address;
             QList<OrganizationalData> m_organization;
+            QList<OnlineAccount> m_onlineAccount;
             QString m_birthday;
-            QString m_anniverasay;
+            QString m_anniverasary;
             QString m_nickName;
             QList<QString> m_url;
             QString m_id;
      };
 
-    QMap< QContactLocalId, MyContacts> initAndroidContacts();
-    QString saveToAndroidContacts(MyContacts &contact);
-    void removeFromAndroidContacts(int id);
-    void updateInAndroidContacts(int id,MyContacts &savingcontact);
-    jobject constructAndroidContactObject(JNIEnv* env,MyContacts& savingcontact);
+
+    QMap< QContactLocalId, Contacts> initAndroidContacts();
+    QString saveToAndroidContacts(Contacts &contact);
+    int removeFromAndroidContacts(int id);
+    void updateInAndroidContacts(int id,Contacts &savingcontact);
+    jobject constructAndroidContactObject(JNIEnv* env,Contacts& savingcontact);
 
     struct FieldID
     {
-        jfieldID m_allContacts_fid;
+        jfieldID m_androidContacts_fid;
         jfieldID m_myContacts_fid;
         jfieldID m_displayName_fid;
         jfieldID m_nameData_fid;
@@ -107,6 +122,14 @@ namespace QtContactsJNI
         jfieldID m_postCode_fid;
         jfieldID m_country_fid;
         jfieldID m_addresstype_fid;
+        jfieldID m_onlineAccount_fid;
+        jfieldID m_onlineAccountUri_fid;
+        jfieldID m_onlineAccountStatus_fid;
+        jfieldID m_onlineAccountCustomProtocol_fid;
+        jfieldID m_onlineAccountPresnce_fid;
+        jfieldID m_onlineAccountProtocol_fid;
+        jfieldID m_onlineAccountTimeStamp_fid;
+        jfieldID m_onlineAccountType_fid;
         jfieldID m_organizationalData_fid;
         jfieldID m_organizaion_fid;
         jfieldID m_organizaiontitle_fid;
@@ -124,4 +147,3 @@ namespace QtContactsJNI
 
 
 #endif // CONTACTSJNI_H
-
