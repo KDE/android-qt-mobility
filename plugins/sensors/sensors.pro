@@ -6,7 +6,14 @@ maemo5 {
     SUBDIRS += n900
 }
 
-maemo6|meego {
+android {
+#	SUBDIRS += jni
+    SUBDIRS += android
+    
+}
+
+
+maemo6 {
     equals(sensord_enabled,yes) {
         SUBDIRS += maemo6
     } else {
@@ -24,8 +31,9 @@ symbian {
     }
 }
 
-SUBDIRS += generic
-simulator: SUBDIRS += simulator
+#SUBDIRS += generic
+simulator: SUBDIRS += simulator 
+
 
 # Allow forcing extra plugins to build even if they won't run
 BUILD_ALL_PLUGINS=$$(BUILD_ALL_PLUGINS)
