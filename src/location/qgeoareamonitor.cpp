@@ -42,6 +42,8 @@
 
 #if defined(Q_OS_SYMBIAN) && defined(QT_LOCATION_S60_MONITORING)
 #include "qgeoareamonitor_s60_p.h"
+#elif defined(Q_WS_ANDROID)
+#   include "qgeoareamonitor_android_p.h"
 #endif
 #include "qgeoareamonitor_polling_p.h"
 
@@ -178,6 +180,8 @@ QGeoAreaMonitor *QGeoAreaMonitor::createDefaultMonitor(QObject *parent)
     QGeoAreaMonitor *ret = NULL;
     TRAPD(error, ret = QGeoAreaMonitorS60::NewL(parent));
     return ret;
+#elif defined(Q_WS_ANDROID)
+    return new QGeoAreaMonitorAndroid(parent);
 #else
     QGeoAreaMonitorPolling *ret = NULL;
     ret = new QGeoAreaMonitorPolling(parent);

@@ -1,18 +1,32 @@
-/****************************************************************************
-**
-** Copyright 2010 Elektrobit(EB)(http://www.elektrobit.com)
-**
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-**
-****************************************************************************/
+/*
+Copyright (c) 2011 Elektrobit (EB), All rights reserved.
+Contact: oss-devel@elektrobit.com
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+* Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+* Neither the name of the Elektrobit (EB) nor the names of its
+contributors may be used to endorse or promote products derived from
+ this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY Elektrobit (EB) ''AS IS'' AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Elektrobit
+(EB) BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 //JNI file to Interact With Java
 #include <QtCore>
@@ -95,15 +109,15 @@ static JavaContactsGlobalObject<jobject> m_addressDataObject=0;
 static JavaContactsGlobalObject<jobject> m_organizationalDataObject=0;
 static JavaContactsGlobalObject<jobject> m_onlineAccountObject=0;
 
-static const char *QtAndroidContactsClassPathName = "com/nokia/qt/android/QtAndroidContacts";
-static const char *QtMyContactsClassPathName = "com/nokia/qt/android/MyContacts";
-static const char *QtAllAndroidContactsClassPathName = "com/nokia/qt/android/AndroidContacts";
-static const char *QtPhoneNumberClassPathName = "com/nokia/qt/android/PhoneNumber";
-static const char *QtEmailDataClassPathName = "com/nokia/qt/android/EmailData";
-static const char *QtAddressDataClassPathName = "com/nokia/qt/android/AddressData";
-static const char *QtNameDataClassPathName = "com/nokia/qt/android/NameData";
-static const char *QtOrganizationalDataClassPathName = "com/nokia/qt/android/OrganizationalData";
-static const char *QtOnlineAccountClassPathName = "com/nokia/qt/android/OnlineAccount";
+static const char *QtAndroidContactsClassPathName = "eu/licentia/necessitas/mobile/QtAndroidContacts";
+static const char *QtMyContactsClassPathName = "eu/licentia/necessitas/mobile/MyContacts";
+static const char *QtAllAndroidContactsClassPathName = "eu/licentia/necessitas/mobile/AndroidContacts";
+static const char *QtPhoneNumberClassPathName = "eu/licentia/necessitas/mobile/PhoneNumber";
+static const char *QtEmailDataClassPathName = "eu/licentia/necessitas/mobile/EmailData";
+static const char *QtAddressDataClassPathName = "eu/licentia/necessitas/mobile/AddressData";
+static const char *QtNameDataClassPathName = "eu/licentia/necessitas/mobile/NameData";
+static const char *QtOrganizationalDataClassPathName = "eu/licentia/necessitas/mobile/OrganizationalData";
+static const char *QtOnlineAccountClassPathName = "eu/licentia/necessitas/mobile/OnlineAccount";
 
 static QtContactsJNI::FieldID javaFieldIds;
 
@@ -202,33 +216,33 @@ static int registerNativeMethods(JNIEnv* env)
     }
     // Registering java methods
     m_getContactsID = env->GetMethodID((jclass)m_qtAndroidContactsObjects(),"getContacts","()V");
-    m_saveContactsID = env->GetMethodID((jclass)m_qtAndroidContactsObjects(),"saveContact","(Lcom/nokia/qt/android/MyContacts;)Ljava/lang/String;");
-    m_myContactsConstructor = env->GetMethodID((jclass)m_myContactsObject(),"<init>","(Lcom/nokia/qt/android/NameData;[Lcom/nokia/qt/android/PhoneNumber;[Lcom/nokia/qt/android/EmailData;Ljava/lang/String;[Lcom/nokia/qt/android/AddressData;[Lcom/nokia/qt/android/OrganizationalData;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)V");
+    m_saveContactsID = env->GetMethodID((jclass)m_qtAndroidContactsObjects(),"saveContact","(Leu/licentia/necessitas/mobile/MyContacts;)Ljava/lang/String;");
+    m_myContactsConstructor = env->GetMethodID((jclass)m_myContactsObject(),"<init>","(Leu/licentia/necessitas/mobile/NameData;[Leu/licentia/necessitas/mobile/PhoneNumber;[Leu/licentia/necessitas/mobile/EmailData;Ljava/lang/String;[Leu/licentia/necessitas/mobile/AddressData;[Leu/licentia/necessitas/mobile/OrganizationalData;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)V");
     m_phoneNumberConstructor = env->GetMethodID((jclass)m_phoneNumberObject(),"<init>","(Ljava/lang/String;I)V");
     m_emailDataConstructor =  env->GetMethodID((jclass)m_emailDataObject(),"<init>","(Ljava/lang/String;I)V");
     m_organizationalDataConstructor =  env->GetMethodID((jclass)m_organizationalDataObject(),"<init>","(Ljava/lang/String;Ljava/lang/String;I)V");
     m_AddressDataConstructor = env->GetMethodID((jclass)m_addressDataObject(),"<init>","(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)V");
     m_removeContactsID = env->GetMethodID((jclass)m_qtAndroidContactsObjects(),"removeContact","(Ljava/lang/String;)I");
-    m_updateContactsID = env->GetMethodID((jclass)m_qtAndroidContactsObjects(),"updateContact","(Ljava/lang/String;Lcom/nokia/qt/android/MyContacts;)V");
+    m_updateContactsID = env->GetMethodID((jclass)m_qtAndroidContactsObjects(),"updateContact","(Ljava/lang/String;Leu/licentia/necessitas/mobile/MyContacts;)V");
     m_nameDataConstructor = env->GetMethodID((jclass)m_nameDataObject(),"<init>","(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
     // Getting all required fieldIDs from Java
-    javaFieldIds.m_androidContacts_fid = env->GetStaticFieldID((jclass)m_qtAndroidContactsObjects(),"m_androidContacts","Lcom/nokia/qt/android/AndroidContacts;");
-    javaFieldIds.m_myContacts_fid = env->GetFieldID((jclass)m_allContactsObject(),"m_allAndroidContacts","[Lcom/nokia/qt/android/MyContacts;");
+    javaFieldIds.m_androidContacts_fid = env->GetStaticFieldID((jclass)m_qtAndroidContactsObjects(),"m_androidContacts","Leu/licentia/necessitas/mobile/AndroidContacts;");
+    javaFieldIds.m_myContacts_fid = env->GetFieldID((jclass)m_allContactsObject(),"m_allAndroidContacts","[Leu/licentia/necessitas/mobile/MyContacts;");
     javaFieldIds.m_displayName_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_dispalyName","Ljava/lang/String;");
-    javaFieldIds.m_nameData_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_names","Lcom/nokia/qt/android/NameData;");
+    javaFieldIds.m_nameData_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_names","Leu/licentia/necessitas/mobile/NameData;");
     javaFieldIds.m_firstName_fid = (env)->GetFieldID((jclass)m_nameDataObject(),"m_firstName","Ljava/lang/String;");
     javaFieldIds.m_lastName_fid = (env)->GetFieldID((jclass)m_nameDataObject(),"m_lastName","Ljava/lang/String;");
     javaFieldIds.m_middleName_fid = (env)->GetFieldID((jclass)m_nameDataObject(),"m_middleName","Ljava/lang/String;");
     javaFieldIds.m_prefix_fid = (env)->GetFieldID((jclass)m_nameDataObject(),"m_prefix","Ljava/lang/String;");
     javaFieldIds.m_suffix_fid = (env)->GetFieldID((jclass)m_nameDataObject(),"m_suffix","Ljava/lang/String;");
-    javaFieldIds.m_phonenumberobjects_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_phoneNumbers","[Lcom/nokia/qt/android/PhoneNumber;");
+    javaFieldIds.m_phonenumberobjects_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_phoneNumbers","[Leu/licentia/necessitas/mobile/PhoneNumber;");
     javaFieldIds.m_phonenumber_fid = (env)->GetFieldID((jclass)m_phoneNumberObject(),"m_number","Ljava/lang/String;");
     javaFieldIds.m_phonetype_fid = (env)->GetFieldID((jclass)m_phoneNumberObject(),"m_type","I");
-    javaFieldIds.m_emailDataObjects_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_email","[Lcom/nokia/qt/android/EmailData;");
+    javaFieldIds.m_emailDataObjects_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_email","[Leu/licentia/necessitas/mobile/EmailData;");
     javaFieldIds.m_email_fid = env->GetFieldID((jclass)m_emailDataObject(),"m_email","Ljava/lang/String;");
     javaFieldIds.m_emailtype_fid = (env)->GetFieldID((jclass)m_emailDataObject(),"m_type","I");
     javaFieldIds.m_note_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_contactNote","Ljava/lang/String;");
-    javaFieldIds.m_addressDataObject_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_address","[Lcom/nokia/qt/android/AddressData;");
+    javaFieldIds.m_addressDataObject_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_address","[Leu/licentia/necessitas/mobile/AddressData;");
     javaFieldIds.m_pobox_fid = env->GetFieldID((jclass)m_addressDataObject(),"m_pobox","Ljava/lang/String;");
     javaFieldIds.m_street_fid = env->GetFieldID((jclass)m_addressDataObject(),"m_street","Ljava/lang/String;");
     javaFieldIds.m_city_fid = env->GetFieldID((jclass)m_addressDataObject(),"m_city","Ljava/lang/String;");
@@ -236,7 +250,7 @@ static int registerNativeMethods(JNIEnv* env)
     javaFieldIds.m_postCode_fid = env->GetFieldID((jclass)m_addressDataObject(),"m_postCode","Ljava/lang/String;");
     javaFieldIds.m_country_fid = env->GetFieldID((jclass)m_addressDataObject(),"m_country","Ljava/lang/String;");
     javaFieldIds.m_addresstype_fid = (env)->GetFieldID((jclass)m_addressDataObject(),"m_type","I");
-    javaFieldIds.m_organizationalData_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_organizations","[Lcom/nokia/qt/android/OrganizationalData;");
+    javaFieldIds.m_organizationalData_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_organizations","[Leu/licentia/necessitas/mobile/OrganizationalData;");
     javaFieldIds.m_organizaion_fid = (env)->GetFieldID((jclass)m_organizationalDataObject(),"m_organization","Ljava/lang/String;");
     javaFieldIds.m_organizaiontitle_fid = (env)->GetFieldID((jclass)m_organizationalDataObject(),"m_title","Ljava/lang/String;");
     javaFieldIds.m_organizationtype_fid = (env)->GetFieldID((jclass)m_organizationalDataObject(),"m_type","I");
@@ -245,7 +259,7 @@ static int registerNativeMethods(JNIEnv* env)
     javaFieldIds.m_nickName_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_contactNickName","Ljava/lang/String;");
     javaFieldIds.m_url_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_contactUrls","[Ljava/lang/String;");
     javaFieldIds.m_id_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_contactID","Ljava/lang/String;");
-    javaFieldIds.m_onlineAccount_fid=(env)->GetFieldID((jclass)m_myContactsObject(),"m_onlineAccount","[Lcom/nokia/qt/android/OnlineAccount;");
+    javaFieldIds.m_onlineAccount_fid=(env)->GetFieldID((jclass)m_myContactsObject(),"m_onlineAccount","[Leu/licentia/necessitas/mobile/OnlineAccount;");
     javaFieldIds.m_onlineAccountUri_fid =  env->GetFieldID((jclass)m_onlineAccountObject(),"m_account","Ljava/lang/String;");
     javaFieldIds.m_onlineAccountStatus_fid = env->GetFieldID((jclass)m_onlineAccountObject(),"m_status","Ljava/lang/String;");
     javaFieldIds.m_onlineAccountCustomProtocol_fid = env->GetFieldID((jclass)m_onlineAccountObject(),"m_customProtocol","Ljava/lang/String;");

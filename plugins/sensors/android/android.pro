@@ -1,6 +1,5 @@
 INCLUDEPATH+=../../../src/sensors
-INCLUDEPATH+=. \
-/root/Desktop/android-ndk-r5/platforms/android-8/arch-arm/usr/include/
+INCLUDEPATH+=.
 
 PLUGIN_TYPE = sensors
 

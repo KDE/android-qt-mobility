@@ -8,7 +8,5 @@ contains(immersion_enabled, yes) {
 }
 
 symbian:SUBDIRS += symbian
-# This is MMK specific at the moment - for 1.1.1
-equals(QT_MAJOR_VERSION, 4) : greaterThan(QT_MINOR_VERSION, 6):contains(mobility_modules,multimedia):!simulator:SUBDIRS += mmk
 maemo6:SUBDIRS += meegotouch
-simulator:SUBDIRS += simulator
+android:SUBDIRS += android

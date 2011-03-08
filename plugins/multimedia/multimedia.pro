@@ -9,7 +9,7 @@ TEMPLATE = subdirs
 include (../../staticconfig.pri)
 
 SUBDIRS += m3u
-
+android:SUBDIRS += android
 win32 {
     SUBDIRS += audiocapture
 }
@@ -20,7 +20,7 @@ win32:!wince*:!simulator {
 
 simulator: SUBDIRS += simulator
 
-unix:!mac:!symbian {
+unix:!android:!mac:!symbian {
     TMP_GST_LIBS = \
         gstreamer-0.10 >= 0.10.19 \
         gstreamer-base-0.10 >= 0.10.19 \

@@ -52,6 +52,8 @@
 #   include "qgeosatelliteinfosource_maemo5_p.h"
 #elif (defined(Q_WS_MEEGO)) && (defined(GYPSY_AVAILABLE))
 #   include "qgeosatelliteinfosource_gypsy_p.h"
+#elif defined(Q_WS_ANDROID)
+#   include "qgeosatelliteinfosource_android_p.h"
 #endif
 
 QTM_BEGIN_NAMESPACE
@@ -122,6 +124,8 @@ QGeoSatelliteInfoSource *QGeoSatelliteInfoSource::createDefaultSource(QObject *p
         return 0;
     }
     return source;
+#elif defined(Q_WS_ANDROID)
+    return new QGeoSatelliteInfoSourceAndroid(parent);
 #else
     qWarning("QGeoSatellitePositionInfoSource: no default source available.");
     Q_UNUSED(parent);

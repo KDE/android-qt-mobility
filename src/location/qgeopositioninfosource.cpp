@@ -52,6 +52,8 @@
 #   include "qgeopositioninfosource_maemo5_p.h"
 #elif defined(Q_WS_MEEGO) && (defined(GEOCLUE_MASTER_AVAILABLE))
 #   include "qgeopositioninfosource_geocluemaster_p.h"
+#elif defined(Q_WS_ANDROID)
+#   include "qgeopositioninfosource_android_p.h"
 #endif
 
 QTM_BEGIN_NAMESPACE
@@ -232,6 +234,8 @@ QGeoPositionInfoSource *QGeoPositionInfoSource::createDefaultSource(QObject *par
         return 0;
     }
     return source;
+#elif (defined(Q_WS_ANDROID))
+    return new QGeoPositionInfoSourceAndroid(parent);
 #else
     qWarning("no default source");
     Q_UNUSED(parent);

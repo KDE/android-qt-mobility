@@ -137,6 +137,9 @@ maemo6|meego {
     QMAKE_LIB_FLAGS+= -Wl,-rpath-link $$[QT_INSTALL_LIBS]
     QMAKE_RPATHDIR += $$[QT_INSTALL_LIBS]
 }
+android {
+    DEFINES+= Q_WS_ANDROID
+}
 maemo5 {
     DEFINES+= Q_WS_MAEMO_5
 }
@@ -198,4 +201,4 @@ DEPENDPATH += . $$SOURCE_DIR
 INCLUDEPATH += $$SOURCE_DIR/src/global
 
 !symbian:!wince*:!android:DEFINES += QTM_PLUGIN_PATH=\\\"$$replace(QT_MOBILITY_PLUGINS, \\\\, /)\\\"
-android:DEFINES += QTM_PLUGIN_PATH=\\\"/data/local/plugins\\\"
+android:DEFINES += QTM_PLUGIN_PATH=\\\"/data/local/qt/plugins\\\"

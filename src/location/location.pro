@@ -96,6 +96,18 @@ maemo6 {
     pkgconfig.files = QtLocation.pc
 }
 
+android {
+    SOURCES += qgeopositioninfosource_android.cpp \
+               qgeosatelliteinfosource_android.cpp \
+               qgeoareamonitor_android.cpp \
+               jni_android.cpp
+
+    HEADERS +=  qgeopositioninfosource_android_p.h \
+                qgeosatelliteinfosource_android_p.h \
+                qgeoareamonitor_android_p.h \
+                jni_android.h
+
+}
 maemo5 {
     CONFIG += qdbus link_pkgconfig
     SOURCES += gconfitem.cpp \
