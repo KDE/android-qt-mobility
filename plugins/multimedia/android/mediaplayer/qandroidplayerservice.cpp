@@ -54,12 +54,13 @@
 #include "qandroidplayercontrol.h"
 #include "qandroidplayersession.h"
 #include "qandroidmetadatacontrol.h"
-
+#include "qandroidvideowidget.h"
 
 QAndroidPlayerService::QAndroidPlayerService(QObject *parent)
     :QMediaService(parent)
 {
-    m_session = new QAndroidPlayerSession(this);
+    m_videoWidget = new QAndroidVideoWidgetControl(this);
+    m_session = new QAndroidPlayerSession(this,m_videoWidget);
     m_control = new QAndroidPlayerControl(m_session, this);
     m_metaData = new QAndroidMetaDataControl(m_session,this);
 }
@@ -80,7 +81,14 @@ QMediaControl *QAndroidPlayerService::requestControl(const char *name)
     {
         return m_metaData;
     }
+    if(m_videoWidget)
+    {
+        if(qstrcmp(name,QVideoWidgetControl_iid) == 0)
+        {
+            return m_videoWidget;
+        }
 
+    }
     return 0;
 }
 

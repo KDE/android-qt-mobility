@@ -54,8 +54,12 @@
 #include<media/mediametadataretriever.h>
 
 #include "mediaPlayerJNI.h"
+#include "qandroidvideothread.h"
+#include "qandroidvideowidget.h"
 
 QT_USE_NAMESPACE
+
+class QAndroidVideoHelper;
 #define QANDROID_DEBUG qWarning()<<__LINE__<<__FILE__
         class QAndroidPlayerSession : public QObject,
         public QtMediaPlayerJNI::QAndroidMediaListner
@@ -63,7 +67,7 @@ QT_USE_NAMESPACE
     Q_OBJECT
 
 public:
-    QAndroidPlayerSession(QObject *parent);
+    QAndroidPlayerSession(QObject *parent,QAndroidVideoWidgetControl *control);
     virtual ~QAndroidPlayerSession();
 
     QNetworkRequest request() const;
@@ -87,6 +91,10 @@ public:
     QList<QtMultimediaKit::MetaData> availableMetaData();
     int activeStream(QMediaStreamsControl::StreamType streamType) const;
     void setActiveStream(QMediaStreamsControl::StreamType streamType, int streamNumber);
+    void stopVideo();
+    bool m_stop;
+
+
 
 public slots:
     void load(const QNetworkRequest &url);
@@ -96,6 +104,7 @@ public slots:
     bool seek(qint64 pos);
     void setVolume(int volume);
     void setMuted(bool muted);
+
 
 signals:
     void durationChanged(qint64 duration);
@@ -124,6 +133,10 @@ private:
 
 private:
     QNetworkRequest m_request;
+    QAndroidVideoHelper *m_helper;
+    QAndroidVideoWidget* m_widget;
+    bool m_releaseWait;
+    QAndroidVideoWidgetControl* m_widgetControl;
     QNetworkRequest m_savedRequest;
     QTimer *m_timer;
     QMediaPlayer::State m_state;
@@ -149,5 +162,6 @@ private:
     qint64 m_qlastPosition;
     qint64 m_qduration;
     const char* m_rawDataPath;
+
 };
 #endif // QANDROIDPLAYERSESSION_H

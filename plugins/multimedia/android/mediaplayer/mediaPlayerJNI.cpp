@@ -40,7 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 static JavaVM *m_javaVM = 0;
 static JNIEnv *m_env = 0;
-
+static QWaitCondition waitCondition;
 template <class T>
         class JavaMediaPlayerGlobalObject
 {
@@ -123,6 +123,21 @@ struct fields_t {
 };
 static fields_t fields;
 QMutex autolock::mutex;
+static QMutex * mutexload=NULL;
+void QtMediaPlayerJNI::wait (QMutex * mutex)
+{
+    mutexload=mutex;
+    waitCondition.wait(mutex);
+}
+
+void QtMediaPlayerJNI::WakeUpThread()
+{
+    while(mutexload==NULL);
+    mutexload->lock();
+    waitCondition.wakeAll();
+    mutexload->unlock();
+    mutexload = NULL;
+}
 
 int QtMediaPlayerJNI::setQtMediaPlayer(QAndroidMediaListner *listnener,int uniqueID,QString path)
 {
@@ -150,9 +165,8 @@ void QtMediaPlayerJNI::play()
         qCritical()<<"AttachCurrentThread failed";
 
     }
-
+    WakeUpThread();
     env->CallVoidMethod(fields.m_qtMediaPlayerObject(),fields.m_playID);
-    m_javaVM->DetachCurrentThread();
 
 }
 
@@ -221,6 +235,7 @@ void QtMediaPlayerJNI::seekTo(int mSec)
         qCritical()<<"AttachCurrentThread failed";
 
     }
+
     env->CallVoidMethod(fields.m_qtMediaPlayerObject(),fields.m_seekToID,mSec);
     m_javaVM->DetachCurrentThread();
 

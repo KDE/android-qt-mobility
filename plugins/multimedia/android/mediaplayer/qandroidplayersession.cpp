@@ -47,6 +47,7 @@
 #include "qandroidplayersession.h"
 #include "qandroidplayerservice.h"
 #include "mediaPlayerJNI.h"
+#include "qandroidvideothread.h"
 #include <stdint.h>
 
 int QAndroidPlayerSession::m_bufferProgress=0;
@@ -57,8 +58,9 @@ int getUniqueID()
     return ++uniqueID;
 }
 
-QAndroidPlayerSession::QAndroidPlayerSession(QObject *parent)
+QAndroidPlayerSession::QAndroidPlayerSession(QObject *parent,QAndroidVideoWidgetControl *control)
     :QObject(parent),
+    m_widgetControl(control),
     m_state(QMediaPlayer::StoppedState),
     m_pendingState(QMediaPlayer::StoppedState),
     m_usePlaybin2(false),
@@ -74,10 +76,13 @@ QAndroidPlayerSession::QAndroidPlayerSession(QObject *parent)
     m_qlastPosition(0),
     m_qcurrPosition(0),
     m_qduration(-1),
-    m_uniqueID(0)
+    m_uniqueID(0),
+    m_stop(false)
 
 {
+    m_widget = m_widgetControl->getWidget();
     m_uniqueID = getUniqueID();
+    m_helper = NULL;
 }
 
 QAndroidPlayerSession::~QAndroidPlayerSession()
@@ -88,6 +93,7 @@ QAndroidPlayerSession::~QAndroidPlayerSession()
 
 void QAndroidPlayerSession::load(const QNetworkRequest &request)
 {
+
     m_savedRequest = request;
     QUrl mediaUrl = request.url();
     QString mediaPath = mediaUrl.path();
@@ -95,12 +101,24 @@ void QAndroidPlayerSession::load(const QNetworkRequest &request)
     {
         QByteArray mediaPathByteArray = mediaPath.toLatin1();
         m_rawDataPath = mediaPathByteArray.data();
+        if(!m_helper)
+        {
+            m_helper = new QAndroidVideoHelper(m_widget);
+        }
+        m_helper->doTheWork(2,0);;
+        m_helper->setPath(mediaPath);
+        m_helper->doTheWork(0,0);
         m_qduration = (qint64)QtMediaPlayerJNI::setQtMediaPlayer(this,m_uniqueID,mediaPath);
         emit durationChanged(m_qduration);
         m_metaDataRetriever.setDataSource(m_rawDataPath);
         emit tagsChanged();
 
     }
+}
+
+void QAndroidPlayerSession::stopVideo()
+{
+    m_helper->doTheWork(2,0);
 }
 
 qint64 QAndroidPlayerSession::duration()
@@ -300,6 +318,7 @@ bool QAndroidPlayerSession::pause()
     if(m_pendingState != QMediaPlayer::StoppedState)
     {
         m_pendingState =  m_state = QMediaPlayer::PausedState;
+        m_helper->doTheWork(1,position());
         QtMediaPlayerJNI::pause();
         return true;
     }
@@ -322,13 +341,28 @@ void QAndroidPlayerSession::stop()
 void QAndroidPlayerSession::playFinshed()
 {
     emit playbackFinished();
+    m_helper->doTheWork(2,0);
 }
 
 bool QAndroidPlayerSession::seek(qint64 ms)
 {
-    unsigned int mSec = (unsigned int)ms;
-    QtMediaPlayerJNI::seekTo(mSec);
-    m_seekable = true;
+    if(m_pendingState!= QMediaPlayer::StoppedState)
+    {
+        unsigned int mSec = (unsigned int)ms;
+        m_helper->doTheWork(3,mSec);
+        if(!m_stop)
+        {
+
+           m_helper->doTheWork(0,mSec);
+           QtMediaPlayerJNI::WakeUpThread();
+        }
+        else
+        {
+            m_stop = false;
+        }
+        QtMediaPlayerJNI::seekTo(mSec);
+        m_seekable = true;
+    }
     return m_seekable;
 }
 
@@ -375,11 +409,16 @@ void QAndroidPlayerSession::setSeekable(bool seekable)
 
 bool QAndroidPlayerSession::doPlay()
 {
+    if(m_state == QMediaPlayer::PausedState)
+    {
+        m_helper->doTheWork(0,position());
+    }
     m_pendingState = QMediaPlayer::PlayingState;
     if(m_muted)
     {
         QtMediaPlayerJNI::setVolume(0,0);
     }
+
     QtMediaPlayerJNI::play();
     emit stateChanged(m_pendingState);
     return true;

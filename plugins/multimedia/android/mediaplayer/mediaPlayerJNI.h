@@ -60,5 +60,7 @@ namespace QtMediaPlayerJNI
     int getCurrentPosition();
     void removeListener(int uniqueID);
     void wait(QMutex * mutex);
+    void WakeUpThread();
+
 }
 #endif // MEDIAPLAYERJNI_H

@@ -12,9 +12,11 @@ INCLUDEPATH+= . \
              ../core/include/ \
              ../base/include/ \
              ../hardware/include/ \
+             ../ \
+             ../ffmpeg \
              $$SOURCE_DIR/include/QtMultimediaKit
 
-LIBS += -lQtCore -lQtMultimediaKit -L../froyolibs -lcutils -lutils -lmedia -lEGL \
+LIBS += -lQtCore -lQtMultimediaKit -L../froyolibs -lcutils -lutils -lmedia -lEGL -L../ffmpeglibs -lffmpeg
 
 
 DEPENDPATH += .
@@ -24,7 +26,9 @@ HEADERS = \
     qandroidplayerservice.h \
     qandroidplayersession.h \
     mediaPlayerJNI.h \
-    qandroidmetadatacontrol.h
+    qandroidmetadatacontrol.h \
+    qandroidvideowidget.h \
+    qandroidvideothread.h
 
 
 SOURCES = \
@@ -33,7 +37,9 @@ SOURCES = \
     qandroidplayerservice.cpp \
     qandroidplayersession.cpp \
     mediaPlayerJNI.cpp \
-    qandroidmetadatacontrol.cpp
+    qandroidmetadatacontrol.cpp \
+    qandroidvideowidget.cpp \
+    qandroidvideothread.cpp
 
 target.path=$$QT_MOBILITY_PREFIX/plugins/mediaservice
 INSTALLS += target

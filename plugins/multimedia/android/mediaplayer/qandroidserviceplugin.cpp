@@ -84,4 +84,4 @@ void QAndroidServicePlugin::release(QMediaService *service)
 {
     delete service;
 }
-Q_EXPORT_PLUGIN2(qtmedia_android, QAndroidServicePlugin);
+Q_EXPORT_PLUGIN2(qtmultimediakit_androidmedia, QAndroidServicePlugin);
