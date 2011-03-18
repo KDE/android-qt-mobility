@@ -61,18 +61,20 @@ QSize AndroidVideoWidget::sizeHint() const
 
 void AndroidVideoWidget::paintEvent(QPaintEvent *event)
 {
+    QPoint point = mapToGlobal(QPoint(0,0));
     scaledSize.setWidth(event->rect().width());
     scaledSize.setHeight(event->rect().height());
+    QList<int> params;
+    params<<event->rect().width()<<event->rect().height()<<point.x()<<point.y();
+    QtCameraJni::setVideoPreviewParams(params);
     m_videoSurface->paintLock.lock();
     QPainter painter(this);
 
     if (m_videoSurface->isActive()) {
         const QRect videoRect = m_videoSurface->videoRect();
-
         if (!videoRect.contains(event->rect())) {
             QRegion region = event->region();
             region.subtract(videoRect);
-
             QBrush brush = palette().background();
 
             foreach (const QRect &rect, region.rects())
@@ -87,10 +89,10 @@ void AndroidVideoWidget::paintEvent(QPaintEvent *event)
 
 }
 
+
 void AndroidVideoWidget::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
-
     m_videoSurface->updateVideoRect();
 }
 

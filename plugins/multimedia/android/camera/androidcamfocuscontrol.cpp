@@ -146,6 +146,7 @@ qreal  AndroidCamFocusControl::opticalZoom() const
 {
     return qreal();
 }
+
 qreal  AndroidCamFocusControl::digitalZoom() const
 {
     return (qreal)QtCameraJni::getZoom();
@@ -156,6 +157,7 @@ void AndroidCamFocusControl::zoomTo(qreal , qreal digital)
     QtCameraJni::setZoom((int)digital);
     emit digitalZoomChanged(digital);
 }
+
 QCameraFocus::FocusPointMode AndroidCamFocusControl::focusPointMode() const
 {
     return QCameraFocus::FocusPointMode();
@@ -169,10 +171,12 @@ bool AndroidCamFocusControl::isFocusPointModeSupported(QCameraFocus::FocusPointM
 {
     return false;
 }
+
 QPointF AndroidCamFocusControl::customFocusPoint() const
 {
     return QPointF();
 }
+
 void AndroidCamFocusControl::setCustomFocusPoint(const QPointF &)
 {
     //not supported

@@ -12,7 +12,11 @@ HEADERS += \
     androidcamexposurecontrol.h \
     androidcamcontrol.h \
     androidcamimageprocessingcontrol.h \
-    androidcamimageencodercontrol.h
+    androidcamimageencodercontrol.h \
+    androidcammediacapturecontrol.h \
+    androidmediacontainercontrol.h \
+    androidvideoencodercontrol.h \
+    androidaudioencodercontrol.h
 
 
 SOURCES += \
@@ -26,7 +30,11 @@ SOURCES += \
     androidcamexposurecontrol.cpp \
     androidcamcontrol.cpp \
     androidcamimageencodercontrol.cpp \
-    androidcamimageprocessingcontrol.cpp
+    androidcamimageprocessingcontrol.cpp \
+    androidcammediacapturecontrol.cpp \
+    androidmediacontainercontrol.cpp \
+    androidvideoencodercontrol.cpp \
+    androidaudioencodercontrol.cpp
 
 
 

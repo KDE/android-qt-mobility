@@ -41,6 +41,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <androidcamimageprocessingcontrol.h>
 #include <androidcamimageencodercontrol.h>
 #include <androidvideowidgetcontrol.h>
+#include <androidcammediacapturecontrol.h>
+#include <androidmediacontainercontrol.h>
+#include <androidvideoencodercontrol.h>
+#include <androidaudioencodercontrol.h>
+
 QT_USE_NAMESPACE
 
 class AndroidCamControl;
@@ -51,6 +56,10 @@ class AndroidCamFlashControl;
 class AndroidCamImageProcessingControl;
 class AndroidCamImageEncoderControl;
 class AndroidVideoWidgetControl;
+class AndroidCamMediaCaptureControl;
+class AndroidMediaContainerControl;
+class AndroidVideoEncoderControl;
+class AndroidAudioEncoderControl;
 
 class AndroidCamService : public QMediaService
 {
@@ -84,6 +93,10 @@ public: // Data
     AndroidCamImageProcessingControl * m_imageProcessingControl;
     AndroidCamImageEncoderControl * m_imageEncoderControl;
     AndroidVideoWidgetControl * m_videoWidgetControl;
+    AndroidCamMediaCaptureControl *m_mediaCaptureControl;
+    AndroidVideoEncoderControl *m_videoEncoder;
+    AndroidAudioEncoderControl *m_audioEncoder;
+    AndroidMediaContainerControl *m_mediaFormat;
 };
 
 

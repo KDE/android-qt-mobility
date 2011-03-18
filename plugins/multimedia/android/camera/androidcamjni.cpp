@@ -21,11 +21,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QWaitCondition>
 #include <QTime>
 #include <QtGui/QPixmap>
-
+#include <QList>
+using namespace std;
 #define QtCameraClassPathName "eu/licentia/necessitas/mobile/QtCamera"
 static JNIEnv *m_env = NULL;
 static JavaVM *m_javaVM = NULL;
-
+static const int kBufferCount = 4;
 template <class T> class CameraGlobalObject
 {
 public:
@@ -63,7 +64,8 @@ private:
 
 namespace QtCameraJni
 {
-    static AndroidCamImageCaptureControl * m_imageCaptureControl;
+    static AndroidCamImageCaptureControl * m_imageCaptureControl = NULL;
+    static AndroidCamMediaCaptureControl * m_videoCaptureControl = NULL;
     static QMutex m_mutex;
     static QQueue<QPixmap *> m_imageQueue;
     static QWaitCondition m_waitCondition;
@@ -96,11 +98,21 @@ namespace QtCameraJni
         jmethodID m_setImageSettingsID;
         jmethodID m_getSupportedImageResolutionsID;
         jmethodID m_getSupportedImageFormatsID;
+        jmethodID m_startRecordingID;
+        jmethodID m_stopRecordingID;
+        jmethodID m_setOutputLocationID;
+        jmethodID m_setOutputFormatID;
+        jmethodID m_setVideoEncodingBitrateID;
+        jmethodID m_setMaxVideoSizeID;
+        jmethodID m_setVideoSettingsID;
+        jmethodID m_setAudioBitRateID;
+        jmethodID m_setAudioChannelsCountID;
 
         jfieldID m_sceneListID;
         jfieldID m_focusModesID;
         jfieldID m_flashModesID;
         jfieldID m_whiteBalanceModesID;
+        jfieldID m_videoPreviewParamsID;
     };
 
     static QtCameraId qtCameraId;
@@ -119,6 +131,7 @@ namespace QtCameraJni
         m_javaVM->DetachCurrentThread();
 
     }
+
 
     void takePicture(AndroidCamImageCaptureControl * control)
     {
@@ -528,10 +541,179 @@ namespace QtCameraJni
 
     }
 
+    void startrecord(AndroidCamMediaCaptureControl* control)
+    {
+        m_videoCaptureControl = control;
+        JNIEnv* env;
+
+        if (m_javaVM->AttachCurrentThread(&env, NULL)<0)
+        {
+            qCritical()<<"AttachCurrentThread failed";
+            return ;
+        }
+        env->CallVoidMethod((jobject)qtCameraId.m_CameraInstance(),qtCameraId.m_startRecordingID);
+        m_javaVM->DetachCurrentThread();
+    }
+
+    void stoprecord()
+    {
+        JNIEnv* env;
+
+        if (m_javaVM->AttachCurrentThread(&env, NULL)<0)
+        {
+            qCritical()<<"AttachCurrentThread failed";
+            return ;
+        }
+        env->CallVoidMethod((jobject)qtCameraId.m_CameraInstance(),qtCameraId.m_stopRecordingID);
+        m_javaVM->DetachCurrentThread();
+    }
+
+    void setVideoOutputLocation(QString & path)
+    {
+        JNIEnv* env;
+
+        if (m_javaVM->AttachCurrentThread(&env, NULL)<0)
+        {
+            qCritical()<<"AttachCurrentThread failed";
+            return ;
+        }
+        jstring jid = env->NewString((const jchar *) path.unicode(), (long) path.length());
+        env->CallVoidMethod((jobject)qtCameraId.m_CameraInstance(),qtCameraId.m_setOutputLocationID,jid);
+        env->DeleteLocalRef(jid);
+        m_javaVM->DetachCurrentThread();
+    }
+
+    void setVideoOutputFormat(MediaFormat format)
+    {
+        JNIEnv* env;
+
+        if (m_javaVM->AttachCurrentThread(&env, NULL)<0)
+        {
+            qCritical()<<"AttachCurrentThread failed";
+            return ;
+        }
+        env->CallVoidMethod((jobject)qtCameraId.m_CameraInstance(),qtCameraId.m_setOutputFormatID,format);
+        m_javaVM->DetachCurrentThread();
+
+    }
+
+    void setVideoEncodingBitrate(int rate)
+    {
+        JNIEnv* env;
+
+        if (m_javaVM->AttachCurrentThread(&env, NULL)<0)
+        {
+            qCritical()<<"AttachCurrentThread failed";
+            return ;
+        }
+        env->CallVoidMethod((jobject)qtCameraId.m_CameraInstance(),qtCameraId.m_setVideoEncodingBitrateID,rate);
+        m_javaVM->DetachCurrentThread();
+    }
+
+    void setMaxVideoSize(long long size)
+    {
+        JNIEnv* env;
+
+        if (m_javaVM->AttachCurrentThread(&env, NULL)<0)
+        {
+            qCritical()<<"AttachCurrentThread failed";
+            return ;
+        }
+        env->CallVoidMethod((jobject)qtCameraId.m_CameraInstance(),qtCameraId.m_setMaxVideoSizeID,size);
+        m_javaVM->DetachCurrentThread();
+    }
+
+    void setVideoSettings(QList<int> videoSettings)
+    {
+        JNIEnv* env;
+
+        if (m_javaVM->AttachCurrentThread(&env, NULL)<0)
+        {
+            qCritical()<<"AttachCurrentThread failed";
+            return ;
+        }
+        int settings[videoSettings.count()];
+        for(int i=0;i<videoSettings.count();i++)
+        {
+            settings[i] = videoSettings.at(i);
+        }
+        jintArray jvideoSettings = env->NewIntArray(videoSettings.count());
+        env->SetIntArrayRegion(jvideoSettings,0,sizeof(settings)/sizeof(int),(jint *)settings);
+        env->CallVoidMethod((jobject)qtCameraId.m_CameraInstance(),qtCameraId.m_setVideoSettingsID,jvideoSettings);
+        env->DeleteLocalRef(jvideoSettings);
+        m_javaVM->DetachCurrentThread();
+
+    }
+
+    void setAudioBitRate(int rate)
+    {
+        JNIEnv* env;
+
+        if (m_javaVM->AttachCurrentThread(&env, NULL)<0)
+        {
+            qCritical()<<"AttachCurrentThread failed";
+            return ;
+        }
+        env->CallVoidMethod((jobject)qtCameraId.m_CameraInstance(),qtCameraId.m_setAudioBitRateID,rate);
+        m_javaVM->DetachCurrentThread();
+
+    }
+
+
+    void setAudioChannelsCount(int count)
+    {
+        JNIEnv* env;
+
+        if (m_javaVM->AttachCurrentThread(&env, NULL)<0)
+        {
+            qCritical()<<"AttachCurrentThread failed";
+            return ;
+        }
+        env->CallVoidMethod((jobject)qtCameraId.m_CameraInstance(),qtCameraId.m_setAudioChannelsCountID,count);
+        m_javaVM->DetachCurrentThread();
+
+    }
+
+    void setVideoPreviewParams(QList<int> params)
+    {
+        JNIEnv* env;
+        QStringList supportedScene;
+        if (m_javaVM->AttachCurrentThread(&env, NULL)<0)
+        {
+            qCritical()<<"AttachCurrentThread failed";
+            return ;
+        }
+        int *parameters;
+        parameters = new int[4];
+        for(int i=0;i<4;i++)
+        {
+            parameters[i] = params.at(i);
+        }
+        jintArray jparams = env->NewIntArray(4);
+        env->SetIntArrayRegion(jparams,0,4,parameters);
+        env->SetObjectField((jobject)qtCameraId.m_CameraInstance(),qtCameraId.m_videoPreviewParamsID,jparams);
+        env->DeleteLocalRef(jparams);
+        delete(parameters);
+        m_javaVM->DetachCurrentThread();
+    }
+
+
+    static void stopRecord(JNIEnv* env, _jobject obj)
+    {
+        Q_UNUSED(obj);
+        Q_UNUSED(env);
+        if(m_videoCaptureControl != NULL)
+        {
+            m_videoCaptureControl->setRecordStop();
+        }
+        m_videoCaptureControl = NULL;
+    }
+
+
     static JNINativeMethod methods[] = {
         {"getImage", "([B)V", (void *)QtCameraJni::getImage},
-        {"getPreviewBuffers", "([B)V", (void *)QtCameraJni::getPreviewBuffers}
-
+        {"getPreviewBuffers", "([B)V", (void *)QtCameraJni::getPreviewBuffers},
+        {"stopRecord", "()V", (void *)QtCameraJni::stopRecord}
     };
 
     static int registerNativeMethods(JNIEnv* env, const char* className,
@@ -567,11 +749,22 @@ namespace QtCameraJni
         qtCameraId.m_setImageSettingsID = env->GetMethodID((jclass)qtCameraId.m_CameraObject (),"setImageSettings","([I)V");
         qtCameraId.m_getSupportedImageResolutionsID = env->GetMethodID((jclass)qtCameraId.m_CameraObject (),"getSupportedImageResolutions","()[I");
         qtCameraId.m_getSupportedImageFormatsID = env->GetMethodID((jclass)qtCameraId.m_CameraObject (),"getSupportedImageFormats","()[I");
+        qtCameraId.m_startRecordingID=env->GetMethodID((jclass)qtCameraId.m_CameraObject (),"startRecording","()V");
+        qtCameraId.m_stopRecordingID=env->GetMethodID((jclass)qtCameraId.m_CameraObject (),"stopRecording","()V");
+        qtCameraId.m_setOutputLocationID=env->GetMethodID((jclass)qtCameraId.m_CameraObject (),"setOutputFile","(Ljava/lang/String;)V");
+        qtCameraId.m_setOutputFormatID=env->GetMethodID((jclass)qtCameraId.m_CameraObject (),"setOutputFormat","(I)V");
+        qtCameraId.m_setVideoEncodingBitrateID=env->GetMethodID((jclass)qtCameraId.m_CameraObject (),"setVideoEncodingBitrate","(I)V");
+        qtCameraId.m_setMaxVideoSizeID=env->GetMethodID((jclass)qtCameraId.m_CameraObject (),"setMaxVideoSize","(J)V");
+        qtCameraId.m_setVideoSettingsID=env->GetMethodID((jclass)qtCameraId.m_CameraObject (),"setVideoSettings","([I)V");
+        qtCameraId.m_setAudioBitRateID=env->GetMethodID((jclass)qtCameraId.m_CameraObject (),"setAudioBitRate","(I)V");
+        qtCameraId.m_setAudioChannelsCountID=env->GetMethodID((jclass)qtCameraId.m_CameraObject (),"setAudioChannelsCount","(I)V");
+
 
         qtCameraId.m_sceneListID  = env->GetFieldID((jclass)qtCameraId.m_CameraObject (),"m_sceneList","[Ljava/lang/String;");
         qtCameraId.m_focusModesID = env->GetFieldID((jclass)qtCameraId.m_CameraObject (),"m_focusModes","[Ljava/lang/String;");
         qtCameraId.m_flashModesID =  env->GetFieldID((jclass)qtCameraId.m_CameraObject (),"m_flashModes","[Ljava/lang/String;");
         qtCameraId.m_whiteBalanceModesID =  env->GetFieldID((jclass)qtCameraId.m_CameraObject (),"m_whiteBalanceModes","[Ljava/lang/String;");
+        qtCameraId.m_videoPreviewParamsID =  env->GetFieldID((jclass)qtCameraId.m_CameraObject (),"m_videoPreviewParams","[I");
 
 
         return JNI_TRUE;
@@ -595,6 +788,6 @@ Q_DECL_EXPORT JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/)
     m_env= uenv.nativeEnvironment;
     m_javaVM = vm;
 
-    QtCameraJni::registerNativeMethods(m_env,QtCameraClassPathName,QtCameraJni::methods,2);
+    QtCameraJni::registerNativeMethods(m_env,QtCameraClassPathName,QtCameraJni::methods,3);
     return JNI_VERSION_1_4;
 }

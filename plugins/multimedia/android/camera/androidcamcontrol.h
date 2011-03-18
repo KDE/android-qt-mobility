@@ -1,19 +1,4 @@
 /*
-Copyright (c) 2011 Elektrobit (EB), All rights reserved.
-Contact: oss-devel@elektrobit.com
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the Elektrobit (EB) nor the names of its
-contributors may be used to endorse or promote products derived from
- this software without specific prior written permission.
-
 THIS SOFTWARE IS PROVIDED BY Elektrobit (EB) ''AS IS'' AND ANY
 EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -36,17 +21,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <qcameraviewfinder.h>
 #include <androidcamjni.h>
 #include <QDebug>
-
+#include <androidcamservice.h>
 
 
 QT_USE_NAMESPACE
-
+class AndroidCamService;
 class AndroidCamControl:public QCameraControl
 {
     Q_OBJECT
 public:
-    AndroidCamControl(QObject *parent = 0);
+    AndroidCamControl(AndroidCamService *,QObject *parent = 0);
     ~AndroidCamControl();
+
 public: // QCameraControl
 
     // State
@@ -74,14 +60,8 @@ public: // QCameraControl
     void cameraActive();
     void cameraStop();
 
+private:
+    AndroidCamService * m_service;
 };
-
-
-
-
-
-
-
-
 
 #endif

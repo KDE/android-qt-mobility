@@ -38,7 +38,7 @@ AndroidCamService::AndroidCamService(QObject *parent) :
 {
     qDebug()<<"Android camera service started";
     // Different control classes implementing the Camera API
-    m_control = new AndroidCamControl();
+    m_control = new AndroidCamControl(this);
     m_focusControl = new AndroidCamFocusControl();
     m_exposureControl = new AndroidCamExposureControl();
     m_flashControl = new AndroidCamFlashControl();
@@ -46,6 +46,10 @@ AndroidCamService::AndroidCamService(QObject *parent) :
     m_imageCaptureControl = new AndroidCamImageCaptureControl(this);
     m_videoWidgetControl = new AndroidVideoWidgetControl();
     m_imageEncoderControl = new AndroidCamImageEncoderControl();
+    m_mediaCaptureControl=new AndroidCamMediaCaptureControl();
+    m_mediaFormat = new AndroidMediaContainerControl();
+    m_videoEncoder = new AndroidVideoEncoderControl();
+    m_audioEncoder = new AndroidAudioEncoderControl();
 
 }
 
@@ -68,7 +72,14 @@ AndroidCamService::~AndroidCamService()
         delete m_control;
     if (m_videoWidgetControl)
         delete m_videoWidgetControl;
-
+    if (m_mediaCaptureControl)
+        delete m_mediaCaptureControl;
+    if (m_mediaFormat)
+        delete m_mediaFormat;
+    if (m_videoEncoder)
+        delete m_videoEncoder;
+    if (m_audioEncoder)
+        delete m_audioEncoder;
 }
 
 QMediaControl *AndroidCamService::requestControl(const char *name)
@@ -101,6 +112,18 @@ QMediaControl *AndroidCamService::requestControl(const char *name)
 
     if (qstrcmp(name, QImageEncoderControl_iid) == 0)
         return m_imageEncoderControl;
+
+    if (qstrcmp(name, QMediaRecorderControl_iid) == 0)
+         return m_mediaCaptureControl;
+
+    if (qstrcmp(name, QVideoEncoderControl_iid) == 0)
+        return m_videoEncoder;
+
+    if (qstrcmp(name, QAudioEncoderControl_iid) == 0)
+        return m_audioEncoder;
+
+    if (qstrcmp(name, QMediaContainerControl_iid) == 0)
+        return m_mediaFormat;
 
     return 0;
 }
