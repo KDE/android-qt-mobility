@@ -51,12 +51,14 @@
 #include "qandroidplayersession.h"
 #include "qandroidplayercontrol.h"
 #include "qandroidmetadatacontrol.h"
+#include "qandroidvideowidget.h"
 
 QT_BEGIN_NAMESPACE
 class QMediaMetaData;
 class QMediaPlayerControl;
 class QMediaPlaylist;
 class QMediaPlaylistNavigator;
+class QAndroidVideoWidgetControl;
 QT_END_NAMESPACE
 
 QT_USE_NAMESPACE
@@ -69,10 +71,12 @@ public:
 
     QMediaControl *requestControl(const char *name);
     void releaseControl(QMediaControl *control);
+    QAndroidVideoWidgetControl* getVideoWidgetControl();
 
 private:
     QAndroidPlayerSession *m_session;
     QAndroidPlayerControl *m_control;
     QAndroidMetaDataControl *m_metaData;
+    QAndroidVideoWidgetControl *m_videoWidget;
 };
 #endif //QANDROIDPLAYERSERVICE_H

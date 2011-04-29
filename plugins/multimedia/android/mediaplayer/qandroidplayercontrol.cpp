@@ -270,9 +270,11 @@ void QAndroidPlayerControl::stop()
     if (m_state != QMediaPlayer::StoppedState) {
         m_state = QMediaPlayer::StoppedState;
         m_session->pause();
+        m_session->m_stop = true;
         m_seekToStartPending = true;
         updateState(m_session->state());
         emit positionChanged(0);
+        m_session->stopVideo();
         emit stateChanged(m_state);
     }
 }

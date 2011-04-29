@@ -4,8 +4,11 @@ TARGET = QtSystemInfo
 
 QT+= network
 include(../../common.pri)
-
+INCLUDEPATH += /root/Desktop/android-ndk-r5b/platforms/android-8/arch-arm/usr/include \
+                .
 # Input
+
+
 PUBLIC_HEADERS +=   qsysteminfo.h \
     qsystemgeneralinfo.h \
     qsystemdeviceinfo.h \
@@ -27,6 +30,14 @@ PRIVATE_HEADERS += qsysteminfocommon_p.h
 
 DEFINES += QT_BUILD_SYSINFO_LIB QT_MAKEDLL
 
+
+android:!simulator{
+    HEADERS += qsysteminfo_android_p.h \
+               jni_android_p.h \
+
+    SOURCES += qsysteminfo_android.cpp \
+               jni_android.cpp \
+}
 
 win32:!simulator {
     contains(CONFIG,release) {

@@ -1,19 +1,4 @@
 /*
-Copyright (c) 2011 Elektrobit (EB), All rights reserved.
-Contact: oss-devel@elektrobit.com
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the Elektrobit (EB) nor the names of its
-contributors may be used to endorse or promote products derived from
- this software without specific prior written permission.
-
 THIS SOFTWARE IS PROVIDED BY Elektrobit (EB) ''AS IS'' AND ANY
 EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -37,11 +22,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <androidcamimagecapturecontrol.h>
 #include <QtGui/QPalette>
 #include <QThread>
-
-
+#include <androidcammediacapturecontrol.h>
 
 class AndroidCamImageCaptureControl;
-
+class AndroidCamMediaCaptureControl;
 namespace QtCameraJni
 {
     enum State {
@@ -49,6 +33,11 @@ namespace QtCameraJni
         Unload,
         StartPreview,
         StopPreview
+    };
+
+    enum MediaFormat {
+        ThreeGP=1,
+        MPFour
     };
 
     void setCameraState(State);
@@ -73,6 +62,17 @@ namespace QtCameraJni
     void wait();
     void waitlocked();
     void waitUnlocked();
+    void stoprecord();
+    void startrecord(AndroidCamMediaCaptureControl*);
+    void setVideoOutputLocation(QString &);
+    void setVideoOutputFormat(MediaFormat format);
+    void setVideoEncodingBitrate(int);
+    void setMaxVideoSize(long long);
+    void setVideoSettings(QList<int>);
+    void setAudioBitRate(int);
+    void setAudioChannelsCount(int);
+    void setVideoPreviewParams(QList<int>);
+
 }
 
 #endif // ANDROIDCAMJNI_H

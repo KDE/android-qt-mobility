@@ -35,10 +35,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 AndroidCamImageCaptureControl::AndroidCamImageCaptureControl(AndroidCamService * service,QObject *parent) :
-        QCameraImageCaptureControl(parent)
+        QCameraImageCaptureControl(parent),
+        m_service(service)
 {
-    m_service = service;
-
 }
 
 AndroidCamImageCaptureControl::~AndroidCamImageCaptureControl()

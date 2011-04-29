@@ -16,20 +16,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "androidcamcontrol.h"
 #include <QtGui/QApplication>
 #include <QtGui/QWidget>
-AndroidCamControl::AndroidCamControl(QObject *parent) :
+
+
+AndroidCamControl::AndroidCamControl(AndroidCamService * service,QObject *parent) :
         QCameraControl(parent),
         m_internalState(QCamera::UnloadedStatus),
-        m_requestedState(QCamera::UnloadedState)
+        m_requestedState(QCamera::UnloadedState),
+        m_service(service)
 {
 }
 
 AndroidCamControl::~AndroidCamControl()
 {
-
+    m_service = NULL;
 }
 
 void AndroidCamControl::setState(QCamera::State state)
 {
+
     if (m_requestedState == state) {
         return;
     }
@@ -124,6 +128,7 @@ void AndroidCamControl::setState(QCamera::State state)
             return;
         }
     emit stateChanged(m_requestedState);
+
 }
 
 QCamera::State AndroidCamControl::state() const
@@ -143,6 +148,7 @@ QCamera::CaptureMode AndroidCamControl::captureMode() const
 
 void AndroidCamControl::setCaptureMode(QCamera::CaptureMode mode)
 {
+
     if (!isCaptureModeSupported(mode)) {
         return;
     }
@@ -161,6 +167,8 @@ void AndroidCamControl::setCaptureMode(QCamera::CaptureMode mode)
             break;
 
         case QCamera::CaptureVideo:
+            m_requestedCaptureMode = QCamera::CaptureVideo;
+            m_captureMode = QCamera::CaptureVideo;
             break;
         }
 
@@ -173,18 +181,21 @@ void AndroidCamControl::setCaptureMode(QCamera::CaptureMode mode)
 
     case QCamera::ActiveStatus:
         // Stop, Change Mode and Start again
-        QtCameraJni::setCameraState(QtCameraJni::StopPreview);
-        QtCameraJni::setCameraState(QtCameraJni::Unload);
+
         switch (mode) {
 
         case QCamera::CaptureStillImage:
+            m_service->m_mediaCaptureControl->stop();
             m_requestedCaptureMode = QCamera::CaptureStillImage;
             m_captureMode = QCamera::CaptureStillImage;
-            QtCameraJni::setCameraState(QtCameraJni::Load);
-            QtCameraJni::setCameraState(QtCameraJni::StartPreview);
+            emit captureModeChanged(QCamera::CaptureStillImage);
             break;
+
         case QCamera::CaptureVideo:
+            m_captureMode = QCamera::CaptureVideo;
+            emit captureModeChanged(QCamera::CaptureVideo);
             break;
+
         }
 
         break;
@@ -201,7 +212,7 @@ bool AndroidCamControl::isCaptureModeSupported(QCamera::CaptureMode mode) const
     case QCamera::CaptureStillImage:
         return true;
     case QCamera::CaptureVideo:
-        return false;
+        return true;
 
     default:
         return false;
@@ -214,9 +225,9 @@ bool AndroidCamControl::canChangeProperty(QCameraControl::PropertyChangeType cha
     Q_UNUSED(status);
 
     bool returnValue = false;
-
     switch (changeType) {
-    case QCameraControl::CaptureMode:   
+    case QCameraControl::CaptureMode:
+    case QCameraControl::VideoEncodingSettings:
     case QCameraControl::ImageEncodingSettings:
     case QCameraControl::Viewfinder:
         returnValue = true;

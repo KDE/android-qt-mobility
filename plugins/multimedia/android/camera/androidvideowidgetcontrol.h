@@ -44,7 +44,7 @@ QT_END_NAMESPACE
 static QSize scaledSize;
 class AndroidVideoSurface;
 class AndroidVideoWidgetControl;
-//! [0]
+
 class AndroidVideoWidget : public QWidget
 {
     Q_OBJECT
@@ -58,8 +58,8 @@ public:
 
     void setNativeSize( const QSize &);
 protected:
-    void paintEvent(QPaintEvent *event);
-    void resizeEvent(QResizeEvent *event);
+    void paintEvent(QPaintEvent *);
+    void resizeEvent(QResizeEvent *);
 
 private:
     AndroidVideoSurface *m_videoSurface;

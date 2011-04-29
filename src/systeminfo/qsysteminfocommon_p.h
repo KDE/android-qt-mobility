@@ -67,6 +67,10 @@
 #include "qsysteminfo_s60_p.h"
 #endif
 
+#ifdef Q_WS_ANDROID
+#include "qsysteminfo_android_p.h"
+#endif
+
 #endif // QT_SIMULATOR
 
 #endif // QSYSTEMINFOCOMMON_H
