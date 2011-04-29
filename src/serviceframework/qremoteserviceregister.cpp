@@ -56,6 +56,8 @@ QTM_BEGIN_NAMESPACE
     details matching a valid QServiceInterfaceDescriptor. 
     
     A registration entry can then be published for discovery by remote clients.
+
+    \since 1.1
 */
 
 /*!
@@ -167,7 +169,7 @@ const QMetaObject * QRemoteServiceRegister::Entry::metaObject() const
     Sets the QRemoteServiceRegister::InstanceType of the registration entry.
 
     If this is not explicitly called, the default instance \a type for the registration entry 
-    is QRemoteServiceRegister::GlobalInstance.
+    is QRemoteServiceRegister::PrivateInstance.
 */
 void QRemoteServiceRegister::Entry::setInstantiationType(QRemoteServiceRegister::InstanceType type)
 {

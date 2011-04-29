@@ -50,6 +50,7 @@ IMPLEMENT_READING(QGyroscopeReading)
     \class QGyroscopeReading
     \ingroup sensors_reading
     \inmodule QtSensors
+    \since 1.2
 
     \brief The QGyroscopeReading class represents one reading from the
            gyroscope sensor.
@@ -57,11 +58,11 @@ IMPLEMENT_READING(QGyroscopeReading)
     \section2 QGyroscopeReading Units
 
     The reading contains 3 values, measured in degrees per second that define
-    the rotation of the device around the x, y and z axes. Unlike QRotationReading,
+    the movement of the device around the x, y and z axes. Unlike QRotationReading,
     the values represent the current angular velocity rather than a fixed rotation.
     The measurements are in degrees per second.
 
-    \image sensors-gyroscope.jpg
+    \image sensors-coordinates3.jpg
 */
 
 /*!

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,12 +60,12 @@ class QBluetoothServiceInfo;
 class Q_CONNECTIVITY_EXPORT QBluetoothSocket : public QIODevice
 {
     Q_OBJECT    
+    Q_DECLARE_PRIVATE(QBluetoothSocket)
 
-    friend class QBluetoothSocketPrivate;
-    friend class QBluetoothSocketBluezPrivate;
-    friend class QBluetoothSocketSymbianPrivate;
     friend class QRfcommServer;
     friend class QRfcommServerPrivate;
+    friend class QL2capServer;
+    friend class QL2capServerPrivate;
 
 public:
     enum SocketType {
@@ -85,13 +85,16 @@ public:
     };
 
     enum SocketError {
+        NoSocketError = -2,
         UnknownSocketError = QAbstractSocket::UnknownSocketError,
         ConnectionRefusedError = QAbstractSocket::ConnectionRefusedError,        
         RemoteHostClosedError = QAbstractSocket::RemoteHostClosedError,
-        HostNotFoundError = QAbstractSocket::HostNotFoundError
+        HostNotFoundError = QAbstractSocket::HostNotFoundError,
+        ServiceNotFoundError = QAbstractSocket::SocketAddressNotAvailableError,
+        NetworkError = QAbstractSocket::NetworkError
     };
 
-    QBluetoothSocket(SocketType socketType, QObject *parent = 0);   // create socket of type socketType
+    explicit QBluetoothSocket(SocketType socketType, QObject *parent = 0);   // create socket of type socketType
     QBluetoothSocket(QObject *parent = 0);  // create a blank socket
     virtual ~QBluetoothSocket();
 
@@ -152,9 +155,22 @@ protected:
     void setSocketState(SocketState state);
     void setSocketError(SocketError error);
 
+    void doDeviceDiscovery(const QBluetoothServiceInfo &service, OpenMode openMode);
+
+private Q_SLOTS:
+    void serviceDiscovered(const QBluetoothServiceInfo &service);
+    void discoveryFinished();
+
+
+protected:
+    QBluetoothSocketPrivate *d_ptr;
+
 private:
-    QBluetoothSocketPrivate *d;
-//    Q_PRIVATE_SLOT(d_func(), void _q_readNotify())
+    Q_PRIVATE_SLOT(d_func(), void _q_readNotify())
+    Q_PRIVATE_SLOT(d_func(), void _q_writeNotify())
+#ifdef QTM_SYMBIAN_BLUETOOTH
+    Q_PRIVATE_SLOT(d_func(), void _q_startReceive())
+#endif //QTM_SYMBIAN_BLUETOOTH
 };
 
 #ifndef QT_NO_DEBUG_STREAM

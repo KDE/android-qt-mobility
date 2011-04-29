@@ -66,6 +66,7 @@ QTM_BEGIN_NAMESPACE
     interactions between the user and the map.
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup maps-mapping
 
@@ -158,6 +159,14 @@ QGraphicsGeoMap::QGraphicsGeoMap(QGeoMappingManager *manager, QGraphicsItem *par
             SIGNAL(zoomLevelChanged(qreal)),
             this,
             SIGNAL(zoomLevelChanged(qreal)));
+    connect(d_ptr->mapData,
+            SIGNAL(bearingChanged(qreal)),
+            this,
+            SIGNAL(bearingChanged(qreal)));
+    connect(d_ptr->mapData,
+            SIGNAL(tiltChanged(qreal)),
+            this,
+            SIGNAL(tiltChanged(qreal)));
     connect(d_ptr->mapData,
             SIGNAL(mapTypeChanged(QGraphicsGeoMap::MapType)),
             this,
@@ -276,6 +285,109 @@ qreal QGraphicsGeoMap::zoomLevel() const
 
     return -1;
 }
+/*!
+    \property QGraphicsGeoMap::supportsBearing
+    \brief This property holds whether bearing is supported by the
+    QGeoMappingManager associated with this widget.
+*/
+bool QGraphicsGeoMap::supportsBearing() const
+{
+    if (d_ptr->mapData)
+        return d_ptr->mapData->supportsBearing();
+
+    return false;
+}
+
+/*!
+    \property QGraphicsGeoMap::bearing
+    \brief This property holds the bearing of the map.
+
+    Value in degrees where 0 is equivalent to 90 degrees between view and earth's
+    surface i.e. looking straight down to earth.
+*/
+void QGraphicsGeoMap::setBearing(qreal bearing)
+{
+    if (d_ptr->mapData)
+        d_ptr->mapData->setBearing(bearing);
+}
+
+qreal QGraphicsGeoMap::bearing() const
+{
+    if (d_ptr->mapData)
+        return d_ptr->mapData->bearing();
+
+    return 0;
+}
+
+/*!
+    \property QGraphicsGeoMap::supportsTilting
+    \brief This property holds whether tilting is supported by the
+    QGeoMappingManager associated with this widget.
+*/
+bool QGraphicsGeoMap::supportsTilting() const
+{
+    if (d_ptr->mapData)
+        return d_ptr->mapData->supportsTilting();
+
+    return false;
+}
+
+/*!
+    \property QGraphicsGeoMap::minimumTilt
+    \brief This property holds the minimum tilt supported by the
+    QGeoMappingManager associated with this widget.
+
+    Value in degrees where 0 is equivalent to 90 degrees between view and earth's
+    surface i.e. looking straight down to earth.
+*/
+qreal QGraphicsGeoMap::minimumTilt() const
+{
+    if (d_ptr->mapData)
+        return d_ptr->mapData->minimumTilt();
+
+    return 0;
+}
+
+/*!
+    \property QGraphicsGeoMap::maximumTilt
+    \brief This property holds the maximum tilt supported by the
+    QGeoMappingManager associated with this widget.
+
+    Value in degrees where 0 is equivalent to 90 degrees between view and earth's
+    surface i.e. looking straight down to earth.
+*/
+qreal QGraphicsGeoMap::maximumTilt() const
+{
+    if (d_ptr->mapData)
+        return d_ptr->mapData->maximumTilt();
+
+    return 0;
+}
+
+/*!
+    \property QGraphicsGeoMap::tilt
+    \brief This property holds the tilt of the map.
+
+    Value in degrees where 0 is equivalent to 90 degrees between view and earth's
+    surface i.e. looking straight down to earth.
+
+    If \a tilt is less than minimumTilt() then minimumTilt()
+    will be used, and if \a tilt is  larger than
+    maximumTilt() then maximumTilt() will be used.
+*/
+void QGraphicsGeoMap::setTilt(qreal tilt)
+{
+    if (d_ptr->mapData)
+        d_ptr->mapData->setTilt(tilt);
+}
+
+qreal QGraphicsGeoMap::tilt() const
+{
+    if (d_ptr->mapData)
+        return d_ptr->mapData->tilt();
+
+    return 0;
+}
 
 /*!
     Pans the map view \a dx pixels in the x direction and \a dy pixels
@@ -392,6 +504,21 @@ QGraphicsGeoMap::ConnectivityMode QGraphicsGeoMap::connectivityMode() const
 }
 
 /*!
+    Returns whether custom map objects are supported by this engine.
+
+    Custom map objects are map objects based on QGraphicsItem instances, which
+    are hard to support in cases where the map rendering is not being
+    performed by the Qt Graphics View framwork.
+*/
+bool QGraphicsGeoMap::supportsCustomMapObjects() const
+{
+    if (d_ptr->manager)
+        return d_ptr->manager->supportsCustomMapObjects();
+
+    return false;
+}
+
+/*!
     Returns the map objects associated with this map.
 */
 QList<QGeoMapObject*> QGraphicsGeoMap::mapObjects() const
@@ -410,10 +537,16 @@ QList<QGeoMapObject*> QGraphicsGeoMap::mapObjects() const
     object immediately.
 
     The map will take ownership of the \a mapObject.
+
+    If supportsCustomMapObject() returns false and \a mapObject is a custom map
+    object then \a mapObject will not be added to the map.
 */
 void QGraphicsGeoMap::addMapObject(QGeoMapObject *mapObject)
 {
     if (!mapObject || !d_ptr->mapData)
+        return;
+
+    if ((mapObject->type() == QGeoMapObject::CustomType) && !supportsCustomMapObjects())
         return;
 
     d_ptr->mapData->addMapObject(mapObject);
@@ -617,6 +750,22 @@ QGeoCoordinate QGraphicsGeoMap::screenPositionToCoordinate(QPointF screenPositio
 */
 
 /*!
+\fn void QGraphicsGeoMap::bearingChanged(qreal bearing)
+
+    This signal is emitted when the bearing of the map changes.
+
+    The new value is \a bearing.
+*/
+
+/*!
+\fn void QGraphicsGeoMap::tiltChanged(qreal tilt)
+
+    This signal is emitted when the tilt of the map changes.
+
+    The new value is \a tilt.
+*/
+
+/*!
 \fn void QGraphicsGeoMap::centerChanged(const QGeoCoordinate &coordinate)
 
     This signal is emitted when the center of the map changes.
@@ -635,7 +784,7 @@ QGeoCoordinate QGraphicsGeoMap::screenPositionToCoordinate(QPointF screenPositio
 /*!
 \fn void QGraphicsGeoMap::connectivityModeChanged(QGraphicsGeoMap::ConnectivityMode connectivityMode)
 
-    This signal is emitted when the connectivity mode used to fetch the 
+    This signal is emitted when the connectivity mode used to fetch the
     map data changes.
 
     The new value is \a connectivityMode.

@@ -50,6 +50,7 @@ QTM_USE_NAMESPACE
 /*!
   \class QVersitDocumentWriter
   \internal
+    \since 1.0
   \brief The QVersitDocumentWriter class provides an interface for writing a
   single versit document into a vCard text string.
  */
@@ -229,6 +230,40 @@ void QVersitDocumentWriter::writeString(const QString &value)
             mSuccessful = false;
         spaceRemaining = MAX_LINE_LENGTH - 1; // minus 1 for the space at the front.
         mCurrentLineLength = 1;
+    }
+
+    if (mDevice->write(mEncoder->fromUnicode(value.mid(charsWritten))) < 0)
+        mSuccessful = false;
+    mCurrentLineLength += value.length() - charsWritten;
+}
+
+/*!
+  Writes \a value to the device.
+
+  This function tracks how many characters have been written to the line and wraps the line
+  according to RFC2045 (a Quoted-Printable soft line break is an EQUALS-CR-LF sequence)
+  */
+void QVersitDocumentWriter::writeStringQp(const QString &value)
+{
+    int spaceRemaining = MAX_LINE_LENGTH - mCurrentLineLength - 1;
+                                             // minus 1 for the equals required at the end
+    int charsWritten = 0;
+    QString softBreak(QLatin1String("=\r\n"));
+    while (spaceRemaining < value.length() - charsWritten) {
+        // Write the first "spaceRemaining" characters
+        if (value[charsWritten + spaceRemaining - 2] == QLatin1Char('=')) {
+            spaceRemaining -= 2;
+        } else if (value[charsWritten + spaceRemaining - 1] == QLatin1Char('=')) {
+            spaceRemaining -= 1;
+        }
+        QStringRef line(&value, charsWritten, spaceRemaining);
+
+        charsWritten += spaceRemaining;
+        if (mDevice->write(mEncoder->fromUnicode(line.constData(), line.length())) < 0
+               || mDevice->write(mEncoder->fromUnicode(softBreak)) < 0)
+            mSuccessful = false;
+        spaceRemaining = MAX_LINE_LENGTH - 1; // minus 1 for the equals required at the end
+        mCurrentLineLength = 0;
     }
 
     if (mDevice->write(mEncoder->fromUnicode(value.mid(charsWritten))) < 0)

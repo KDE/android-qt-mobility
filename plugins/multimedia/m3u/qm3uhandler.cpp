@@ -58,7 +58,7 @@ public:
     }
 
     QM3uPlaylistReader(const QUrl& location)
-        :m_ownDevice(true)
+        :m_location(location), m_ownDevice(true)
     {
         QFile *f = new QFile(location.toLocalFile());
         if (f->open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -91,19 +91,47 @@ public:
     {
         QMediaContent item;
         if (!nextResource.isNull())
-        item = QMediaContent(nextResource);
+            item = QMediaContent(nextResource);
 
         nextResource = QMediaContent();
 
         while (m_textStream && !m_textStream->atEnd()) {
-            QString line = m_textStream->readLine();
+            QString line = m_textStream->readLine().trimmed();
             if (line.isEmpty() || line[0] == '#')
                 continue;
 
-            if (QFile::exists(line))
-                nextResource = QMediaContent(QUrl::fromLocalFile(line));
-            else
-                nextResource = QMediaContent(QUrl(line));
+            QUrl fileUrl = QUrl::fromLocalFile(line);
+            QUrl url(line);
+
+            //m3u may contain url encoded entries or absolute/relative file names
+            //prefer existing file if any
+            QList<QUrl> candidates;
+            if (!m_location.isEmpty()) {
+                candidates << m_location.resolved(fileUrl);
+                candidates << m_location.resolved(url);
+            }
+            candidates << fileUrl;
+            candidates << url;
+
+            foreach (const QUrl &candidate, candidates) {
+                if (QFile::exists(candidate.toLocalFile())) {
+                    nextResource = candidate;
+                    break;
+                }
+            }
+
+            if (nextResource.isNull()) {
+                //assume the relative urls are file names, not encoded urls if m3u is local file
+                if (!m_location.isEmpty() && url.isRelative()) {
+                    if (m_location.scheme() == QLatin1String("file"))
+                        nextResource = m_location.resolved(fileUrl);
+                    else
+                        nextResource = m_location.resolved(url);
+                } else {
+                    nextResource = QMediaContent(QUrl::fromUserInput(line));
+                }
+            }
+
             break;
         }
 
@@ -115,6 +143,7 @@ public:
     }
 
 private:
+    QUrl m_location;
     bool m_ownDevice;
     QIODevice *m_device;
     QTextStream *m_textStream;

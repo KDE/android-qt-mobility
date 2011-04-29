@@ -135,6 +135,7 @@ public:
    void emitNetworkStatusChanged(QSystemNetworkInfo::NetworkMode, QSystemNetworkInfo::NetworkStatus);
    void emitNetworkSignalStrengthChanged(QSystemNetworkInfo::NetworkMode,int);
    QSystemNetworkInfo::NetworkMode currentMode();
+   QSystemNetworkInfo::CellDataTechnology cellDataTechnology();
 
 
    static QSystemNetworkInfoPrivate *instance();
@@ -179,7 +180,7 @@ public:
     int displayBrightness(int screen);
     int colorDepth(int screen);
 
-    QSystemDisplayInfo::DisplayOrientation getOrientation(int screen);
+    QSystemDisplayInfo::DisplayOrientation orientation(int screen);
     float contrast(int screen);
     int getDPIWidth(int screen);
     int getDPIHeight(int screen);
@@ -189,6 +190,8 @@ public:
 private:
     HDC deviceContextHandle;
     int getMonitorCaps(int caps, int screen);
+Q_SIGNALS:
+    void orientationChanged(QSystemDisplayInfo::DisplayOrientation newOrientation);
 
 };
 
@@ -271,32 +274,38 @@ public:
     QTM_PREPEND_NAMESPACE(QSystemDeviceInfo::Profile) currentProfile();
 
     QTM_PREPEND_NAMESPACE(QSystemDeviceInfo::PowerState) currentPowerState();
+    QTM_PREPEND_NAMESPACE(QSystemDeviceInfo::ThermalState) currentThermalState();
     void setConnection();
     static QSystemDeviceInfoPrivate *instance() {return self;}
 
     bool currentBluetoothPowerState();
 
-    QSystemDeviceInfo::KeyboardTypeFlags keyboardType(); //1.2
+    QSystemDeviceInfo::KeyboardTypeFlags keyboardTypes(); //1.2
     bool isWirelessKeyboardConnected(); //1.2
-    bool isKeyboardFlipOpen();//1.2
+    bool isKeyboardFlippedOpen();//1.2
 
     void keyboardConnected(bool connect);//1.2
-    bool keypadLightOn(QSystemDeviceInfo::keypadType type); //1.2
-    QUuid hostId(); //1.2
-    QSystemDeviceInfo::LockType lockStatus(); //1.2
+    bool keypadLightOn(QSystemDeviceInfo::KeypadType type); //1.2
+    QByteArray uniqueDeviceID(); //1.2
+    QSystemDeviceInfo::LockTypeFlags lockStatus(); //1.2
+
+    int messageRingtoneVolume();//1.2
+    int voiceRingtoneVolume();//1.2
+    bool vibrationActive();//1.2
 
 Q_SIGNALS:
     void batteryLevelChanged(int);
     void batteryStatusChanged(QSystemDeviceInfo::BatteryStatus );
 
     void powerStateChanged(QSystemDeviceInfo::PowerState);
+    void thermalStateChanged(QSystemDeviceInfo::ThermalState);
     void currentProfileChanged(QSystemDeviceInfo::Profile);
     void bluetoothStateChanged(bool);
 
     void wirelessKeyboardConnected(bool connected);//1.2
-    void keyboardFlip(bool open);//1.2
+    void keyboardFlipped(bool open);//1.2
     void deviceLocked(bool isLocked); // 1.2
-    void lockStatusChanged(QSystemDeviceInfo::LockType); //1.2
+    void lockStatusChanged(QSystemDeviceInfo::LockTypeFlags); //1.2
 
 private:
     bool btPowered;
@@ -322,6 +331,9 @@ public:
     bool screenSaverInhibited();
     bool setScreenSaverInhibit();
     bool screenSaverSecureEnabled();
+
+    void setScreenSaverInhibited(bool on);
+
 private:
     QString screenPath;
     QString settingsPath;
@@ -350,7 +362,6 @@ public:
     int maxBars() const;
     QSystemBatteryInfo::BatteryStatus batteryStatus() const;
     QSystemBatteryInfo::EnergyUnit energyMeasurementUnit();
-    int startCurrentMeasurement(int rate);
 
     void getBatteryStatus();
     static QSystemBatteryInfoPrivate *instance() {return batself;}
@@ -370,8 +381,6 @@ Q_SIGNALS:
     void currentFlowChanged(int);
     void remainingCapacityBarsChanged(int);
     void remainingChargingTimeChanged(int);
-    void voltageChanged(int);
-
 
 protected:
     void connectNotify(const char *signal);

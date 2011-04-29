@@ -47,21 +47,17 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QCameraExposureControl
 
-    
+
     \brief The QCameraExposureControl class supplies control for exposure
     related camera parameters.
 
     \inmodule QtMultimediaKit
     \ingroup camera
+    \since 1.1
 
     The interface name of QCameraExposureControl is \c com.nokia.Qt.QCameraExposureControl/1.0 as
     defined in QCameraExposureControl_iid.
 
-The Camera API of Qt Mobility is still in \bold Technology Preview. It has not undergone
-the same level of review and testing as the rest of the APIs.
-
-The API exposed by the classes in this component are not stable, and will
-undergo modification or removal prior to the final release of Qt Mobility.
 
     \sa QCamera
 */

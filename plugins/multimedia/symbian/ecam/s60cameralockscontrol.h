@@ -63,7 +63,9 @@ class S60CameraLocksControl : public QCameraLocksControl
 public: // Contructors & Destrcutor
 
     S60CameraLocksControl(QObject *parent = 0);
-    S60CameraLocksControl(S60ImageCaptureSession *session, QObject *parent = 0);
+    S60CameraLocksControl(S60CameraService *service,
+                          S60ImageCaptureSession *session,
+                          QObject *parent = 0);
     ~S60CameraLocksControl();
 
 public: // QCameraLocksControl
@@ -83,7 +85,7 @@ Q_SIGNALS: // QCameraLocksControl
                            QCamera::LockChangeReason reason);
 */
 
-private Q_SLOTS: // Internal Slots
+private slots: // Internal Slots
 
     void exposureStatusChanged(QCamera::LockStatus status, QCamera::LockChangeReason reason);
     void focusStatusChanged(QCamera::LockStatus status, QCamera::LockChangeReason reason);

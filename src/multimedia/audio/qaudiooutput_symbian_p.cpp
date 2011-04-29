@@ -103,6 +103,7 @@ QAudioOutputPrivate::QAudioOutputPrivate(const QByteArray &device)
     ,   m_clientBufferSize(SymbianAudio::DefaultBufferSize)
     ,   m_notifyInterval(SymbianAudio::DefaultNotifyInterval)
     ,   m_notifyTimer(new QTimer(this))
+    ,   m_lastNotifyPosition(0)
     ,   m_error(QAudio::NoError)
     ,   m_internalState(SymbianAudio::ClosedState)
     ,   m_externalState(QAudio::StoppedState)
@@ -120,7 +121,8 @@ QAudioOutputPrivate::QAudioOutputPrivate(const QByteArray &device)
     ,   m_samplesPlayed(0)
     ,   m_totalSamplesPlayed(0)
 {
-    connect(m_notifyTimer.data(), SIGNAL(timeout()), this, SIGNAL(notify()));
+    connect(m_notifyTimer.data(), SIGNAL(timeout()),
+            this, SLOT(notifyTimerExpired()));
 
     m_underflowTimer->setInterval(UnderflowTimerInterval);
 
@@ -177,23 +179,30 @@ void QAudioOutputPrivate::stop()
 
 void QAudioOutputPrivate::reset()
 {
+#ifndef PRE_S60_52_PLATFORM
+    int err =  m_devSound->flush();
+    if (err != 0)
+        setError(QAudio::FatalError);
+#else
     m_totalSamplesPlayed += getSamplesPlayed();
     m_devSound->stop();
     m_bytesPadding = 0;
     startPlayback();
+#endif
 }
 
 void QAudioOutputPrivate::suspend()
 {
     if (SymbianAudio::ActiveState == m_internalState
         || SymbianAudio::IdleState == m_internalState) {
-        m_notifyTimer->stop();
         m_underflowTimer->stop();
         const qint64 samplesWritten = SymbianAudio::Utils::bytesToSamples(
                                           m_format, m_bytesWritten);
         const qint64 samplesPlayed = getSamplesPlayed();
+#ifdef PRE_S60_52_PLATFORM
         m_totalSamplesPlayed += samplesPlayed;
         m_bytesWritten = 0;
+#endif
         const bool paused = m_devSound->pause();
         if (paused) {
             setState(SymbianAudio::SuspendedPausedState);
@@ -212,10 +221,19 @@ void QAudioOutputPrivate::suspend()
 void QAudioOutputPrivate::resume()
 {
     if (QAudio::SuspendedState == m_externalState) {
-        if (SymbianAudio::SuspendedPausedState == m_internalState)
+        if (SymbianAudio::SuspendedPausedState == m_internalState) {
+#ifndef PRE_S60_52_PLATFORM
+            setState(SymbianAudio::ActiveState);
+            if (m_devSoundBuffer != 0)
+                devsoundBufferToBeFilled(m_devSoundBuffer);
+            m_devSound->start();
+#else
+//defined in else part of macro to enable compatibility of previous code
             m_devSound->resume();
-        else
+#endif
+        } else {
             startPlayback();
+        }
     }
 }
 
@@ -255,7 +273,7 @@ int QAudioOutputPrivate::bufferSize() const
 void QAudioOutputPrivate::setNotifyInterval(int ms)
 {
     if (ms >= 0) {
-        const int oldNotifyInterval = m_notifyInterval;
+        //const int oldNotifyInterval = m_notifyInterval;
         m_notifyInterval = ms;
         if (m_notifyInterval && (SymbianAudio::ActiveState == m_internalState ||
                                  SymbianAudio::IdleState == m_internalState))
@@ -279,10 +297,16 @@ qint64 QAudioOutputPrivate::processedUSecs() const
     // Protect against division by zero
     Q_ASSERT_X(m_format.frequency() > 0, Q_FUNC_INFO, "Invalid frequency");
 
+#ifndef PRE_S60_52_PLATFORM
+    const qint64 devSoundSamplesPlayed(m_devSound->samplesProcessed());
+    const qint64 result = qint64(1000000) *
+                          (devSoundSamplesPlayed)
+                        / m_format.frequency();
+#else
     const qint64 result = qint64(1000000) *
                           (samplesPlayed + m_totalSamplesPlayed)
                         / m_format.frequency();
-
+#endif
     return result;
 }
 
@@ -313,6 +337,18 @@ QAudioFormat QAudioOutputPrivate::format() const
 // Private functions
 //-----------------------------------------------------------------------------
 
+void QAudioOutputPrivate::notifyTimerExpired()
+{
+    const qint64 pos = processedUSecs();
+    if (pos > m_lastNotifyPosition) {
+        int count = (pos - m_lastNotifyPosition) / (m_notifyInterval * 1000);
+        while (count--) {
+            emit notify();
+            m_lastNotifyPosition += m_notifyInterval * 1000;
+        }
+    }
+}
+
 void QAudioOutputPrivate::dataReady()
 {
     // Client-provided QIODevice has data ready to read.
@@ -329,6 +365,9 @@ void QAudioOutputPrivate::underflowTimerExpired()
     const TInt samplesPlayed = getSamplesPlayed();
     if (m_samplesPlayed && (samplesPlayed == m_samplesPlayed)) {
         setError(QAudio::UnderrunError);
+#ifndef PRE_S60_52_PLATFORM
+        m_underflowTimer->stop();
+#endif
     } else {
         m_samplesPlayed = samplesPlayed;
         m_underflowTimer->start();
@@ -354,6 +393,13 @@ void QAudioOutputPrivate::devsoundBufferToBeFilled(CMMFBuffer *bufferBase)
 
     // Will be returned to DevSoundWrapper by bufferProcessed().
     m_devSoundBuffer = static_cast<CMMFDataBuffer*>(bufferBase);
+#ifndef PRE_S60_52_PLATFORM
+    if (m_externalState == QAudio::SuspendedState) {
+        // This condition occurs when buffertobefilled callback is received after
+        // pause command is processed.
+        return;
+     }
+#endif
 
     if (!m_devSoundBufferSize)
         m_devSoundBufferSize = m_devSoundBuffer->Data().MaxLength();
@@ -522,13 +568,18 @@ void QAudioOutputPrivate::pullData()
 
         char *outputPtr = (char*)(outputBuffer.Ptr() + outputBuffer.Length());
         const qint64 bytesCopied = m_source->read(outputPtr, copyBytes);
-        Q_ASSERT(bytesCopied == copyBytes);
+        
+        //Partial buffers can be sent to DevSound. This assert not required.
+        //Q_ASSERT(bytesCopied == copyBytes);
         outputBuffer.SetLength(outputBuffer.Length() + bytesCopied);
         inputBytes -= bytesCopied;
 
+        if(bytesCopied == 0)
+        	return;
+
         if (m_source->atEnd())
             lastBufferFilled();
-        else if (copyBytes == outputBytes)
+        else
             bufferFilled();
     }
 }
@@ -562,7 +613,7 @@ void QAudioOutputPrivate::lastBufferFilled()
 
 void QAudioOutputPrivate::close()
 {
-    m_notifyTimer->stop();
+    m_lastNotifyPosition = 0;
     m_underflowTimer->stop();
 
     m_error = QAudio::NoError;
@@ -637,6 +688,10 @@ void QAudioOutputPrivate::setState(SymbianAudio::State newInternalState)
     const QAudio::State oldExternalState = m_externalState;
     m_internalState = newInternalState;
     m_externalState = SymbianAudio::Utils::stateNativeToQt(m_internalState);
+
+    if (m_externalState != QAudio::ActiveState &&
+        m_externalState != QAudio::IdleState)
+        m_notifyTimer->stop();
 
     if (m_externalState != oldExternalState)
         emit stateChanged(m_externalState);

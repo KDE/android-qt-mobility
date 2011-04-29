@@ -43,6 +43,7 @@
 
 #include <QWidget>
 #include <qsysteminfo.h>
+#include <qsystemdeviceinfo.h>
 
 #include "ui_dialog_small_landscape.h"
 QTM_USE_NAMESPACE
@@ -53,11 +54,13 @@ class Dialog : public QWidget, public Ui_Dialog
 public:
     Dialog();
     ~Dialog();
+    void parseArguments();
 
 protected:
     void changeEvent(QEvent *e);
 
 private:
+
     void setupGeneral();
     void setupDevice();
     void setupDisplay();
@@ -65,6 +68,7 @@ private:
     void setupNetwork();
     void setupSaver();
     void setupBattery();
+    void setupAlignedTimer();
 
     QSystemScreenSaver *saver;
     QSystemInfo *systemInfo;
@@ -72,6 +76,10 @@ private:
     QSystemNetworkInfo *ni;
     QSystemStorageInfo *sti;
     QSystemBatteryInfo *bi;
+    QSystemDisplayInfo *dis;
+
+    QSystemAlignedTimer*alt;
+
     void updateStorage();
 
     QSystemBatteryInfo::BatteryStatus currentBatStat;
@@ -79,6 +87,20 @@ private:
 
     QSystemBatteryInfo::ChargerType currentChargerType;
     QSystemBatteryInfo::ChargingState currentChargingState;
+
+    void updateKeyboard(QSystemDeviceInfo::KeyboardTypeFlags type);
+
+    QString storageStateToString(QSystemStorageInfo::StorageState state);
+
+    QString sizeToString(qlonglong size);
+    QBrush brushForStorageState(QSystemStorageInfo::StorageState state);
+
+    QString lockStateToString(QSystemDeviceInfo::LockTypeFlags);
+    QSystemDeviceInfo::LockTypeFlags oldLockStatus;
+
+    QSystemAlignedTimer*alt1;
+    QSystemAlignedTimer*alt2;
+    QSystemAlignedTimer*alt3;
 
 private slots:
     void tabChanged(int index);
@@ -93,6 +115,7 @@ private slots:
     void displayBatteryStatus(QSystemBatteryInfo::BatteryStatus);
     void updateProfile(QSystemDeviceInfo::Profile profile);
     void updateSimStatus();
+    void updateThermalState();
     void updateProfile();
 
      void displayNetworkStatus(QSystemNetworkInfo::NetworkStatus);
@@ -107,8 +130,31 @@ private slots:
     void chargingStateChanged(QSystemBatteryInfo::ChargingState chargingState);
     void chargerTypeChanged(QSystemBatteryInfo::ChargerType chargerType);
 
-    void startCurrentPushed();
+    void orientationChanged(QSystemDisplayInfo::DisplayOrientation);
+    void keyboardFlipped(bool);
 
+    void storageStateChanged(const QString &vol, QSystemStorageInfo::StorageState state);
+
+    void backlightTotext(QSystemDisplayInfo::BacklightState);
+    void dataTechnologyChanged(QSystemNetworkInfo::CellDataTechnology tech);
+
+    void lockStatusChanged(QSystemDeviceInfo::LockTypeFlags);
+
+    void cellIdChanged(int);
+
+    void startAlignedTimers();
+    void stopAlignedTimers();
+
+    void setupAlignedTimers();
+
+    void timeout1();
+    void timeout2();
+    void timeout3();
+
+    void timerError(QSystemAlignedTimer::AlignedTimerError error);
+
+private:
+    int lastTab;
 };
 
 #endif // DIALOG_H

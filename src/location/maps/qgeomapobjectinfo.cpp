@@ -57,6 +57,7 @@ QTM_BEGIN_NAMESPACE
     particular QGeoMapData subclass.
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup maps-impl
 
@@ -101,7 +102,7 @@ QGeoMapObjectInfo::~QGeoMapObjectInfo()
 void QGeoMapObjectInfo::init() {}
 
 /*!
-    This function is called when the window size of the map changes to 
+    This function is called when the window size of the map changes to
     \a windowSize.
 
     The default implementation does nothing.
@@ -112,7 +113,7 @@ void QGeoMapObjectInfo::windowSizeChanged(const QSizeF &windowSize)
 }
 
 /*!
-    This function is called when the zoom level of the map changes to 
+    This function is called when the zoom level of the map changes to
     \a zoomLevel.
 
     The default implementation does nothing.
@@ -123,7 +124,7 @@ void QGeoMapObjectInfo::zoomLevelChanged(qreal zoomLevel)
 }
 
 /*!
-    This function is called when the center of the map changes to 
+    This function is called when the center of the map changes to
     \a coordinate.
 
     The default implementation does nothing.
@@ -144,7 +145,7 @@ void QGeoMapObjectInfo::zValueChanged(int zValue)
 }
 
 /*!
-    This function is run when the visible state of the object changes to 
+    This function is run when the visible state of the object changes to
     \a visible.
 
     The default implementation does nothing.
@@ -155,7 +156,7 @@ void QGeoMapObjectInfo::visibleChanged(bool visible)
 }
 
 /*!
-    This function is run when the selected state of the object changes to 
+    This function is run when the selected state of the object changes to
     \a selected.
 
     The default implementation does nothing.
@@ -163,6 +164,39 @@ void QGeoMapObjectInfo::visibleChanged(bool visible)
 void QGeoMapObjectInfo::selectedChanged(bool selected)
 {
     Q_UNUSED(selected)
+}
+
+/*!
+    This function is run when the origin of the object changes to
+    \a origin.
+
+    The default implementation does nothing.
+*/
+void QGeoMapObjectInfo::originChanged(const QGeoCoordinate &origin)
+{
+    Q_UNUSED(origin);
+}
+
+/*!
+    This function is run when the coordinate units of the object changes to
+    \a units.
+
+    The default implementation does nothing.
+*/
+void QGeoMapObjectInfo::unitsChanged(QGeoMapObject::CoordinateUnit units)
+{
+    Q_UNUSED(units);
+}
+
+/*!
+    This function is run when the transform type of the object changes to
+    \a transformType.
+
+    The default implementation does nothing.
+*/
+void QGeoMapObjectInfo::transformTypeChanged(QGeoMapObject::TransformType transformType)
+{
+    Q_UNUSED(transformType);
 }
 
 /*!
@@ -195,10 +229,20 @@ QGeoMapData* QGeoMapObjectInfo::mapData()
     return d_ptr->mapData;
 }
 
+// Need to keep this for BC, otherwise would probably replace with const
+// version
 /*!
     Returns the QGeoMapObject instance associated with this info object.
 */
 QGeoMapObject* QGeoMapObjectInfo::mapObject()
+{
+    return d_ptr->mapObject;
+}
+
+/*!
+    Returns the QGeoMapObject instance associated with this info object.
+*/
+QGeoMapObject* QGeoMapObjectInfo::mapObject() const
 {
     return d_ptr->mapObject;
 }

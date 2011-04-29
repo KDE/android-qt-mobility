@@ -59,6 +59,7 @@ QTM_BEGIN_NAMESPACE
     the usage of request classes and ownership semantics.
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup landmarks-request
 */
@@ -139,6 +140,12 @@ void QLandmarkCategoryIdFetchRequest::setLimit(int limit)
 
 /*!
     Returns the index offset for the request.  By default the offset is set to 0.
+    The offset determines the first index which is retrieved. it is generally
+    used in conjunction with limit() to facilitate paging.
+
+    For example, if there are 10 categories in the landmark store, setting the offset
+    to 2 and limit to 5 will retrieve the 3rd to 7th category ids inclusively.  (The order
+    of category ids is specified by the sorting field).
 */
 int QLandmarkCategoryIdFetchRequest::offset() const
 {

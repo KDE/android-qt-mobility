@@ -59,7 +59,8 @@ public:
     \brief The QGeoPositionInfo class contains information gathered on a global position, direction and velocity at a particular point in time.
 
     \inmodule QtLocation
-    
+    \since 1.0
+
     \ingroup location
 
     A QGeoPositionInfo contains, at a minimum, a geographical coordinate and
@@ -296,7 +297,7 @@ QDebug operator<<(QDebug dbg, const QGeoPositionInfo &info)
 
     Writes the given \a info to the specified \a stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &stream, const QGeoPositionInfo &info)
@@ -316,7 +317,7 @@ QDataStream &operator<<(QDataStream &stream, const QGeoPositionInfo &info)
     Reads a coordinate from the specified \a stream into the given
     \a info.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &stream, QGeoPositionInfo &info)

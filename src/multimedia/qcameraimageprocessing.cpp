@@ -57,18 +57,14 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QCameraImageProcessing
 
-    
+
     \brief The QCameraImageProcessing class provides interface for
     focus and zoom related camera settings.
 
     \inmodule QtMultimediaKit
     \ingroup camera
+    \since 1.1
 
-The Camera API of Qt Mobility is still in \bold Technology Preview. It has
-not undergone the same level of review and testing as the rest of the APIs.
-
-The API exposed by the classes in this component are not stable, and will
-undergo modification or removal prior to the final release of Qt Mobility.
 */
 
 

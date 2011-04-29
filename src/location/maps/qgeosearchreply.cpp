@@ -51,6 +51,7 @@ QTM_BEGIN_NAMESPACE
 
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup maps-places
 
@@ -260,7 +261,7 @@ int QGeoSearchReply::limit() const
 }
 
 /*!
-    Returns the offset into the entire result set at which to start 
+    Returns the offset into the entire result set at which to start
     fetching results.
 */
 int QGeoSearchReply::offset() const
@@ -279,7 +280,7 @@ void QGeoSearchReply::setLimit(int limit)
 }
 
 /*!
-    Sets the offset in the entire result set at which to start 
+    Sets the offset in the entire result set at which to start
     fetching result to \a offset.
 */
 void QGeoSearchReply::setOffset(int offset)
@@ -323,6 +324,7 @@ QGeoSearchReplyPrivate::QGeoSearchReplyPrivate()
     : error(QGeoSearchReply::NoError),
       errorString(""),
       isFinished(false),
+      viewport(0),
       limit(-1),
       offset(0) {}
 
@@ -330,6 +332,7 @@ QGeoSearchReplyPrivate::QGeoSearchReplyPrivate(QGeoSearchReply::Error error, con
     : error(error),
       errorString(errorString),
       isFinished(true),
+      viewport(0),
       limit(-1),
       offset(0) {}
 

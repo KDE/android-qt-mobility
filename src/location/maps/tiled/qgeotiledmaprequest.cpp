@@ -55,6 +55,8 @@ QTM_BEGIN_NAMESPACE
 
     \ingroup maps-impl-tiled
 
+    \since 1.2
+
     The tile is specified by a map type, a zoom level, a row and a column.
 
     At a zoom level of z the world is represented as a 2^z by 2^z grid
@@ -76,9 +78,9 @@ QGeoTiledMapRequest::QGeoTiledMapRequest()
 
     This tiled map request represents a request for the tile at row \a row and
     column \a column at zoom level \a zoomLevel and type
-    \a mapType. 
-    
-    The request will use connectivity mode \a connectivityMode when 
+    \a mapType.
+
+    The request will use connectivity mode \a connectivityMode when
     accessing the map data.
 
     The rectangle that the tile occupies on the map at the maximum zoom level
@@ -226,7 +228,13 @@ uint qHash(const QGeoTiledMapRequest &key)
 *******************************************************************************/
 
 QGeoTiledMapRequestPrivate::QGeoTiledMapRequestPrivate()
-    : QSharedData() {}
+    : QSharedData(),
+    connectivityMode(QGraphicsGeoMap::NoConnectivity),
+    mapType(QGraphicsGeoMap::NoMap),
+    zoomLevel(0),
+    row(0),
+    column(0),
+    tileRect(QRect()) {}
 //mapData(0) {}
 
 QGeoTiledMapRequestPrivate::QGeoTiledMapRequestPrivate(const QGeoTiledMapRequestPrivate &other)

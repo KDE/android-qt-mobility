@@ -43,7 +43,6 @@
 #include <QFile>
 #include <QDebug>
 #include <string.h>
-#include <time.h>
 
 char const * const n900proximitysensor::id("n900.proximity");
 char const * const n900proximitysensor::filename("/sys/bus/platform/devices/proximity/state");
@@ -52,7 +51,9 @@ n900proximitysensor::n900proximitysensor(QSensor *sensor)
     : n900filebasedsensor(sensor)
 {
     setReading<QProximityReading>(&m_reading);
-    addDataRate(100, 100); // 100Hz
+    // The proximity hardware runs at 10Hz.
+    // Report 1-10 so the app can choose the speed it wants to poll
+    addDataRate(1, 10);
 }
 
 void n900proximitysensor::start()
@@ -83,8 +84,8 @@ void n900proximitysensor::poll()
         close = false;
     }
 
-    if (close != m_reading.close()) {
-        m_reading.setTimestamp(clock());
+    if (close != m_reading.close() || m_reading.timestamp() == 0) {
+        m_reading.setTimestamp(getTimestamp());
         m_reading.setClose(close);
         newReadingAvailable();
     }

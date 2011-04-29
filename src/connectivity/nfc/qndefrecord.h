@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -86,7 +86,7 @@ public:
     bool isEmpty() const;
 
     template <typename T>
-    bool isRecordType() const
+    inline bool isRecordType() const
     {
         T dummy;
         return (typeNameFormat() == dummy.typeNameFormat() && type() == dummy.type());
@@ -103,17 +103,19 @@ private:
     QSharedDataPointer<QNdefRecordPrivate> d;
 };
 
-#define Q_DECLARE_NDEF_RECORD(className, typeNameFormat, type) \
-    className() : QNdefRecord(typeNameFormat, type) { } \
+#define Q_DECLARE_NDEF_RECORD(className, typeNameFormat, type, initialPayload) \
+    className() : QNdefRecord(typeNameFormat, type) { setPayload(initialPayload); } \
     className(const QNdefRecord &other) : QNdefRecord(other, typeNameFormat, type) { }
 
 #define Q_DECLARE_ISRECORDTYPE_FOR_NDEF_RECORD(className, typeNameFormat_, type_) \
     QTM_BEGIN_NAMESPACE \
-    template<> bool QNdefRecord::isRecordType<className>() const\
+    template<> inline bool QNdefRecord::isRecordType<className>() const\
     { \
         return (typeNameFormat() == typeNameFormat_ && type() == type_); \
     } \
     QTM_END_NAMESPACE
+
+uint qHash(const QNdefRecord &key);
 
 QTM_END_NAMESPACE
 

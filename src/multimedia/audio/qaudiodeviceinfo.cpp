@@ -54,7 +54,10 @@ public:
     QAudioDeviceInfoPrivate(const QString &r, const QByteArray &h, QAudio::Mode m):
         realm(r), handle(h), mode(m)
     {
-        info = QAudioDeviceFactory::audioDeviceInfo(realm, handle, mode);
+        if (!handle.isEmpty())
+            info = QAudioDeviceFactory::audioDeviceInfo(realm, handle, mode);
+        else
+            info = NULL;
     }
 
     QAudioDeviceInfoPrivate(const QAudioDeviceInfoPrivate &other):
@@ -114,19 +117,7 @@ public:
     supported format that is as close as possible to the format with
     nearestFormat(). For instance:
 
-    \code
-        QAudioFormat format;
-        format.setFrequency(44100);
-    \endcode
-    \dots 8
-    \code
-        format.setSampleType(QAudioFormat::SignedInt);
-
-        QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
-
-        if (!info.isFormatSupported(format))
-            format = info.nearestFormat(format);
-    \endcode
+    \snippet doc/src/snippets/multimedia-snippets/audio.cpp Setting audio format
 
     A QAudioDeviceInfo is used by Qt to construct
     classes that communicate with the device--such as
@@ -134,15 +125,12 @@ public:
     functions defaultInputDevice(), defaultOutputDevice(), and
     availableDevices() let you get a list of all available
     devices. Devices are fetch according to the value of mode
-    this is specified by the QAudio::Mode enum.
-    The QAudioDeviceInfo returned are only valid for the QAudio::Mode.
+    this is specified by the \l {QAudio}::Mode enum.
+    The QAudioDeviceInfo returned are only valid for the \l {QAudio}::Mode.
 
     For instance:
 
-    \code
-    foreach(const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::availableDevices(QAudio::AudioOutput))
-        qDebug() << "Device name: " << deviceInfo.deviceName();
-    \endcode
+    \snippet doc/src/snippets/multimedia-snippets/audio.cpp Dumping audio formats
 
     In this code sample, we loop through all devices that are able to output
     sound, i.e., play an audio stream in a supported format. For each device we
@@ -225,7 +213,7 @@ bool QAudioDeviceInfo::isFormatSupported(const QAudioFormat &settings) const
 
     These settings are provided by the platform/audio plugin being used.
 
-    They also are dependent on the QAudio::Mode being used.
+    They also are dependent on the \l {QAudio}::Mode being used.
 
     A typical audio system would provide something like:
     \list
@@ -244,7 +232,7 @@ QAudioFormat QAudioDeviceInfo::preferredFormat() const
 
     These settings are provided by the platform/audio plugin being used.
 
-    They also are dependent on the QAudio::Mode being used.
+    They also are dependent on the \l {QAudio}::Mode being used.
 */
 
 QAudioFormat QAudioDeviceInfo::nearestFormat(const QAudioFormat &settings) const

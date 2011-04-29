@@ -123,6 +123,7 @@ void tst_QGeoMapPolylineObject::qgeomappolylineobject()
 
     QCOMPARE(object->path(), QList<QGeoCoordinate>());
     QPen pen(Qt::black);
+    pen.setCosmetic(true);
     QCOMPARE(object->pen(), pen);
     QCOMPARE(object->zValue(), 0);
     QCOMPARE(object->isSelected(),false);
@@ -139,12 +140,10 @@ void tst_QGeoMapPolylineObject::qgeomappolylineobject()
     QList<QGeoMapObject *> list = map->mapObjects();
 
     QVERIFY(list.at(0)==object);
-    QVERIFY2(object->info(),"info object not created");
     QVERIFY2(object->mapData(),"no map data set");
 
     map->removeMapObject(object);
 
-    QVERIFY2(!object->info(),"info object not deleted");
     QVERIFY2(!object->mapData(),"no map data still set");
     delete (object);
 
@@ -492,7 +491,6 @@ void tst_QGeoMapPolylineObject::contains()
 // public QGeoBoundingBox boundingBox() const
 void tst_QGeoMapPolylineObject::boundingBox()
 {
-
     QList<QGeoCoordinate> path;
 
     path << QGeoCoordinate(2.0, -1.0, 0);
@@ -515,6 +513,33 @@ void tst_QGeoMapPolylineObject::boundingBox()
     QVERIFY2(object->boundingBox().width()>0,"no bounding box");
     QVERIFY2(object->boundingBox().height()>0,"no bounding box");
 
+    double width = object->boundingBox().width();
+    double height = object->boundingBox().height();
+
+    double top = object->boundingBox().topLeft().latitude();
+    double bottom = object->boundingBox().bottomRight().latitude();
+
+    QVERIFY(object->boundingBox().topLeft().longitude() < object->boundingBox().bottomRight().longitude());
+
+    QList<QGeoCoordinate> datelinePath;
+
+    datelinePath << QGeoCoordinate(2.0, 179.0, 0);
+    datelinePath << QGeoCoordinate(2.0, -179.0, 0);
+    datelinePath << QGeoCoordinate(-2.0, -179.0, 0);
+    datelinePath << QGeoCoordinate(-2.0, 179.0, 0);
+
+    object->setPath(datelinePath);
+
+    QVERIFY2(object->boundingBox().width()!=0,"no bounding box");
+    QVERIFY2(object->boundingBox().height()!=0,"no bounding box");
+
+    QVERIFY(object->boundingBox().width() == width);
+    QVERIFY(object->boundingBox().height() == height);
+
+    QVERIFY(object->boundingBox().topLeft().latitude() == top);
+    QVERIFY(object->boundingBox().bottomRight().latitude() == bottom);
+
+    QVERIFY(object->boundingBox().topLeft().longitude() > object->boundingBox().bottomRight().longitude());
 }
 
 QTEST_MAIN(tst_QGeoMapPolylineObject)

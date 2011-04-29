@@ -15,7 +15,7 @@ android {
 
 maemo6 {
     equals(sensord_enabled,yes) {
-        SUBDIRS += maemo6
+        SUBDIRS += meego
     } else {
         message("sensord library missing")
     }

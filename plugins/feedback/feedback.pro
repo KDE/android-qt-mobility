@@ -7,6 +7,10 @@ contains(immersion_enabled, yes) {
     SUBDIRS += immersion
 }
 
+contains(meegotouchfeedback_enabled, yes) {
+    message("Building with meegotouch theme haptics support")
+    SUBDIRS += meegotouch
+}
+
 symbian:SUBDIRS += symbian
-maemo6:SUBDIRS += meegotouch
 android:SUBDIRS += android

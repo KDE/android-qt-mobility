@@ -3,15 +3,20 @@ include(../../staticconfig.pri)
 requires(contains(mobility_modules,serviceframework))
 
 TEMPLATE = subdirs
-SUBDIRS += servicemetadata \
+SUBDIRS +=  servicemetadata \
     qserviceinterfacedescriptor \
     qservicefilter \
     qservicemanager \
     qabstractsecuritysession \
     qservicecontext \
     qmetaobjectbuilder \
-    icheck \
     qservicemanager_ipc \
-    servicedatabase
+    servicedatabase \
+    qremoteserviceregister \
+    qservicedeletion \
     # databasemanager # disabled from auto builds
+
+contains(build_tools,yes) {
+    SUBDIRS += icheck
+}
 

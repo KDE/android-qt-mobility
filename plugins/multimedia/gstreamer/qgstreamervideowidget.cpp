@@ -40,13 +40,16 @@
 ****************************************************************************/
 
 #include "qgstreamervideowidget.h"
+#include "qgstutils.h"
 
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qdebug.h>
 #include <QtGui/qapplication.h>
 #include <QtGui/qpainter.h>
 
-#include <X11/Xlib.h>
+#ifdef Q_WS_X11
+#  include <X11/Xlib.h>
+#endif
 #include <gst/gst.h>
 #include <gst/interfaces/xoverlay.h>
 #include <gst/interfaces/propertyprobe.h>
@@ -202,20 +205,7 @@ void QGstreamerVideoWidgetControl::updateNativeVideoSize()
         GstCaps *caps = gst_pad_get_negotiated_caps(pad);
 
         if (caps) {
-            GstStructure *str;
-            gint width, height;
-
-            if ((str = gst_caps_get_structure (caps, 0))) {
-                if (gst_structure_get_int (str, "width", &width) && gst_structure_get_int (str, "height", &height)) {
-                    gint aspectNum = 0;
-                    gint aspectDenum = 0;
-                    if (gst_structure_get_fraction(str, "pixel-aspect-ratio", &aspectNum, &aspectDenum)) {
-                        if (aspectDenum > 0)
-                            width = width*aspectNum/aspectDenum;
-                    }
-                    m_widget->setNativeSize(QSize(width, height));
-                }
-            }
+            m_widget->setNativeSize(QGstUtils::capsCorrectedResolution(caps));
             gst_caps_unref(caps);
         }
     } else {

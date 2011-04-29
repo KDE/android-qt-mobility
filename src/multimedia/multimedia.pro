@@ -8,7 +8,12 @@ INCLUDEPATH+= .
 
 QT += network
 
-contains(QT_CONFIG, opengl): QT += opengl
+contains(QT_CONFIG, opengl) | contains(QT_CONFIG, opengles2): !symbian {
+   QT += opengl
+} else {
+   DEFINES += QT_NO_OPENGL
+}
+
 
 !static:DEFINES += QT_MAKEDLL
 DEFINES += QT_BUILD_MULTIMEDIA_LIB
@@ -22,7 +27,8 @@ PRIVATE_HEADERS += \
     qmediaimageviewerservice_p.h \
     qvideowidget_p.h \
     qmediapluginloader_p.h \
-    qpaintervideosurface_p.h
+    qpaintervideosurface_p.h \
+    qvideosurfaceoutput_p.h
 
 PUBLIC_HEADERS += \
     qmediacontrol.h \
@@ -64,7 +70,9 @@ PUBLIC_HEADERS += \
     qvideodevicecontrol.h \
     qgraphicsvideoitem.h \
     qvideorenderercontrol.h \
-    qmediatimerange.h
+    qmediatimerange.h \
+    qmedianetworkaccesscontrol.h \
+    qmediaenumdebug.h
 
 SOURCES += qmediacontrol.cpp \
     qmediaobject.cpp \
@@ -105,7 +113,9 @@ SOURCES += qmediacontrol.cpp \
     qmediapluginloader.cpp \
     qpaintervideosurface.cpp \
     qvideorenderercontrol.cpp \
-    qmediatimerange.cpp
+    qmediatimerange.cpp \
+    qmedianetworkaccesscontrol.cpp \
+    qvideosurfaceoutput.cpp
 
 #Camera
 PUBLIC_HEADERS += \
@@ -121,7 +131,9 @@ PUBLIC_HEADERS += \
     qcameraexposurecontrol.h \
     qcamerafocuscontrol.h \
     qcameraflashcontrol.h \
-    qcameraimageprocessingcontrol.h
+    qcameraimageprocessingcontrol.h \
+    qcameracapturedestinationcontrol.h \
+    qcameracapturebufferformatcontrol.h
 
 SOURCES += \
     qcamera.cpp \
@@ -136,7 +148,9 @@ SOURCES += \
     qcameraexposurecontrol.cpp \
     qcamerafocuscontrol.cpp \
     qcameraflashcontrol.cpp \
-    qcameraimageprocessingcontrol.cpp
+    qcameraimageprocessingcontrol.cpp \
+    qcameracapturedestinationcontrol.cpp \
+    qcameracapturebufferformatcontrol.cpp
 
 include(audio/audio.pri)
 include(video/video.pri)
@@ -158,8 +172,25 @@ maemo5 {
     LIBS += -lXv  -lX11 -lXext
 }
 
-maemo6|symbian {
-    SOURCES += qgraphicsvideoitem_overlay.cpp
+maemo6 {
+    isEqual(QT_ARCH,armv6) {
+        HEADERS += qeglimagetexturesurface_p.h
+        SOURCES += qeglimagetexturesurface.cpp
+
+        SOURCES += qgraphicsvideoitem_maemo6.cpp
+
+        LIBS += -lX11
+    } else {
+        SOURCES += qgraphicsvideoitem.cpp
+    }
+}
+
+symbian {
+    contains(surfaces_s60_enabled, yes) {
+        SOURCES += qgraphicsvideoitem_symbian.cpp
+    } else {
+        SOURCES += qgraphicsvideoitem_overlay.cpp
+    }
 }
 
 !maemo*:!symbian {
@@ -169,6 +200,7 @@ maemo6|symbian {
 HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
 
 symbian {
+    contains(S60_VERSION, 5.1) |contains (S60_VERSION, 3.2) | contains(S60_VERSION, 3.1): DEFINES += PRE_S60_52_PLATFORM
     load(data_caging_paths)
     QtMediaDeployment.sources = QtMultimediaKit.dll
     QtMediaDeployment.path = /sys/bin

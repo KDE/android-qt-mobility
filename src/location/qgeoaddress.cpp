@@ -76,6 +76,7 @@ QGeoAddressPrivate::~QGeoAddressPrivate()
     \brief The QGeoAddress class represents an address
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup location
 
@@ -182,7 +183,7 @@ void QGeoAddress::setCountryCode(const QString &countryCode)
 }
 
 /*!
-    Returns the state.
+    Returns the state.  The state is considered the first subdivision below country.
 */
 QString QGeoAddress::state() const
 {
@@ -198,7 +199,7 @@ void QGeoAddress::setState(const QString &state)
 }
 
 /*!
-    Returns the county.
+    Returns the county.  The county is considered the second subdivision below country.
 */
 QString QGeoAddress::county() const
 {
@@ -230,7 +231,7 @@ void QGeoAddress::setCity(const QString &city)
 }
 
 /*!
-    Returns the district.
+    Returns the district.  The district is considered the subdivison below city.
 */
 QString QGeoAddress::district() const
 {

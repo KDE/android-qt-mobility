@@ -54,6 +54,7 @@ QTM_BEGIN_NAMESPACE
     \brief The QGeoBoundingCircle class defines a circular geographic area.
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup maps
 
@@ -139,7 +140,7 @@ bool QGeoBoundingCircle::isValid() const
 {
     return (d_ptr->center.isValid()
             && !qIsNaN(d_ptr->radius)
-            && d_ptr->radius >= 0.0);
+            && d_ptr->radius >= -1e-7);
 }
 
 /*!
@@ -149,7 +150,7 @@ bool QGeoBoundingCircle::isValid() const
 */
 bool QGeoBoundingCircle::isEmpty() const
 {
-    return (!isValid() && (d_ptr->radius > 0.0));
+    return (!isValid() || (d_ptr->radius <= 1e-7));
 }
 
 /*!

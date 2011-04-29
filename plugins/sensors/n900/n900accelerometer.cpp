@@ -42,7 +42,6 @@
 #include "n900accelerometer.h"
 #include <QFile>
 #include <QDebug>
-#include <time.h>
 #include <stdio.h>
 
 char const * const n900accelerometer::id("n900.accelerometer");
@@ -50,12 +49,20 @@ char const * const n900accelerometer::filename("/sys/class/i2c-adapter/i2c-3/3-0
 char const * const n900accelerometer::range("/sys/class/i2c-adapter/i2c-3/3-001d/scale");
 char const * const n900accelerometer::rate("/sys/class/i2c-adapter/i2c-3/3-001d/rate");
 
+extern bool portraitOrientation;
+
 n900accelerometer::n900accelerometer(QSensor *sensor)
     : n900filebasedsensor(sensor)
 {
     setReading<QAccelerometerReading>(&m_reading);
-    // Details derived from the kernel driver
-    addDataRate(100, 100); // 100Hz
+    // According to the kernel driver, this runs at 100 or 400Hz
+    // but we can't change the rate because we don't run as root.
+    // The hardware seems to run at 100Hz by default so report that.
+    // Report 1-100Hz so the app can poll less frequently if it wants to.
+    addDataRate(1, 100);
+    // According to the kernel driver this reports +- 2G or +- 8G (with lower accuracy)
+    // but we can't change the range because we don't run as root.
+    // The hardware seems to run at +- 2G by default so report that.
     addOutputRange(-22.418, 22.418, 0.17651); // 2G
     setDescription(QLatin1String("lis302dl"));
 }
@@ -91,9 +98,14 @@ void n900accelerometer::poll()
     qreal ay = y * -0.00980665;
     qreal az = z * -0.00980665;
 
-    m_reading.setTimestamp(clock());
-    m_reading.setX(ax);
-    m_reading.setY(ay);
+    m_reading.setTimestamp(getTimestamp());
+    if (portraitOrientation) {
+        m_reading.setX(ay);
+        m_reading.setY(-ax);
+    } else {
+        m_reading.setX(ax);
+        m_reading.setY(ay);
+    }
     m_reading.setZ(az);
 
     newReadingAvailable();

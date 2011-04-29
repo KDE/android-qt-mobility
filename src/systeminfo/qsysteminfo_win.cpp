@@ -64,8 +64,9 @@
 #include <QTimer>
 #include <QBasicTimer>
 #include <QtCore/qlibrary.h>
-#include <QUuid>
 #include <QSysInfo>
+#include <QUuid>
+#include <QCryptographicHash>
 
 #include <qabstracteventdispatcher.h>
 
@@ -1301,6 +1302,11 @@ QSystemNetworkInfo::NetworkMode QSystemNetworkInfoPrivate::currentMode()
     return QSystemNetworkInfo::UnknownMode;
 }
 
+QSystemNetworkInfo::CellDataTechnology QSystemNetworkInfoPrivate::cellDataTechnology()
+{
+    return QSystemNetworkInfo::UnknownDataTechnology;
+}
+
 QSystemDisplayInfoPrivate::QSystemDisplayInfoPrivate(QObject *parent)
         : QObject(parent),deviceContextHandle(0)
 {
@@ -1371,7 +1377,7 @@ int QSystemDisplayInfoPrivate::colorDepth(int screen)
     return bpp;
 }
 
-QSystemDisplayInfo::DisplayOrientation QSystemDisplayInfoPrivate::getOrientation(int screen)
+QSystemDisplayInfo::DisplayOrientation QSystemDisplayInfoPrivate::orientation(int screen)
 {
     QSystemDisplayInfo::DisplayOrientation orientation = QSystemDisplayInfo::Unknown;
 
@@ -1823,8 +1829,8 @@ QSystemDeviceInfo::InputMethodFlags QSystemDeviceInfoPrivate::inputMethodType()
     // (by virtue of being written for one particular device) shipping a library which will cause
     // just the Qt apps to fail may not be the best move.
 #endif
-    int keyboardType = GetKeyboardType(0);
-    switch(keyboardType) {
+    int keyboardTypes = GetKeyboardType(0);
+    switch(keyboardTypes) {
     case 1:
     case 3:
         {
@@ -1891,6 +1897,11 @@ QSystemDeviceInfo::PowerState QSystemDeviceInfoPrivate::currentPowerState()
     }
 
     return state;
+}
+
+QSystemDeviceInfo::ThermalState QSystemDeviceInfoPrivate::currentThermalState()
+{
+    return QSystemDeviceInfo::UnknownThermal;
 }
 
 QString QSystemDeviceInfoPrivate::imei()
@@ -2096,7 +2107,7 @@ bool QSystemDeviceInfoPrivate::isDeviceLocked()
     return false;
 }
 
-QSystemDeviceInfo::KeyboardTypeFlags QSystemDeviceInfoPrivate::keyboardType()
+QSystemDeviceInfo::KeyboardTypeFlags QSystemDeviceInfoPrivate::keyboardTypes()
 {
     QSystemDeviceInfo::InputMethodFlags methods = inputMethodType();
     QSystemDeviceInfo::KeyboardTypeFlags keyboardFlags = QSystemDeviceInfo::UnknownKeyboard;
@@ -2116,7 +2127,7 @@ bool QSystemDeviceInfoPrivate::isWirelessKeyboardConnected()
     return hasWirelessKeyboardConnected;
 }
 
-bool QSystemDeviceInfoPrivate::isKeyboardFlipOpen()
+bool QSystemDeviceInfoPrivate::isKeyboardFlippedOpen()
 {
     return false;
 }
@@ -2128,19 +2139,44 @@ void QSystemDeviceInfoPrivate::keyboardConnected(bool connect)
     Q_EMIT wirelessKeyboardConnected(connect);
 }
 
-bool QSystemDeviceInfoPrivate::keypadLightOn(QSystemDeviceInfo::keypadType type)
+bool QSystemDeviceInfoPrivate::keypadLightOn(QSystemDeviceInfo::KeypadType type)
 {
     return false;
 }
 
-QUuid QSystemDeviceInfoPrivate::hostId()
+QByteArray QSystemDeviceInfoPrivate::uniqueDeviceID()
 {
-    return 0;//gethostid();
+    WMIHelper *wHelper;
+    wHelper = new WMIHelper(this);
+    wHelper->setWmiNamespace("root/cimv2");
+    wHelper->setClassName("Win32_ComputerSystemProduct");
+    wHelper->setClassProperty(QStringList() << "UUID");
+
+    QCryptographicHash hash(QCryptographicHash::Sha1);
+    QString id = wHelper->getWMIData().toString();
+    hash.addData(id.toLocal8Bit());
+
+    return  hash.result().toHex();
 }
 
-QSystemDeviceInfo::LockType QSystemDeviceInfoPrivate::lockStatus()
+QSystemDeviceInfo::LockTypeFlags QSystemDeviceInfoPrivate::lockStatus()
 {
     return QSystemDeviceInfo::UnknownLock;
+}
+
+int QSystemDeviceInfoPrivate::messageRingtoneVolume()
+{
+    return 0;
+}
+
+int QSystemDeviceInfoPrivate::voiceRingtoneVolume()
+{
+    return 0;
+}
+
+bool QSystemDeviceInfoPrivate::vibrationActive()
+{
+    return false;
 }
 
 QSystemScreenSaverPrivate::QSystemScreenSaverPrivate(QObject *parent)
@@ -2194,6 +2230,16 @@ QSystemBatteryInfoPrivate::QSystemBatteryInfoPrivate(QObject *parent)
     getBatteryStatus();
 
 }
+
+void QSystemScreenSaverPrivate::setScreenSaverInhibited(bool on)
+{
+    if (on) {
+        setScreenSaverInhibit();
+    } else {
+
+    }
+}
+
 
 QSystemBatteryInfoPrivate::~QSystemBatteryInfoPrivate()
 {
@@ -2294,10 +2340,6 @@ void QSystemBatteryInfoPrivate::connectNotify(const char *signal)
     if (QLatin1String(signal) == QLatin1String(QMetaObject::normalizedSignature(SIGNAL(
             remainingChargingTimeChanged(int))))) {
     }
-    if (QLatin1String(signal) == QLatin1String(QMetaObject::normalizedSignature(SIGNAL(
-            voltageChanged(int))))) {
-    }
-
 }
 
 void QSystemBatteryInfoPrivate::setConnection()
@@ -2335,11 +2377,6 @@ void QSystemBatteryInfoPrivate::notificationArrived()
 void QSystemBatteryInfoPrivate::disconnectNotify(const char *signal)
 {
 
-}
-
-qint32 QSystemBatteryInfoPrivate::startCurrentMeasurement(qint32 rate)
-{
- return 0;
 }
 
 QSystemBatteryInfo::EnergyUnit QSystemBatteryInfoPrivate::energyMeasurementUnit()
@@ -2494,7 +2531,6 @@ void QSystemBatteryInfoPrivate::getBatteryStatus()
                                                 cVoltage = batteryStatus.Voltage;
                                                 if(cVoltage != currentVoltage) {
                                                     currentVoltage= cVoltage;
-                                                    emit voltageChanged(currentVoltage);
                                                 }
                                             }
                                         }

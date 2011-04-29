@@ -34,8 +34,14 @@ MOC_DIR = $$OUTPUT_DIR/build/$$SUBDIRPART/$$TARGET/moc
 RCC_DIR = $$OUTPUT_DIR/build/$$SUBDIRPART/$$TARGET/rcc
 UI_DIR = $$OUTPUT_DIR/build/$$SUBDIRPART/$$TARGET/ui
 OBJECTS_DIR = $$OUTPUT_DIR/build/$$SUBDIRPART/$$TARGET
-mac:LIBS+= -F$$OUTPUT_DIR/lib
-LIBS+= -L$$OUTPUT_DIR/lib
+
+# See common.pri for comments on why using QMAKE_FRAMEWORKPATH/QMAKE_LIBDIR
+# rather than LIBS here.
+mac:contains(QT_CONFIG,qt_framework) {
+    QMAKE_FRAMEWORKPATH = $$OUTPUT_DIR/lib
+}
+QMAKE_LIBDIR = $$OUTPUT_DIR/lib
+
 QMAKE_RPATHDIR+=$$QT_MOBILITY_LIB
 INCLUDEPATH+= $$QT_MOBILITY_SOURCE_TREE/src/global
 
@@ -45,6 +51,7 @@ maemo6 {
     DEFINES+= QTM_EXAMPLES_PREFER_LANDSCAPE
 }
 maemo5 {
+    error(Maemo5/Freemantle not supported by QtMobility 1.2+ \(Not building any examples and demos\).)
     DEFINES+= Q_WS_MAEMO_5
     DEFINES+= QTM_EXAMPLES_SMALL_SCREEN
     DEFINES+= QTM_EXAMPLES_PREFER_LANDSCAPE

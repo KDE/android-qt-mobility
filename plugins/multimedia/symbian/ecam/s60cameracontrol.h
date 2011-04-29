@@ -46,6 +46,7 @@
 
 #include "s60cameraengineobserver.h"    // MCameraEngineObserver
 #include "s60videocapturesession.h"     // TVideoCaptureState
+#include "s60cameraviewfinderengine.h"  // ViewfinderOutputType
 
 #include <e32base.h>
 #include <fbs.h>
@@ -67,14 +68,6 @@ class QTimer;
 class S60CameraControl : public QCameraControl, public MCameraEngineObserver
 {
     Q_OBJECT
-
-public: // Enums
-
-    enum ViewfinderOutputType {
-        VideoWidgetOutput,
-        VideoRendererOutput,
-        VideoWindowOutput
-    };
 
 public: // Constructors & Destructor
 
@@ -122,9 +115,11 @@ public: // Internal
     int selectedDevice() const;
     void setSelectedDevice(const int index);
 
-    void setVideoOutput(QObject *output, ViewfinderOutputType type);
+    void setVideoOutput(QObject *output,
+                        const S60CameraViewfinderEngine::ViewfinderOutputType type);
+    void releaseVideoOutput(const S60CameraViewfinderEngine::ViewfinderOutputType type);
 
-private Q_SLOTS: // Internal Slots
+private slots: // Internal Slots
 
     void videoStateChanged(const S60VideoCaptureSession::TVideoCaptureState state);
     // Needed to detect image capture completion when trying to rotate the camera
@@ -151,10 +146,10 @@ private: // Internal
     void startCamera();
     void stopCamera();
 
-    void resetCamera();
+    void resetCamera(bool errorHandling = false);
     void setCameraHandles();
 
-Q_SIGNALS: // Internal Signals
+signals: // Internal Signals
 
     void cameraReadyChanged(bool);
     void devicesChanged();
@@ -170,6 +165,7 @@ private: // Data
     QTimer                      *m_inactivityTimer;
     QCamera::CaptureMode        m_captureMode;
     QCamera::CaptureMode        m_requestedCaptureMode;
+    bool                        m_settingCaptureModeInternally;
     QCamera::Status             m_internalState;
     QCamera::State              m_requestedState;
     int                         m_deviceIndex;

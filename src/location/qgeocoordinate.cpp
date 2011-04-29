@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 #include "qgeocoordinate.h"
+#include "qgeocoordinate_p.h"
 #include "qlocationutils_p.h"
 
 #include <QDateTime>
@@ -69,19 +70,11 @@ inline static double qgeocoordinate_radToDeg(double rad)
 }
 
 
-class QGeoCoordinatePrivate
-{
-public:
-    double lat;
-    double lng;
-    double alt;
-
-    QGeoCoordinatePrivate() {
-        lat = qQNaN();
-        lng = qQNaN();
-        alt = qQNaN();
-    }
-};
+QGeoCoordinatePrivate::QGeoCoordinatePrivate() {
+    lat = qQNaN();
+    lng = qQNaN();
+    alt = qQNaN();
+}
 
 
 /*!
@@ -89,7 +82,8 @@ public:
     \brief The QGeoCoordinate class defines a geographical position on the surface of the Earth.
 
     \inmodule QtLocation
-    
+    \since 1.0
+
     \ingroup location
 
     A QGeoCoordinate is defined by latitude, longitude, and optionally, altitude.
@@ -399,24 +393,12 @@ qreal QGeoCoordinate::azimuthTo(const QGeoCoordinate &other) const
     return qreal((int(whole + 360) % 360) + fraction);
 }
 
-
-/*!
-    Returns the coordinate that is reached by traveling \a distance metres 
-    from the current coordinate at \a azimuth (or bearing) along a great-circle.
-    There is an assumption that the Earth is spherical for the purpose of this
-    calculation.
-    
-    The altitude will have \a distanceUp added to it.
-
-    Returns an invalid coordinate if this coordinate is invalid.
-*/
-QGeoCoordinate QGeoCoordinate::atDistanceAndAzimuth(qreal distance, qreal azimuth, qreal distanceUp) const 
+void QGeoCoordinatePrivate::atDistanceAndAzimuth(const QGeoCoordinate &coord,
+                                                 qreal distance, qreal azimuth,
+                                                 double *lon, double *lat)
 {
-    if (!isValid())
-        return QGeoCoordinate();
-
-    double latRad = qgeocoordinate_degToRad(d->lat);
-    double lonRad = qgeocoordinate_degToRad(d->lng);
+    double latRad = qgeocoordinate_degToRad(coord.d->lat);
+    double lonRad = qgeocoordinate_degToRad(coord.d->lng);
     double cosLatRad = cos(latRad);
     double sinLatRad = sin(latRad);
 
@@ -428,12 +410,37 @@ QGeoCoordinate QGeoCoordinate::atDistanceAndAzimuth(qreal distance, qreal azimut
 
     double resultLatRad = asin(sinLatRad * cosRatio
                                + cosLatRad * sinRatio * cos(azimuthRad));
-    double resultLonRad  = lonRad 
-                           + atan2(sin(azimuthRad) * sinRatio * cosLatRad, 
+    double resultLonRad  = lonRad
+                           + atan2(sin(azimuthRad) * sinRatio * cosLatRad,
                                    cosRatio - sinLatRad * sin(resultLatRad));
 
-    double resultLat = qgeocoordinate_radToDeg(resultLatRad);
-    double resultLon = qgeocoordinate_radToDeg(resultLonRad);
+    *lat = qgeocoordinate_radToDeg(resultLatRad);
+    *lon = qgeocoordinate_radToDeg(resultLonRad);
+}
+
+/*!
+    Returns the coordinate that is reached by traveling \a distance metres
+    from the current coordinate at \a azimuth (or bearing) along a great-circle.
+    There is an assumption that the Earth is spherical for the purpose of this
+    calculation.
+
+    The altitude will have \a distanceUp added to it.
+
+    Returns an invalid coordinate if this coordinate is invalid.
+*/
+QGeoCoordinate QGeoCoordinate::atDistanceAndAzimuth(qreal distance, qreal azimuth, qreal distanceUp) const
+{
+    if (!isValid())
+        return QGeoCoordinate();
+
+    double resultLon, resultLat;
+    QGeoCoordinatePrivate::atDistanceAndAzimuth(*this, distance, azimuth,
+                                                &resultLon, &resultLat);
+
+    if (resultLon > 180.0)
+        resultLon -= 360.0;
+    else if (resultLon < -180.0)
+        resultLon += 360.0;
 
     double resultAlt = d->alt + distanceUp;
     return QGeoCoordinate(resultLat, resultLon, resultAlt);
@@ -592,7 +599,7 @@ QDebug operator<<(QDebug dbg, const QGeoCoordinate &coord)
 
     Writes the given \a coordinate to the specified \a stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &stream, const QGeoCoordinate &coordinate)
@@ -612,7 +619,7 @@ QDataStream &operator<<(QDataStream &stream, const QGeoCoordinate &coordinate)
     Reads a coordinate from the specified \a stream into the given
     \a coordinate.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &stream, QGeoCoordinate &coordinate)

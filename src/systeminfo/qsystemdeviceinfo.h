@@ -43,7 +43,8 @@
 #define QSYSTEMDEVICEINFO_H
 
 #include <QObject>
-#include <QUuid>
+#include <QExplicitlySharedDataPointer>
+
 #include "qmobilityglobal.h"
 
 QT_BEGIN_HEADER
@@ -51,15 +52,16 @@ QTM_BEGIN_NAMESPACE
 
 class QSystemDeviceInfoPrivate;
 
-class  Q_SYSINFO_EXPORT QSystemDeviceInfo : public QObject
+class Q_SYSINFO_EXPORT QSystemDeviceInfo : public QObject
 {
     Q_OBJECT
+
     Q_PROPERTY(Profile currentProfile READ currentProfile NOTIFY currentProfileChanged)
-    Q_PROPERTY(PowerState powerState READ currentPowerState NOTIFY powerStateChanged)
+    Q_PROPERTY(PowerState currentPowerState READ currentPowerState NOTIFY powerStateChanged)
+    Q_PROPERTY(ThermalState currentThermalState READ currentThermalState NOTIFY thermalStateChanged)
     Q_PROPERTY(SimStatus simStatus READ simStatus CONSTANT)
     Q_PROPERTY(BatteryStatus batteryStatus READ batteryStatus NOTIFY batteryStatusChanged)
-    Q_PROPERTY(InputMethodFlags inputMethodType READ inputMethodType)
-
+    Q_PROPERTY(QSystemDeviceInfo::InputMethodFlags inputMethodType READ inputMethodType)
     Q_PROPERTY(QString imei READ imei CONSTANT)
     Q_PROPERTY(QString imsi READ imsi CONSTANT)
     Q_PROPERTY(QString manufacturer READ manufacturer CONSTANT)
@@ -68,25 +70,25 @@ class  Q_SYSINFO_EXPORT QSystemDeviceInfo : public QObject
     Q_PROPERTY(int batteryLevel READ batteryLevel NOTIFY batteryLevelChanged)
     Q_PROPERTY(bool isDeviceLocked READ isDeviceLocked NOTIFY deviceLocked)
     Q_PROPERTY(bool currentBluetoothPowerState READ currentBluetoothPowerState NOTIFY bluetoothStateChanged)
-
-    Q_PROPERTY(KeyboardTypeFlags keyboardType READ keyboardType)//1.2
+    Q_PROPERTY(KeyboardTypeFlags keyboardTypes READ keyboardTypes)//1.2
     Q_PROPERTY(bool isWirelessKeyboardConnected READ isWirelessKeyboardConnected NOTIFY wirelessKeyboardConnected)//1.2
-    Q_PROPERTY(bool isKeyboardFlipOpen READ isKeyboardFlipOpen NOTIFY keyboardFlip)//1.2
-    Q_PROPERTY(QSystemDeviceInfo::LockType lockStatus READ lockStatus NOTIFY lockStatusChanged)
-    Q_PROPERTY(QSystemDeviceInfo::PowerState currentPowerState READ currentPowerState NOTIFY powerStateChanged)
+    Q_PROPERTY(bool isKeyboardFlippedOpen READ isKeyboardFlippedOpen NOTIFY keyboardFlipped)//1.2
+    Q_PROPERTY(QSystemDeviceInfo::LockTypeFlags lockStatus READ lockStatus NOTIFY lockStatusChanged)
+    Q_PROPERTY(QByteArray uniqueDeviceID READ uniqueDeviceID CONSTANT)
 
     Q_ENUMS(BatteryStatus)
     Q_ENUMS(PowerState)
+    Q_ENUMS(ThermalState)
     Q_FLAGS(InputMethod InputMethodFlags)
     Q_ENUMS(SimStatus)
     Q_ENUMS(Profile)
     Q_ENUMS(LockType)
-    Q_ENUMS(keypadType)
+    Q_ENUMS(KeypadType)
 
     Q_FLAGS(KeyboardType KeyboardTypeFlags) //1.2
+    Q_FLAGS(LockType LockTypeFlags) //1.2
 
 public:
-
     explicit QSystemDeviceInfo(QObject *parent = 0);
     virtual ~QSystemDeviceInfo();
 
@@ -98,7 +100,6 @@ public:
         BatteryNormal
     };
 
-
     enum PowerState {
         UnknownPower = 0,
         BatteryPower,
@@ -106,6 +107,13 @@ public:
         WallPowerChargingBattery
     };
 
+    enum ThermalState {
+        UnknownThermal = 0,
+        NormalThermal,
+        WarningThermal,
+        AlertThermal,
+        ErrorThermal
+    };
 
     enum InputMethod {
         Keys = 0x0000001,
@@ -138,25 +146,32 @@ public:
 
     enum KeyboardType {
         UnknownKeyboard = 0,
-        SoftwareKeyboard= 0x0000001,
+        SoftwareKeyboard = 0x0000001,
         ITUKeypad = 0x0000002,
         HalfQwertyKeyboard = 0x0000004,
         FullQwertyKeyboard = 0x0000008,
-        WirelessKeyboard = 0x0000010
-      };//1.2
+        WirelessKeyboard = 0x0000010,
+        FlipKeyboard = 0x0000020
+    };//1.2
     Q_DECLARE_FLAGS(KeyboardTypeFlags, KeyboardType)//1.2
 
-    enum keypadType {
+    enum KeypadType {
        PrimaryKeypad = 0,
        SecondaryKeypad
     }; //1.2
 
+//    enum KeypadType {
+//        PrimaryKeypad = 0x0000001,
+//        SecondaryKeypad = 0x0000002
+//    }; //1.2
+//    Q_DECLARE_FLAGS(KeypadTypeFlags, KeypadType)//1.2
+
     enum LockType {
         UnknownLock = 0,
-        DeviceUnlocked,
-        DeviceLocked,
-        TouchAndKeyboardLocked
+        PinLocked = 0x0000001,
+        TouchAndKeyboardLocked = 0x0000002
     }; //1.2
+    Q_DECLARE_FLAGS(LockTypeFlags, LockType)//1.2
 
     QSystemDeviceInfo::InputMethodFlags inputMethodType();
 
@@ -172,32 +187,53 @@ public:
     QSystemDeviceInfo::SimStatus simStatus();
     QSystemDeviceInfo::Profile currentProfile();
     QSystemDeviceInfo::PowerState currentPowerState();
+    QSystemDeviceInfo::ThermalState currentThermalState();
 
     bool currentBluetoothPowerState();
 
-    QSystemDeviceInfo::KeyboardTypeFlags keyboardType(); //1.2
+    QSystemDeviceInfo::KeyboardTypeFlags keyboardTypes(); //1.2
     bool isWirelessKeyboardConnected(); //1.2
-    bool isKeyboardFlipOpen();//1.2
+    bool isKeyboardFlippedOpen();//1.2
 
-    bool keypadLightOn(QSystemDeviceInfo::keypadType type); //1.2
-    QUuid hostId(); //1.2
-    QSystemDeviceInfo::LockType lockStatus(); //1.2
+    Q_INVOKABLE bool keypadLightOn(QSystemDeviceInfo::KeypadType type); //1.2
+//    QSystemDeviceInfo::KeypadTypeFlags keypadLightsOn(); //1.2
+    QByteArray uniqueDeviceID(); //1.2
+    QSystemDeviceInfo::LockTypeFlags lockStatus(); //1.2
+
+    class Q_SYSINFO_EXPORT ProfileDetails  {
+    public:
+        ProfileDetails();
+        ProfileDetails(const ProfileDetails &other);
+        ProfileDetails &operator=(const ProfileDetails &other);
+
+        ~ProfileDetails();
+
+        int messageRingtoneVolume() const;
+        int voiceRingtoneVolume() const;
+        bool vibrationActive() const;
+
+    private:
+        friend class QSystemDeviceInfo;
+    };
+
+    Q_INVOKABLE ProfileDetails activeProfileDetails(); //1.2
 
 Q_SIGNALS:
     void batteryLevelChanged(int level);
     void batteryStatusChanged(QSystemDeviceInfo::BatteryStatus batteryStatus);
     void powerStateChanged(QSystemDeviceInfo::PowerState powerState);
+    void thermalStateChanged(QSystemDeviceInfo::ThermalState thermalState);
     void currentProfileChanged(QSystemDeviceInfo::Profile currentProfile);
     void bluetoothStateChanged(bool on);
-
-    void wirelessKeyboardConnected(bool connected);//1.2
-    void keyboardFlip(bool open);//1.2
+    void wirelessKeyboardConnected(bool connected); //1.2
+    void keyboardFlipped(bool open); //1.2
     void deviceLocked(bool isLocked); // 1.2
-    void lockStatusChanged(QSystemDeviceInfo::LockType); //1.2
-
+    void lockStatusChanged(QSystemDeviceInfo::LockTypeFlags); //1.2
 
 private:
     QSystemDeviceInfoPrivate *d;
+    QSystemDeviceInfo::ProfileDetails currentProfileDetails;
+
 protected:
     void connectNotify(const char *signal);
     void disconnectNotify(const char *signal);
@@ -205,9 +241,7 @@ protected:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSystemDeviceInfo::InputMethodFlags )
 
-
 QTM_END_NAMESPACE
-
 QT_END_HEADER
 
 #endif // QSYSTEMDEVICEINFO_H

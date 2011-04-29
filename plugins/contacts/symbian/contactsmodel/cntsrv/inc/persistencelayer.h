@@ -178,7 +178,6 @@ public:
 	virtual CContactIdArray& CardTemplateIdsL() = 0;
 	virtual CContactIdArray& GroupIdListL() = 0;
     virtual CBufSeg* DetailsListL(const TDesC& aSearchQuery) const = 0;
-    virtual CBufSeg* DetailsListPredictiveL(const TDesC& aSearchPattern) const = 0;
     
 	virtual void SetMachineIdL(TInt64 aMachineId) = 0;
 	virtual TPtrC UniqueIdL() = 0; 
@@ -249,47 +248,59 @@ public:
 
 
 /**
+ * This interface defines a function to close the resource 
+ * which is running and depends on RSqlDatabase.
+ */
+class MLplSqlDatabaseObserver
+    {
+public:
+    virtual void OnCloseL() = 0;
+    };
+ 
+
+/**
 This interface provides a simplified way of querying the database.  The result
 of the query is typically an array of the contact IDs satisfying the given
 criteria.  For example, IDs of all the contacts changed since the given date.
 */
 class MLplCollection
-	{
+    {
 public:
-	enum TLplViewType
-		{
-		EFilter,
-		EChangedSince,
-		EFindInIdFields,
-		EFindInEmail,
-		EFindInAll,
-		EFindType,
-		EFindGuid,
-		EPhoneMatch,
-		EViewData,
-		EUnfiled,
-		EDeleted,
-		ESortNoText,
-		ESortWithText,
-		EMatchPhoneNos
-		};
+    enum TLplViewType
+        {
+        EFilter,
+        EChangedSince,
+        EFindInIdFields,
+        EFindInEmail,
+        EFindInAll,
+        EFindType,
+        EFindGuid,
+        EPhoneMatch,
+        EViewData,
+        EUnfiled,
+        EDeleted,
+        ESortNoText,
+        ESortWithText,
+        EMatchPhoneNos
+        };
 public:
-	virtual TBool ContactMatchesHintFieldL (TInt aBitWiseFilter, TContactItemId aContactId) = 0;
-	virtual CContactIdArray* CollectionL(TLplViewType aViewType,TTime aTime = 0, const TDesC& aGuid = KNullDesC)=0;
-	virtual TInt  ContactCountL () = 0;
-	virtual CContactIdArray* MatchPhoneNumberL(const TDesC& aNumber, const TInt aMatchLengthFromRight) = 0;
-	virtual CContactIdArray* FindL(const TDesC& aText, const CContactItemFieldDef* aFieldDef, TUint aSessionId) = 0;
-	virtual CContactIdArray* FilterDatabaseL(CCntFilter& aFilter)=0;
-	virtual void Reset()=0;
-	virtual void FindAsyncInitL(const TDesC& aText,CContactItemFieldDef* aFieldDef)=0;
-	virtual void FindAsyncTextDefInitL(const CDesCArray& aWords,CContactTextDef* aTextDef) =0;
-	virtual CContactIdArray* FindAsyncL(TBool& aMoreToGo, TUint aSessionId)=0;
-	virtual TBool UsesIdentityFieldsOnly(TInt aFindFlags) = 0;
-	virtual void ConstructBitwiseFlagsFromTextDef(TInt& aFindFlags,TInt& aIdentityColumnsCount,const CContactTextDef* aTextDef) = 0;
-	
-	virtual TBool SeekContactL(TContactItemId aReqId,TContactItemId& aId,TUid& aContactType, TBool& aDeleted) = 0;
-	};
-	
+    virtual TBool ContactMatchesHintFieldL (TInt aBitWiseFilter, TContactItemId aContactId) = 0;
+    virtual CContactIdArray* CollectionL(TLplViewType aViewType,TTime aTime = 0, const TDesC& aGuid = KNullDesC)=0;
+    virtual TInt  ContactCountL () = 0;
+    virtual CContactIdArray* MatchPhoneNumberL(const TDesC& aNumber, const TInt aMatchLengthFromRight) = 0;
+    virtual CContactIdArray* FindL(const TDesC& aText, const CContactItemFieldDef* aFieldDef, TUint aSessionId) = 0;
+    virtual CContactIdArray* FilterDatabaseL(CCntFilter& aFilter)=0;
+    virtual CContactIdArray* FindVoipContactsL() = 0;
+    virtual void Reset()=0;
+    virtual void FindAsyncInitL(const TDesC& aText,CContactItemFieldDef* aFieldDef)=0;
+    virtual void FindAsyncTextDefInitL(const CDesCArray& aWords,CContactTextDef* aTextDef) =0;
+    virtual CContactIdArray* FindAsyncL(TBool& aMoreToGo, TUint aSessionId)=0;
+    virtual TBool UsesIdentityFieldsOnly(TInt aFindFlags) = 0;
+    virtual void ConstructBitwiseFlagsFromTextDef(TInt& aFindFlags,TInt& aIdentityColumnsCount,const CContactTextDef* aTextDef) = 0;
+    
+    virtual TBool SeekContactL(TContactItemId aReqId,TContactItemId& aId,TUid& aContactType, TBool& aDeleted) = 0;
+    };
+    
 
 /**
 This interface provides a single point of access to the three other interfaces:

@@ -41,6 +41,8 @@
 
 #include "qgeomaprouteobject.h"
 #include "qgeomaprouteobject_p.h"
+#include "qgeocoordinate.h"
+#include "qgeoroutesegment.h"
 
 #define DEFAULT_ROUTE_DETAIL_LEVEL 6
 
@@ -52,6 +54,7 @@ QTM_BEGIN_NAMESPACE
     a route on a map.
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup maps-mapping-objects
 
@@ -70,7 +73,11 @@ QTM_BEGIN_NAMESPACE
     Constructs a new route object.
 */
 QGeoMapRouteObject::QGeoMapRouteObject()
-    : d_ptr(new QGeoMapRouteObjectPrivate()) {}
+    : d_ptr(new QGeoMapRouteObjectPrivate())
+{
+    setUnits(QGeoMapObject::AbsoluteArcSecondUnit);
+    setTransformType(QGeoMapObject::ExactTransform);
+}
 
 /*!
     Constructs a new route object for the route \a route.
@@ -79,6 +86,8 @@ QGeoMapRouteObject::QGeoMapRouteObject(const QGeoRoute &route)
     : d_ptr(new QGeoMapRouteObjectPrivate())
 {
     d_ptr->route = route;
+    setUnits(QGeoMapObject::AbsoluteArcSecondUnit);
+    setTransformType(QGeoMapObject::ExactTransform);
 }
 
 /*!
@@ -113,10 +122,8 @@ QGeoRoute QGeoMapRouteObject::route() const
 
 void QGeoMapRouteObject::setRoute(const QGeoRoute &route)
 {
-    //if (d_ptr->route != route) {
     d_ptr->route = route;
     emit routeChanged(d_ptr->route);
-    //}
 }
 
 /*!
@@ -142,7 +149,7 @@ void QGeoMapRouteObject::setPen(const QPen &pen)
         return;
 
     d_ptr->pen = newPen;
-    emit penChanged(d_ptr->pen);
+    emit penChanged(newPen);
 }
 
 /*!
@@ -176,7 +183,7 @@ void QGeoMapRouteObject::setDetailLevel(quint32 detailLevel)
 /*!
 \fn void QGeoMapRouteObject::routeChanged(const QGeoRoute &route)
 
-    This signal is emitted when the route drawn by this route object 
+    This signal is emitted when the route drawn by this route object
     has changed.
 
     The new value is \a route.
@@ -185,7 +192,7 @@ void QGeoMapRouteObject::setDetailLevel(quint32 detailLevel)
 /*!
 \fn void QGeoMapRouteObject::penChanged(const QPen &pen)
 
-    This signal is emitted when the pen used to draw this route object has 
+    This signal is emitted when the pen used to draw this route object has
     changed.
 
     The new value is \a pen.
@@ -194,7 +201,7 @@ void QGeoMapRouteObject::setDetailLevel(quint32 detailLevel)
 /*!
 \fn void QGeoMapRouteObject::detailLevelChanged(quint32 detailLevel)
 
-    This signal is emitted when the level of detail used to draw this 
+    This signal is emitted when the level of detail used to draw this
     route object has changed.
 
     The new value is \a detailLevel.
@@ -206,7 +213,7 @@ void QGeoMapRouteObject::setDetailLevel(quint32 detailLevel)
 QGeoMapRouteObjectPrivate::QGeoMapRouteObjectPrivate()
 {
     detailLevel = DEFAULT_ROUTE_DETAIL_LEVEL;
-    pen.setCosmetic(false);
+    pen.setCosmetic(true);
 }
 
 QGeoMapRouteObjectPrivate::~QGeoMapRouteObjectPrivate() {}

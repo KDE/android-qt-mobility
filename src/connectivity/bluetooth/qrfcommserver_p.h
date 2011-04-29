@@ -44,8 +44,9 @@
 
 #include <QtGlobal>
 #include <QList>
+#include <qbluetoothsocket.h>
 
-#ifdef Q_OS_SYMBIAN
+#ifdef QTM_SYMBIAN_BLUETOOTH
 #include <es_sock.h>
 #include <bt_sock.h>
 #endif
@@ -61,16 +62,13 @@ QTM_BEGIN_NAMESPACE
 class QBluetoothAddress;
 class QBluetoothSocket;
 
-#ifdef Q_OS_SYMBIAN
-class QBluetoothSocketSymbianPrivate;
+#ifdef QTM_SYMBIAN_BLUETOOTH
+class QBluetoothSocketPrivate;
 #endif
 
 class QRfcommServer;
 
 class QRfcommServerPrivate
-#ifdef Q_OS_SYMBIAN
-: public MBluetoothSocketNotifier
-#endif
 {
     Q_DECLARE_PUBLIC(QRfcommServer)
 
@@ -78,16 +76,12 @@ public:
     QRfcommServerPrivate();
     ~QRfcommServerPrivate();
 
-#ifdef Q_OS_SYMBIAN
-    /* MBluetoothSocketNotifier virtual functions */
-    void HandleAcceptCompleteL(TInt aErr);
-    void HandleActivateBasebandEventNotifierCompleteL(TInt aErr, TBTBasebandEventNotification &aEventNotification);
-    void HandleConnectCompleteL(TInt aErr);
-    void HandleIoctlCompleteL(TInt aErr);
-    void HandleReceiveCompleteL(TInt aErr);
-    void HandleSendCompleteL(TInt aErr);
-    void HandleShutdownCompleteL(TInt aErr);
-#endif
+#ifdef QTM_SYMBIAN_BLUETOOTH
+    // private slots
+    void _q_connected();
+    void _q_socketError(QBluetoothSocket::SocketError err);
+    void _q_disconnected();
+#endif //QTM_SYMBIAN_BLUETOOTH
 
 #ifndef QT_NO_DBUS
     void _q_newConnection();
@@ -96,13 +90,13 @@ public:
 public:
     QBluetoothSocket *socket;
 
-#ifdef Q_OS_SYMBIAN
-    QBluetoothSocket *pendingSocket;
+#ifdef QTM_SYMBIAN_BLUETOOTH
     mutable QList<QBluetoothSocket *> activeSockets;
-    QBluetoothSocketSymbianPrivate *ds;
+    QBluetoothSocketPrivate *ds;
 #endif
 
     int maxPendingConnections;
+    QBluetooth::SecurityFlags securityFlags;
 
 protected:
     QRfcommServer *q_ptr;

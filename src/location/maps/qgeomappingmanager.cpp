@@ -54,6 +54,7 @@ QTM_BEGIN_NAMESPACE
     and interacting with maps.
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup maps-mapping
 
@@ -172,6 +173,56 @@ qreal QGeoMappingManager::minimumZoomLevel() const
 qreal QGeoMappingManager::maximumZoomLevel() const
 {
     return d_ptr->engine->maximumZoomLevel();
+}
+
+/*!
+    Return whether bearing is supported by this manager.
+*/
+bool QGeoMappingManager::supportsBearing() const
+{
+    return d_ptr->engine->supportsBearing();
+}
+
+/*!
+    Return whether tilting is supported by this manager.
+*/
+bool QGeoMappingManager::supportsTilting() const
+{
+    return d_ptr->engine->supportsTilting();
+}
+
+/*!
+    Returns minimum tilt supported by this manager.
+
+    Value in degrees where 0 is equivalent to 90 degrees between view and earth's
+    surface i.e. looking straight down to earth.
+*/
+qreal QGeoMappingManager::minimumTilt() const
+{
+    return d_ptr->engine->minimumTilt();
+}
+
+/*!
+    Returns maximum tilt supported by this manager.
+
+    Value in degrees where 0 is equivalent to 90 degrees between view and earth's
+    surface i.e. looking straight down to earth.
+*/
+qreal QGeoMappingManager::maximumTilt() const
+{
+    return d_ptr->engine->maximumTilt();
+}
+
+/*!
+    Returns whether custom map objects are supported by this engine.
+
+    Custom map objects are map objects based on QGraphicsItem instances, which
+    are hard to support in cases where the map rendering is not being
+    performed by the Qt Graphics View framwork.
+*/
+bool QGeoMappingManager::supportsCustomMapObjects() const
+{
+    return d_ptr->engine->supportsCustomMapObjects();
 }
 
 /*!

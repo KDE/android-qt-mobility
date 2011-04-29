@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#ifdef SYMBIAN_BACKEND_USE_SQLITE
+#ifdef SYMBIAN_BACKEND_USE_CNTMODEL_V2
 
 #include "cntsymbianfiltersql.h"
 #include "qcontactdetailfilter.h"
@@ -96,13 +96,16 @@ QList<QContactLocalId> CntSymbianFilter::contacts(const QContactFilter& filter,
     QList<QContactLocalId> ids;
     if (m_filterMap.contains(filter.type())) {
         ids = ( m_filterMap.value(filter.type()))->contacts(filter,sortOrders,filterSupported,error);
+        if (*error != QContactManager::NoError) {
+            filterSupported = false;
+        }
         return ids;   
     }
     else {
+        *error = QContactManager::NotSupportedError;
         filterSupported = false;
+        return ids;
     }
-    *error = QContactManager::NotSupportedError;
-    return ids;
 }
 
 bool CntSymbianFilter::filterSupported(const QContactFilter& filter)

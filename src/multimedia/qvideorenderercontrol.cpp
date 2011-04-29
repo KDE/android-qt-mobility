@@ -47,24 +47,22 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QVideoRendererControl
-    
+
 
     \brief The QVideoRendererControl class provides a control for rendering
     to a video surface.
 
     \inmodule QtMultimediaKit
     \ingroup multimedia
+    \since 1.0
 
     Using the surface() property of QVideoRendererControl a
     QAbstractVideoSurface may be set as the video render target of a
     QMediaService.
 
-    \code
-    QVideoRendererControl *rendererControl = mediaService->control<QVideoRendererControl *>();
-    rendererControl->setSurface(myVideoSurface);
-    \endcode
+    \snippet doc/src/snippets/multimedia-snippets/video.cpp Video renderer control
 
-    QVideoRendererControl is one of number of possible video output controls.
+    QVideoRendererControl is one of a number of possible video output controls.
 
     The interface name of QVideoRendererControl is \c com.nokia.Qt.QVideoRendererControl/1.0 as
     defined in QVideoRendererControl_iid.

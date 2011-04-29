@@ -51,6 +51,7 @@ QTM_BEGIN_NAMESPACE
 
     \ingroup connectivity-bluetooth
     \inmodule QtConnectivity
+    \since 1.2
 
     QRfcommServer is used to implement Bluetooth services over RFCOMM.
 
@@ -140,6 +141,7 @@ QRfcommServer::QRfcommServer(QObject *parent)
 */
 QRfcommServer::~QRfcommServer()
 {
+    delete d_ptr;
 }
 
 /*!
@@ -166,20 +168,15 @@ int QRfcommServer::maxPendingConnections() const
 }
 
 /*!
+  \fn QRfcommServer::setSecurityFlags(QBluetooth::SecurityFlags security)
     Sets the Bluetooth security flags to \a security. This function must be called prior to calling
     listen().
 */
-void QRfcommServer::setSecurityFlags(QBluetooth::SecurityFlags security)
-{
-}
 
 /*!
+  \fn QBluetooth::SecurityFlags QRfcommServer::securityFlags() const
     Returns the Bluetooth security flags.
 */
-QBluetooth::SecurityFlags QRfcommServer::securityFlags() const
-{
-    return QBluetooth::NoSecurity;
-}
 
 #include "moc_qrfcommserver.cpp"
 

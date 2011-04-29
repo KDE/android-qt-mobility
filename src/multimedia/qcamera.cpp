@@ -54,6 +54,7 @@
 #include <qvideodevicecontrol.h>
 #include <qvideowidget.h>
 #include <qgraphicsvideoitem.h>
+#include <qvideosurfaceoutput_p.h>
 
 QT_USE_NAMESPACE
 
@@ -67,6 +68,7 @@ public:
         qRegisterMetaType<QCamera::Error>("QCamera::Error");
         qRegisterMetaType<QCamera::State>("QCamera::State");
         qRegisterMetaType<QCamera::Status>("QCamera::Status");
+        qRegisterMetaType<QCamera::CaptureMode>("QCamera::CaptureMode");
         qRegisterMetaType<QCamera::LockType>("QCamera::LockType");
         qRegisterMetaType<QCamera::LockStatus>("QCamera::LockStatus");
         qRegisterMetaType<QCamera::LockChangeReason>("QCamera::LockChangeReason");
@@ -78,35 +80,18 @@ public:
 /*!
     \class QCamera
 
-    
+
     \brief The QCamera class provides interface for system camera devices.
 
     \inmodule QtMultimediaKit
     \ingroup camera
+    \since 1.1
 
     QCamera can be used with QVideoWidget for viewfinder display,
-    QMediaRecorder for video recording and QCameraImageCapture for images taking.
+    QMediaRecorder for video recording and QCameraImageCapture for image taking.
 
-    \code
-        camera = new QCamera;
+    \snippet doc/src/snippets/multimedia-snippets/media.cpp Request control
 
-        viewfinder = new QCameraViewfinder();
-        viewfinder->show();
-
-        camera->setViewfinder(viewfinder);
-
-        recorder = new QMediaRecorder(camera);
-        imageCapture = new QCameraImageCapture(camera);
-
-        camera->setCaptureMode(QCamera::CaptureStillImage);
-        camera->start();
-    \endcode
-
-The Camera API of Qt Mobility is still in \bold Technology Preview. It has
-not undergone the same level of review and testing as the rest of the APIs.
-
-The API exposed by the classes in this component are not stable, and will
-undergo modification or removal prior to the final release of Qt Mobility.
 */
 
 
@@ -117,7 +102,8 @@ public:
     QCameraPrivate():
         QMediaObjectPrivate(),
         provider(0),
-        control(0),        
+        control(0),
+        deviceControl(0),
         viewfinder(0),
         capture(0),
         state(QCamera::UnloadedState),
@@ -136,7 +122,8 @@ public:
     QMediaServiceProvider *provider;
 
     QCameraControl *control;
-    QCameraLocksControl *locksControl;    
+    QVideoDeviceControl *deviceControl;
+    QCameraLocksControl *locksControl;
 
     QCameraExposure *cameraExposure;
     QCameraFocus *cameraFocus;
@@ -158,6 +145,8 @@ public:
     bool supressLockChangedSignal;
 
     bool restartPending;
+
+    QVideoSurfaceOutput surfaceViewfinder;
 
     void _q_error(int error, const QString &errorString);
     void unsetError() { error = QCamera::NoError; errorString.clear(); }
@@ -256,6 +245,7 @@ void QCameraPrivate::initControls()
     if (service) {
         control = qobject_cast<QCameraControl *>(service->requestControl(QCameraControl_iid));
         locksControl = qobject_cast<QCameraLocksControl *>(service->requestControl(QCameraLocksControl_iid));
+        deviceControl = qobject_cast<QVideoDeviceControl*>(service->requestControl(QVideoDeviceControl_iid));
 
         if (control) {
             q->connect(control, SIGNAL(stateChanged(QCamera::State)), q, SLOT(_q_updateState(QCamera::State)));
@@ -276,6 +266,7 @@ void QCameraPrivate::initControls()
     } else {
         control = 0;
         locksControl = 0;
+        deviceControl = 0;
 
         error = QCamera::ServiceMissingError;
         errorString = QCamera::tr("The camera service is missing");
@@ -373,15 +364,12 @@ QCamera::QCamera(const QByteArray& device, QObject *parent):
 
     if (d->service != 0) {
         //pass device name to service
-        QVideoDeviceControl *deviceControl =
-                qobject_cast<QVideoDeviceControl*>(d->service->requestControl(QVideoDeviceControl_iid));
-
-        if (deviceControl) {
+        if (d->deviceControl) {
             QString deviceName(device);
 
-            for (int i=0; i<deviceControl->deviceCount(); i++) {
-                if (deviceControl->deviceName(i) == deviceName) {
-                    deviceControl->setSelectedDevice(i);
+            for (int i=0; i<d->deviceControl->deviceCount(); i++) {
+                if (d->deviceControl->deviceName(i) == deviceName) {
+                    d->deviceControl->setSelectedDevice(i);
                     break;
                 }
             }
@@ -412,6 +400,8 @@ QCamera::~QCamera()
             d->service->releaseControl(d->control);
         if (d->locksControl)
             d->service->releaseControl(d->locksControl);
+        if (d->deviceControl)
+            d->service->releaseControl(d->deviceControl);
 
         d->provider->releaseService(d->service);
     }
@@ -423,10 +413,7 @@ QCamera::~QCamera()
 */
 bool QCamera::isAvailable() const
 {
-    if (d_func()->control != NULL)
-        return true;
-    else
-        return false;
+    return availabilityError() == QtMultimediaKit::NoError;
 }
 
 /*!
@@ -435,13 +422,17 @@ bool QCamera::isAvailable() const
 
 QtMultimediaKit::AvailabilityError QCamera::availabilityError() const
 {
-    if (d_func()->control != NULL) {
-        if (d_func()->error == QCamera::NoError)
-            return QtMultimediaKit::NoError;
-        else
-            return QtMultimediaKit::ResourceError;
-    } else
+    Q_D(const QCamera);
+    if (d->control == NULL)
         return QtMultimediaKit::ServiceMissingError;
+
+    if (d->deviceControl && d->deviceControl->deviceCount() == 0)
+        return QtMultimediaKit::ResourceError;
+
+    if (d->error != QCamera::NoError)
+        return QtMultimediaKit::ResourceError;
+
+    return QtMultimediaKit::NoError;
 }
 
 
@@ -481,10 +472,7 @@ void QCamera::setViewfinder(QVideoWidget *viewfinder)
     if (d->viewfinder)
         unbind(d->viewfinder);
 
-    d->viewfinder = viewfinder;
-
-    if (d->viewfinder)
-        bind(d->viewfinder);
+    d->viewfinder = viewfinder && bind(viewfinder) ? viewfinder : 0;
 }
 
 /*!
@@ -499,10 +487,28 @@ void QCamera::setViewfinder(QGraphicsVideoItem *viewfinder)
     if (d->viewfinder)
         unbind(d->viewfinder);
 
-    d->viewfinder = viewfinder;
+    d->viewfinder = viewfinder && bind(viewfinder) ? viewfinder : 0;
+}
 
-    if (d->viewfinder)
-        bind(d->viewfinder);
+/*!
+    Sets a video \a surface as the viewfinder of a camera.
+
+    If a viewfinder has already been set on the camera the new surface
+    will replace it.
+*/
+
+void QCamera::setViewfinder(QAbstractVideoSurface *surface)
+{
+    Q_D(QCamera);
+
+    d->surfaceViewfinder.setVideoSurface(surface);
+
+    if (d->viewfinder != &d->surfaceViewfinder) {
+        if (d->viewfinder)
+            unbind(d->viewfinder);
+
+        d->viewfinder = bind(&d->surfaceViewfinder) ? &d->surfaceViewfinder : 0;
+    }
 }
 
 /*!
@@ -668,7 +674,7 @@ QCamera::LockTypes QCamera::requestedLocks() const
     Returns the status of requested camera settings locks.
 */
 QCamera::LockStatus QCamera::lockStatus() const
-{    
+{
     return d_func()->lockStatus;
 }
 
@@ -693,7 +699,7 @@ QCamera::LockStatus QCamera::lockStatus(QCamera::LockType lockType) const
 
 /*!
     \fn void QCamera::searchAndLock(QCamera::LockTypes locks)
-    
+
     Locks the camera settings with the requested \a locks, including focusing in the single autofocus mode,
     exposure and white balance if the exposure and white balance modes are not manual.
 

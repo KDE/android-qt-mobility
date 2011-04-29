@@ -43,6 +43,7 @@
 
 #include <qgalleryfilter.h>
 #include <qgalleryproperty.h>
+#include <qgallerytype.h>
 
 #include <QtTest/QtTest>
 
@@ -76,11 +77,19 @@ private Q_SLOTS:
     void equality();
     void inequality_data();
     void inequality();
+    void galleryType();
+    void galleryProperty();
 
 #ifndef QT_NO_DEBUG_STREAM
     void debugMessage_data();
     void debugMessage();
 #endif
+    // Test case for missing scenarios.
+
+    void intersectionFilterInsert();
+    void intersectionFilterPrepend();
+    void unionFilterInsert();
+    void unionFilterPrepend();
 };
 
 void tst_QGalleryFilter::nullFilter()
@@ -262,6 +271,19 @@ void tst_QGalleryFilter::unionFilter()
     QCOMPARE(filters.at(1).type(), QGalleryFilter::Intersection);
     QCOMPARE(filters.at(2).type(), QGalleryFilter::MetaData);
     QCOMPARE(filters.at(3).type(), QGalleryFilter::MetaData);
+
+    unionFilter.prepend(intersectionFilter || metaDataFilter);
+    QCOMPARE(unionFilter.isEmpty(), false);
+    QCOMPARE(unionFilter.filterCount(), 6);
+
+    filters = unionFilter.filters();
+    QCOMPARE(filters.count(), 6);
+    QCOMPARE(filters.at(0).type(), QGalleryFilter::Intersection);
+    QCOMPARE(filters.at(1).type(), QGalleryFilter::MetaData);
+    QCOMPARE(filters.at(2).type(), QGalleryFilter::MetaData);
+    QCOMPARE(filters.at(3).type(), QGalleryFilter::Intersection);
+    QCOMPARE(filters.at(4).type(), QGalleryFilter::MetaData);
+    QCOMPARE(filters.at(5).type(), QGalleryFilter::MetaData);
 }
 
 void tst_QGalleryFilter::intersectionFilter()
@@ -373,6 +395,19 @@ void tst_QGalleryFilter::intersectionFilter()
     QCOMPARE(filters.at(1).type(), QGalleryFilter::Union);
     QCOMPARE(filters.at(2).type(), QGalleryFilter::MetaData);
     QCOMPARE(filters.at(3).type(), QGalleryFilter::MetaData);
+
+    intersectionFilter.prepend(unionFilter && metaDataFilter);
+    QCOMPARE(intersectionFilter.isEmpty(), false);
+    QCOMPARE(intersectionFilter.filterCount(), 6);
+
+    filters = intersectionFilter.filters();
+    QCOMPARE(filters.count(), 6);
+    QCOMPARE(filters.at(0).type(), QGalleryFilter::Union);
+    QCOMPARE(filters.at(1).type(), QGalleryFilter::MetaData);
+    QCOMPARE(filters.at(2).type(), QGalleryFilter::MetaData);
+    QCOMPARE(filters.at(3).type(), QGalleryFilter::Union);
+    QCOMPARE(filters.at(4).type(), QGalleryFilter::MetaData);
+    QCOMPARE(filters.at(5).type(), QGalleryFilter::MetaData);
 }
 
 void tst_QGalleryFilter::assignment()
@@ -1076,6 +1111,236 @@ void tst_QGalleryFilter::debugMessage()
     qDebug() << filter;
 }
 #endif
+
+void tst_QGalleryFilter::galleryType()
+{
+    {
+        QGalleryType type = { "Audio", sizeof("Audio") - 1 };
+
+        const QString name = QLatin1String("Audio");
+
+        QCOMPARE(type.name(), name);
+        QCOMPARE(QString(type), name);
+    } {
+        QGalleryType type = { "Video", sizeof("Video") - 1 };
+
+        const QString name = QLatin1String("Video");
+
+        QCOMPARE(type.name(), name);
+        QCOMPARE(QString(type), name);
+    }
+}
+
+void tst_QGalleryFilter::galleryProperty()
+{
+    {
+        QGalleryProperty property = { "title", sizeof("title") - 1 };
+
+        const QString name = QLatin1String("title");
+        const QString ascendingName = QLatin1String("+title");
+        const QString descendingName = QLatin1String("-title");
+
+        QCOMPARE(property.name(), name);
+        QCOMPARE(QString(property), name);
+        QCOMPARE(property.ascending(), ascendingName);
+        QCOMPARE(property.descending(), descendingName);
+    } {
+        QGalleryProperty property = { "duration", sizeof("duration") - 1 };
+
+        const QString name = QLatin1String("duration");
+        const QString ascendingName = QLatin1String("+duration");
+        const QString descendingName = QLatin1String("-duration");
+
+        QCOMPARE(property.name(), name);
+        QCOMPARE(QString(property), name);
+        QCOMPARE(property.ascending(), ascendingName);
+        QCOMPARE(property.descending(), descendingName);
+    }
+}
+
+/* Test case for insert QGalleryIntersectionFilter */
+ void tst_QGalleryFilter::intersectionFilterInsert()
+ {
+     QGalleryIntersectionFilter intersectionFilter;
+
+     QGalleryMetaDataFilter metaDataFilter;
+     QGalleryUnionFilter unionFilter;
+
+     QCOMPARE(intersectionFilter.isValid(), true);
+     QCOMPARE(intersectionFilter.isEmpty(), true);
+     QCOMPARE(intersectionFilter.filterCount(), 0);
+
+     intersectionFilter.append(metaDataFilter);
+     intersectionFilter.append(unionFilter);
+     intersectionFilter.append(metaDataFilter);
+
+     QCOMPARE(intersectionFilter.filterCount(), 3);
+
+     QList<QGalleryFilter>filters = intersectionFilter.filters();
+     QCOMPARE(filters.count(), 3);
+
+     QCOMPARE(filters.at(0).type(), QGalleryFilter::MetaData);
+     QCOMPARE(filters.at(1).type(), QGalleryFilter::Union);
+     QCOMPARE(filters.at(2).type(), QGalleryFilter::MetaData);
+
+     intersectionFilter.insert(1,intersectionFilter);
+     filters = intersectionFilter.filters();
+     QCOMPARE(filters.count(), 6);
+
+     QCOMPARE(filters.at(0).type(), QGalleryFilter::MetaData);
+     QCOMPARE(filters.at(1).type(), QGalleryFilter::MetaData);
+     QCOMPARE(filters.at(2).type(), QGalleryFilter::Union);
+     QCOMPARE(filters.at(3).type(), QGalleryFilter::MetaData);
+     QCOMPARE(filters.at(4).type(), QGalleryFilter::Union);
+     QCOMPARE(filters.at(5).type(), QGalleryFilter::MetaData);
+
+     QGalleryIntersectionFilter intersectionFilter1;
+
+     QCOMPARE(intersectionFilter1.isEmpty(), true);
+     intersectionFilter.insert(1,intersectionFilter1);
+     filters = intersectionFilter.filters();
+     QCOMPARE(filters.count(), 6);
+
+
+ }
+
+/* Test case for insert QGalleryIntersectionFilter */
+ void tst_QGalleryFilter::intersectionFilterPrepend()
+ {
+     QGalleryIntersectionFilter intersectionFilter;
+
+     QGalleryMetaDataFilter metaDataFilter;
+     QGalleryUnionFilter unionFilter;
+
+     QCOMPARE(intersectionFilter.isValid(), true);
+     QCOMPARE(intersectionFilter.isEmpty(), true);
+     QCOMPARE(intersectionFilter.filterCount(), 0);
+
+     intersectionFilter.append(metaDataFilter);
+     intersectionFilter.append(unionFilter);
+     intersectionFilter.append(metaDataFilter);
+
+     QCOMPARE(intersectionFilter.filterCount(), 3);
+
+     QList<QGalleryFilter>filters = intersectionFilter.filters();
+     QCOMPARE(filters.count(), 3);
+
+     QCOMPARE(filters.at(0).type(), QGalleryFilter::MetaData);
+     QCOMPARE(filters.at(1).type(), QGalleryFilter::Union);
+     QCOMPARE(filters.at(2).type(), QGalleryFilter::MetaData);
+
+     intersectionFilter.prepend(intersectionFilter);
+     filters = intersectionFilter.filters();
+     QCOMPARE(filters.count(), 6);
+
+     QCOMPARE(filters.at(0).type(), QGalleryFilter::MetaData);
+     QCOMPARE(filters.at(1).type(), QGalleryFilter::Union);
+     QCOMPARE(filters.at(2).type(), QGalleryFilter::MetaData);
+     QCOMPARE(filters.at(3).type(), QGalleryFilter::MetaData);
+     QCOMPARE(filters.at(4).type(), QGalleryFilter::Union);
+     QCOMPARE(filters.at(5).type(), QGalleryFilter::MetaData);
+
+     QGalleryIntersectionFilter intersectionFilter1;
+
+     QCOMPARE(intersectionFilter1.isEmpty(), true);
+     intersectionFilter.prepend(intersectionFilter1);
+     filters = intersectionFilter.filters();
+     QCOMPARE(filters.count(), 6);
+
+ }
+
+
+ /* Test case for insert QGalleryUnionFilter */
+  void tst_QGalleryFilter::unionFilterInsert()
+  {
+      QGalleryIntersectionFilter intersectionFilter;
+
+      QGalleryMetaDataFilter metaDataFilter;
+      QGalleryUnionFilter unionFilter;
+
+      QCOMPARE(unionFilter.isValid(), true);
+      QCOMPARE(unionFilter.isEmpty(), true);
+      QCOMPARE(unionFilter.filterCount(), 0);
+
+      unionFilter.append(metaDataFilter);
+      unionFilter.append(intersectionFilter);
+      unionFilter.append(metaDataFilter);
+
+      QCOMPARE(unionFilter.filterCount(), 3);
+
+      QList<QGalleryFilter>filters = unionFilter.filters();
+      QCOMPARE(filters.count(), 3);
+
+      QCOMPARE(filters.at(0).type(), QGalleryFilter::MetaData);
+      QCOMPARE(filters.at(1).type(), QGalleryFilter::Intersection);
+      QCOMPARE(filters.at(2).type(), QGalleryFilter::MetaData);
+
+      unionFilter.insert(1,unionFilter);
+      filters = unionFilter.filters();
+      QCOMPARE(filters.count(), 6);
+
+      QCOMPARE(filters.at(0).type(), QGalleryFilter::MetaData);
+      QCOMPARE(filters.at(1).type(), QGalleryFilter::MetaData);
+      QCOMPARE(filters.at(2).type(), QGalleryFilter::Intersection);
+      QCOMPARE(filters.at(3).type(), QGalleryFilter::MetaData);
+      QCOMPARE(filters.at(4).type(), QGalleryFilter::Intersection);
+      QCOMPARE(filters.at(5).type(), QGalleryFilter::MetaData);
+
+      QGalleryUnionFilter unionFilter1;
+
+      QCOMPARE(unionFilter1.isEmpty(), true);
+      unionFilter.insert(1,unionFilter1);
+      filters = unionFilter.filters();
+      QCOMPARE(filters.count(), 6);
+
+
+  }
+
+ /* Test case for Prepend QGalleryUnionFilter */
+  void tst_QGalleryFilter::unionFilterPrepend()
+  {
+      QGalleryIntersectionFilter intersectionFilter;
+
+      QGalleryMetaDataFilter metaDataFilter;
+      QGalleryUnionFilter unionFilter;
+
+      QCOMPARE(unionFilter.isValid(), true);
+      QCOMPARE(unionFilter.isEmpty(), true);
+      QCOMPARE(unionFilter.filterCount(), 0);
+
+      unionFilter.append(metaDataFilter);
+      unionFilter.append(intersectionFilter);
+      unionFilter.append(metaDataFilter);
+
+      QCOMPARE(unionFilter.filterCount(), 3);
+
+      QList<QGalleryFilter>filters = unionFilter.filters();
+      QCOMPARE(filters.count(), 3);
+
+      QCOMPARE(filters.at(0).type(), QGalleryFilter::MetaData);
+      QCOMPARE(filters.at(1).type(), QGalleryFilter::Intersection);
+      QCOMPARE(filters.at(2).type(), QGalleryFilter::MetaData);
+
+      unionFilter.prepend(unionFilter);
+      filters = unionFilter.filters();
+      QCOMPARE(filters.count(), 6);
+
+      QCOMPARE(filters.at(0).type(), QGalleryFilter::MetaData);
+      QCOMPARE(filters.at(1).type(), QGalleryFilter::Intersection);
+      QCOMPARE(filters.at(2).type(), QGalleryFilter::MetaData);
+      QCOMPARE(filters.at(3).type(), QGalleryFilter::MetaData);
+      QCOMPARE(filters.at(4).type(), QGalleryFilter::Intersection);
+      QCOMPARE(filters.at(5).type(), QGalleryFilter::MetaData);
+
+      QGalleryUnionFilter unionFilter1;
+
+      QCOMPARE(unionFilter1.isEmpty(), true);
+      unionFilter.prepend(unionFilter1);
+      filters = unionFilter.filters();
+      QCOMPARE(filters.count(), 6);
+
+  }
+
 
 QTEST_MAIN(tst_QGalleryFilter)
 

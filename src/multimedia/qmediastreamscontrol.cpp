@@ -46,12 +46,14 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QMediaStreamsControl
-    
+    \preliminary
+
     \inmodule QtMultimediaKit
     \ingroup multimedia
     \brief The QMediaStreamsControl class provides a media stream selection control.
 
     \ingroup multimedia
+    \since 1.0
 
     The QMediaStreamsControl class provides descriptions of the available media streams
     and allows individual streams to be activated and deactivated.

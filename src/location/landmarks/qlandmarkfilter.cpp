@@ -82,6 +82,7 @@ QLandmarkFilterPrivate::~QLandmarkFilterPrivate()
     \inmodule QtLocation
 
     \ingroup landmarks-filter
+    \since 1.1
 
     This class is used as a parameter to search for landmarks, it allows selection of
     landmarks which meet certain criteria.  It is used with QLandmarkManager
@@ -115,7 +116,7 @@ QLandmarkFilterPrivate::~QLandmarkFilterPrivate()
     \enum QLandmarkFilter::MatchFlag
     Describes the semantics of matching followed by the filter.
     \value MatchExactly Performs QVariant-based matching. (For the Symbian and S60 platforms MatchExactly has the same semantics as MatchFixedString)
-    \value MatchContains The search term is contained in the item.
+    \value MatchContains The search term is contained in the item. (For the Symbian and S60 platforms, MatchContains is not supported)
     \value MatchStartsWith The search term matches the start of the item.
     \value MatchEndsWith The search term matches the end of the item.
     \value MatchFixedString  Performs string-based matching. String-based comparisons are case-insensitive unless the MatchCaseSensitive flag is also specified.

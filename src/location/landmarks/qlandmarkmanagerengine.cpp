@@ -147,6 +147,7 @@ QStringList commonLandmarkKeys = QStringList() << "name"
     of the landmark manager backend functionality.
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup landmarks-backend
 
@@ -211,7 +212,7 @@ int QLandmarkManagerEngine::managerVersion() const
  */
 QList<QLandmarkId> QLandmarkManagerEngine::landmarkIds(const QLandmarkFilter& /*filter*/,
         int /*limit*/, int /*offset*/, const QList<QLandmarkSortOrder>& /*sortOrders*/, QLandmarkManager::Error* /*error*/,
-        QString *errorString) const
+        QString */* errorString */) const
 {
     return QList<QLandmarkId>();
 }
@@ -1357,8 +1358,6 @@ bool QLandmarkManagerEngine::testFilter(const QLandmarkFilter& filter, const QLa
                 }
                 return false;
             }
-            //should not be reachable
-            return false;
         }
     }
     return false;

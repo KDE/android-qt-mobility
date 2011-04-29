@@ -74,8 +74,9 @@ static bool validateActionFilter(const QContactFilter& filter);
   \brief The QContactManagerEngine class provides the interface for
   implementations of the contact manager backend functionality.
   \inmodule QtContacts
-  
+
   \ingroup contacts-backends
+  \since 1.0
 
   Instances of this class are usually provided by a
   \l QContactManagerEngineFactory, which is loaded from a plugin.
@@ -1687,7 +1688,7 @@ QContact QContactManagerEngine::compatibleContact(const QContact& original, QCon
                         detail.removeValue(key);
                     else
                         detail.setValue(key, innerValues);
-                } 
+                }
                 if (field.dataType() == QVariant::StringList) {
                     QStringList innerValues = variant.toStringList();
                     QMutableListIterator<QString> it(innerValues);
@@ -2341,7 +2342,19 @@ QList<QContactLocalId> QContactManagerEngine::sortContacts(const QList<QContact>
 }
 
 /*!
-  Notifies the manager engine that the given request \a req has been destroyed
+  Notifies the manager engine that the given request \a req is in the process of being destroyed.
+
+  The request pointer \a req is still valid during this function call, but before returning
+  from this call the engine should ensure that it no longer holds any references
+  to the \a req pointer (for example, in a queue in another thread) because directly
+  following this call the request will be deleted and this pointer will become invalid.
+  In a multithreaded engine, this may mean blocking the calling thread while other
+  threads clean up.
+
+  If a request is still in progress at this point, it is undefined what will
+  happen to the operation requested, but in general it should either be
+  fully completed or fully aborted.  In any case, the client has signalled that
+  they do not care about the outcome (by deleting the request).
  */
 void QContactManagerEngine::requestDestroyed(QContactAbstractRequest* req)
 {
@@ -2642,7 +2655,7 @@ void QContactManagerEngine::updateRelationshipRemoveRequest(QContactRelationship
   \brief The QContactManagerEngineV2 class provides the interface for
   implementations of the contact manager backend functionality.
   \inmodule QtContacts
-  
+
   \ingroup contacts-backends
 
   Instances of this class are usually provided by a
@@ -2849,7 +2862,7 @@ bool QContactManagerEngineV2::saveContacts(QList<QContact> *contacts, const QStr
 /*!
   Returns the list of contacts with the ids given by \a localIds.  There is a one-to-one
   correspondence between the returned contacts and the supplied \a localIds.
-  
+
   If there is an invalid id in \a localIds, then an empty QContact will take its place in the
   returned list and an entry will be inserted into \a errorMap.
 

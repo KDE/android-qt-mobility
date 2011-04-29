@@ -100,7 +100,7 @@ public:
 
         //filters
         qmlRegisterType<QDeclarativeOrganizerItemFilter>(uri, 1, 1, "Filter");
-        qmlRegisterType<QDeclarativeOrganizerItemChangelogFilter>(uri, 1, 1, "ChangelogFilter");
+        qmlRegisterType<QDeclarativeOrganizerItemChangeLogFilter>(uri, 1, 1, "ChangeLogFilter");
         qmlRegisterType<QDeclarativeOrganizerItemCollectionFilter>(uri, 1, 1, "CollectionFilter");
         qmlRegisterType<QDeclarativeOrganizerItemDetailFilter>(uri, 1, 1, "DetailFilter");
         qmlRegisterType<QDeclarativeOrganizerItemDetailRangeFilter>(uri, 1, 1, "DetailRangeFilter");
@@ -108,6 +108,7 @@ public:
         qmlRegisterType<QDeclarativeOrganizerItemIntersectionFilter>(uri, 1, 1, "IntersectionFilter");
         qmlRegisterType<QDeclarativeOrganizerItemUnionFilter>(uri, 1, 1, "UnionFilter");
         qmlRegisterType<QDeclarativeOrganizerItemInvalidFilter>(uri, 1, 1, "InvalidFilter");
+        qmlRegisterType<QDeclarativeOrganizerItemCompoundFilter>();
     }
 };
 

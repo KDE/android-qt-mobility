@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qgeotiledmappolygonobjectinfo_p.h"
-//#include "makepoly_p.h"
 
 #include "qgeotiledmapdata.h"
 #include "qgeotiledmapdata_p.h"
@@ -77,28 +76,60 @@ QGeoTiledMapPolygonObjectInfo::QGeoTiledMapPolygonObjectInfo(QGeoTiledMapData *m
 
 QGeoTiledMapPolygonObjectInfo::~QGeoTiledMapPolygonObjectInfo() {}
 
-void QGeoTiledMapPolygonObjectInfo::pathChanged(const QList<QGeoCoordinate> &path)
+void QGeoTiledMapPolygonObjectInfo::pathChanged(const QList<QGeoCoordinate> &/*path*/)
 {
-    points = createPolygon(polygon->path(), tiledMapData, true);
-    if (points.size() >= 3) {
-        polygonItem->setPolygon(points);
-        setValid(true);
-    } else {
-        setValid(false);
-    }
+    genPoly();
     updateItem();
 }
 
-void QGeoTiledMapPolygonObjectInfo::penChanged(const QPen &pen)
+void QGeoTiledMapPolygonObjectInfo::penChanged(const QPen &/*pen*/)
 {
     polygonItem->setPen(polygon->pen());
     updateItem();
 }
 
-void QGeoTiledMapPolygonObjectInfo::brushChanged(const QBrush &brush)
+void QGeoTiledMapPolygonObjectInfo::brushChanged(const QBrush &/*brush*/)
 {
     polygonItem->setBrush(polygon->brush());
     updateItem();
+}
+
+void QGeoTiledMapPolygonObjectInfo::genPoly()
+{
+    QPolygonF poly;
+
+    QList<QGeoCoordinate> path = polygon->path();
+
+    if (path.size() > 0) {
+        QGeoCoordinate origin = path.at(0);
+        double ox = origin.longitude() * 3600.0;
+        double oy = origin.latitude() * 3600.0;
+
+        double oldx = ox;
+        double oldy = oy;
+
+        poly << QPointF(0,0);
+        for (int i = 0; i < path.size(); ++i) {
+            QGeoCoordinate pt = path.at(i);
+            double x = pt.longitude() * 3600.0;
+            double y = pt.latitude() * 3600.0;
+
+            if (qAbs(x - oldx) > 180.0 * 3600.0) {
+                if (x > oldx) {
+                    x -= 360.0 * 3600.0;
+                } else if (x < oldx) {
+                    x += 360.0 * 3600.0;
+                }
+            }
+
+            poly << QPointF(x - ox, y - oy);
+
+            oldx = x;
+            oldy = y;
+        }
+    }
+
+    polygonItem->setPolygon(poly);
 }
 
 #include "moc_qgeotiledmappolygonobjectinfo_p.cpp"

@@ -52,6 +52,7 @@ QTM_BEGIN_NAMESPACE
     a polygon on a map.
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup maps-mapping-objects
 
@@ -64,7 +65,11 @@ QTM_BEGIN_NAMESPACE
     Constructs a new polygon object.
 */
 QGeoMapPolygonObject::QGeoMapPolygonObject()
-    : d_ptr(new QGeoMapPolygonObjectPrivate()) {}
+    : d_ptr(new QGeoMapPolygonObjectPrivate())
+{
+    setUnits(QGeoMapObject::RelativeArcSecondUnit);
+    setTransformType(QGeoMapObject::ExactTransform);
+}
 
 /*!
     Destroys this polygon object.
@@ -101,6 +106,7 @@ void QGeoMapPolygonObject::setPath(const QList<QGeoCoordinate> &path)
 {
     if (d_ptr->path != path) {
         d_ptr->path = path;
+        setOrigin(path.at(0));
         emit pathChanged(emit d_ptr->path);
     }
 }
@@ -129,8 +135,8 @@ void QGeoMapPolygonObject::setPen(const QPen &pen)
     if (d_ptr->pen == newPen)
         return;
 
-    d_ptr->pen = newPen;
-    emit penChanged(d_ptr->pen);
+    d_ptr->pen = pen;
+    emit penChanged(pen);
 }
 
 QPen QGeoMapPolygonObject::pen() const
@@ -151,7 +157,7 @@ void QGeoMapPolygonObject::setBrush(const QBrush &brush)
 {
     if (d_ptr->brush != brush) {
         d_ptr->brush = brush;
-        emit brushChanged(d_ptr->brush);
+        emit brushChanged(brush);
     }
 }
 
@@ -163,7 +169,7 @@ QBrush QGeoMapPolygonObject::brush() const
 /*!
 \fn void QGeoMapPolygonObject::pathChanged(const QList<QGeoCoordinate> &path)
 
-    This signal is emitted when the ordered list of coordinates that define 
+    This signal is emitted when the ordered list of coordinates that define
     the polygon to be drawn by this polygon object has changed.
 
     The new value is \a path.
@@ -172,7 +178,7 @@ QBrush QGeoMapPolygonObject::brush() const
 /*!
 \fn void QGeoMapPolygonObject::penChanged(const QPen &pen)
 
-    This signal is emitted when the pen used to draw the edge of this 
+    This signal is emitted when the pen used to draw the edge of this
     polygon object has changed.
 
     The new value is \a pen.
@@ -181,9 +187,9 @@ QBrush QGeoMapPolygonObject::brush() const
 /*!
 \fn void QGeoMapPolygonObject::brushChanged(const QBrush &brush)
 
-    This signal is emitted when the brush used to fill in the interior of 
+    This signal is emitted when the brush used to fill in the interior of
     this polygon object has changed.
-    
+
     The new value is \a brush.
 */
 

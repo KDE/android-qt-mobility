@@ -64,6 +64,7 @@ QTM_BEGIN_NAMESPACE
     \inmodule QtPublishSubscribe
     \ingroup publishsubscribe
     \internal
+    \since 1.0
 
     To create a new layer in the Value Space subclass this class and reimplement all of the virtual
     functions.  The new layer is installed by either calling QValueSpace::installLayer() or by
@@ -71,6 +72,8 @@ QTM_BEGIN_NAMESPACE
 */
 
 /*!
+    \internal
+
     \macro QVALUESPACE_AUTO_INSTALL_LAYER(className)
 
     \relates QAbstractValueSpaceLayer
@@ -303,6 +306,7 @@ void QAbstractValueSpaceLayer::emitInterestChanged(QValueSpacePublisher *publish
     \brief The QValueSpace namespace contains miscellaneous identifiers used throughtout the
            Publish and Subscribe API.
     \ingroup publishsubscribe
+    \inmodule QtPublishSubscribe
 */
 
 /*!
@@ -374,10 +378,12 @@ void QAbstractValueSpaceLayer::emitInterestChanged(QValueSpacePublisher *publish
 */
 void QValueSpace::initValueSpaceServer()
 {
-    QValueSpaceManager::instance()->initServer();
+    QValueSpaceManager::instance()->init(QAbstractValueSpaceLayer::Server);
 }
 
 /*!
+    \internal
+
     Used by Value Space layer implementations to install themselves into the system.  \a layer
     should be a pointer to the layer to install.
 

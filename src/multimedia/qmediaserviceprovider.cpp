@@ -81,11 +81,12 @@ public:
 
 /*!
     \class QMediaServiceProviderHint
-    
+
     \brief The QMediaServiceProviderHint class describes what is required of a QMediaService.
 
     \inmodule QtMultimediaKit
     \ingroup multimedia
+    \since 1.0
 
     The QMediaServiceProvider class uses hints to select an appropriate media service.
 */
@@ -105,6 +106,10 @@ public:
 
     \value StreamPlayback
             The service is capable of playing QIODevice based streams.
+
+    \value VideoSurface
+            The service is capable of renderering to a QAbstractVideoSurface
+            output.
 */
 
 /*!
@@ -447,7 +452,7 @@ public:
                     qobject_cast<QMediaServiceSupportedFormatsInterface*>(obj);
 
 
-            if (flags & QMediaPlayer::LowLatency) {
+            if (flags) {
                 QMediaServiceFeaturesInterface *iface =
                         qobject_cast<QMediaServiceFeaturesInterface*>(obj);
 
@@ -463,6 +468,11 @@ public:
                     //the same for QIODevice based streams support
                     if ((flags & QMediaPlayer::StreamPlayback) &&
                         !(features & QMediaServiceProviderHint::StreamPlayback))
+                            continue;
+
+                    //the same for QAbstractVideoSurface support
+                    if ((flags & QMediaPlayer::VideoSurface) &&
+                        !(features & QMediaServiceProviderHint::VideoSurface))
                             continue;
                 }
             }
@@ -514,7 +524,7 @@ Q_GLOBAL_STATIC(QPluginServiceProvider, pluginProvider);
 
 /*!
     \class QMediaServiceProvider
-    
+
     \brief The QMediaServiceProvider class provides an abstract allocator for media services.
 */
 
@@ -628,7 +638,7 @@ QMediaServiceProvider *QMediaServiceProvider::defaultServiceProvider()
 
 /*!
     \class QMediaServiceProviderPlugin
-    
+
     \brief The QMediaServiceProviderPlugin class interface provides an interface for QMediaService
     plug-ins.
 

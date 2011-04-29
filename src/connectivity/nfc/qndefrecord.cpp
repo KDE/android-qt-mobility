@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,6 +43,8 @@
 #include "qndefrecord.h"
 #include "qndefrecord_p.h"
 
+#include <QtCore/QHash>
+
 QTM_BEGIN_NAMESPACE
 
 /*!
@@ -51,6 +53,7 @@ QTM_BEGIN_NAMESPACE
 
     \ingroup connectivity-nfc
     \inmodule QtConnectivity
+    \since 1.2
 
     QNdefRecord and derived classes are used to parse the contents of
     \l {QNdefMessage}{NDEF messages} and create new NDEF messages.
@@ -113,14 +116,16 @@ QTM_BEGIN_NAMESPACE
 */
 
 /*!
-    \macro Q_DECLARE_NDEF_RECORD(className, typeNameFormat, type)
+    \macro Q_DECLARE_NDEF_RECORD(className, typeNameFormat, type, initialPayload)
     \relates QNdefRecord
 
     This macro declares default and copy constructors for specialized NDEF record classes.
 
     \a className is the name of the specialized class, \a typeNameFormat is the appropriate
     QNdefRecord::TypeNameFormat for the custom type and \a type is the type without the NID or NSS
-    prefixes.  That is \i {example.com:f} not \i {urn:nfc:ext:example.com:f}.
+    prefixes. That is \i {example.com:f} not \i {urn:nfc:ext:example.com:f}.  \a initialPayload
+    is the initial payload of an empty record, it must be a QByteArray or a type that can be
+    implicitly converted into a QByteArray.
 
     See the section on \l {Creating specialized NDEF record classes} for details.
 
@@ -144,6 +149,11 @@ QTM_BEGIN_NAMESPACE
 
     \sa Q_DECLARE_NDEF_RECORD()
 */
+
+uint qHash(const QNdefRecord &key)
+{
+    return qHash(key.type() + key.id() + key.payload());
+}
 
 /*!
     Constructs a new empty NDEF record.

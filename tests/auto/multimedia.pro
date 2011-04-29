@@ -11,6 +11,7 @@ SUBDIRS += \
     qmediaimageviewer \
     qmediaobject \
     qmediaplayer \
+    qmediaplayerbackend \
     qmediaplaylist \
     qmediaplaylistnavigator \
     qmediapluginloader \
@@ -29,7 +30,8 @@ SUBDIRS += \
     qaudioinput \
     qaudioformat \
     qvideoframe \
-    qvideosurfaceformat
+    qvideosurfaceformat \
+    qcamerabackend
 
 contains (QT_CONFIG, declarative) {
     SUBDIRS += \

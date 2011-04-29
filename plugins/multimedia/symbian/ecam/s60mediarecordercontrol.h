@@ -64,7 +64,9 @@ class S60MediaRecorderControl : public QMediaRecorderControl
 public: // Contructors & Destructor
 
     S60MediaRecorderControl(QObject *parent = 0);
-    S60MediaRecorderControl(S60VideoCaptureSession *session, QObject *parent = 0);
+    S60MediaRecorderControl(S60CameraService *service,
+                            S60VideoCaptureSession *session,
+                            QObject *parent = 0);
     ~S60MediaRecorderControl();
 
 public: // QMediaRecorderControl
@@ -88,7 +90,7 @@ Q_SIGNALS: // QMediaRecorderControl
     void error(int error, const QString &errorString);
 */
 
-public Q_SLOTS: // QMediaRecorderControl
+public slots: // QMediaRecorderControl
 
     void record();
     void pause();
@@ -100,7 +102,7 @@ private:
     QMediaRecorder::State convertInternalStateToQtState(
         S60VideoCaptureSession::TVideoCaptureState aState) const;
 
-private Q_SLOTS:
+private slots:
 
     void updateState(S60VideoCaptureSession::TVideoCaptureState state);
 

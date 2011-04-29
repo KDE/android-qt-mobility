@@ -57,9 +57,11 @@
 #include <qcameraimageprocessing.h>
 
 #include <qmediaserviceprovider.h>
+#include <qmediaenumdebug.h>
 
 QT_BEGIN_NAMESPACE
 
+class QAbstractVideoSurface;
 class QVideoWidget;
 class QGraphicsVideoItem;
 
@@ -157,6 +159,7 @@ public:
 
     void setViewfinder(QVideoWidget *viewfinder);
     void setViewfinder(QGraphicsVideoItem *viewfinder);
+    void setViewfinder(QAbstractVideoSurface *surface);
 
     Error error() const;
     QString errorString() const;
@@ -212,8 +215,17 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QCamera::State)
 Q_DECLARE_METATYPE(QCamera::Status)
 Q_DECLARE_METATYPE(QCamera::Error)
+Q_DECLARE_METATYPE(QCamera::CaptureMode)
 Q_DECLARE_METATYPE(QCamera::LockType)
 Q_DECLARE_METATYPE(QCamera::LockStatus)
 Q_DECLARE_METATYPE(QCamera::LockChangeReason)
+
+Q_MEDIA_ENUM_DEBUG(QCamera, State)
+Q_MEDIA_ENUM_DEBUG(QCamera, Status)
+Q_MEDIA_ENUM_DEBUG(QCamera, Error)
+Q_MEDIA_ENUM_DEBUG(QCamera, CaptureMode)
+Q_MEDIA_ENUM_DEBUG(QCamera, LockType)
+Q_MEDIA_ENUM_DEBUG(QCamera, LockStatus)
+Q_MEDIA_ENUM_DEBUG(QCamera, LockChangeReason)
 
 #endif  // QCAMERA_H

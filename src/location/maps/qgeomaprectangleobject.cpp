@@ -53,6 +53,7 @@ QTM_BEGIN_NAMESPACE
     a rectangular region on a map.
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup maps-mapping-objects
 
@@ -65,7 +66,11 @@ QTM_BEGIN_NAMESPACE
     Constructs a new rectangle object.
 */
 QGeoMapRectangleObject::QGeoMapRectangleObject()
-    : d_ptr(new QGeoMapRectangleObjectPrivate()) {}
+    : d_ptr(new QGeoMapRectangleObjectPrivate())
+{
+    setUnits(QGeoMapObject::AbsoluteArcSecondUnit);
+    setTransformType(QGeoMapObject::ExactTransform);
+}
 
 /*!
     Constructs a new rectangle object based on the bounding box \a boundingBox.
@@ -74,6 +79,8 @@ QGeoMapRectangleObject::QGeoMapRectangleObject(const QGeoBoundingBox &boundingBo
     : d_ptr(new QGeoMapRectangleObjectPrivate())
 {
     d_ptr->bounds = boundingBox;
+    setUnits(QGeoMapObject::AbsoluteArcSecondUnit);
+    setTransformType(QGeoMapObject::ExactTransform);
 }
 
 /*!
@@ -84,6 +91,8 @@ QGeoMapRectangleObject::QGeoMapRectangleObject(const QGeoCoordinate &topLeft, co
     : d_ptr(new QGeoMapRectangleObjectPrivate())
 {
     d_ptr->bounds = QGeoBoundingBox(topLeft, bottomRight);
+    setUnits(QGeoMapObject::AbsoluteArcSecondUnit);
+    setTransformType(QGeoMapObject::ExactTransform);
 }
 
 /*!
@@ -213,7 +222,7 @@ void QGeoMapRectangleObject::setPen(const QPen &pen)
         return;
 
     d_ptr->pen = newPen;
-    emit penChanged(d_ptr->pen);
+    emit penChanged(newPen);
 }
 
 /*!
@@ -241,7 +250,7 @@ void QGeoMapRectangleObject::setBrush(const QBrush &brush)
 /*!
 \fn void QGeoMapRectangleObject::topLeftChanged(const QGeoCoordinate &topLeft)
 
-    This signal is emitted when the top left coordinate of this rectangle 
+    This signal is emitted when the top left coordinate of this rectangle
     object has changed.
 
     The new value is \a topLeft.
@@ -250,7 +259,7 @@ void QGeoMapRectangleObject::setBrush(const QBrush &brush)
 /*!
 \fn void QGeoMapRectangleObject::bottomRightChanged(const QGeoCoordinate &bottomRight)
 
-    This signal is emitted when the bottom right coordinate of this rectangle 
+    This signal is emitted when the bottom right coordinate of this rectangle
     object has changed.
 
     The new value is \a bottomRight.
@@ -259,7 +268,7 @@ void QGeoMapRectangleObject::setBrush(const QBrush &brush)
 /*!
 \fn void QGeoMapRectangleObject::penChanged(const QPen &pen)
 
-    This signal is emitted when the pen used to draw the perimeter of this 
+    This signal is emitted when the pen used to draw the perimeter of this
     rectangle object has changed.
 
     The new value is \a pen.
@@ -268,7 +277,7 @@ void QGeoMapRectangleObject::setBrush(const QBrush &brush)
 /*!
 \fn void QGeoMapRectangleObject::brushChanged(const QBrush &brush)
 
-    This signal is emitted when the brush used to fill in the interior of 
+    This signal is emitted when the brush used to fill in the interior of
     this rectangle object has changed.
 
     The new value is \a brush.
