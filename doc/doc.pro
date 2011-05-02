@@ -5,4 +5,4 @@
 ######################################################################
 
 TEMPLATE = subdirs
-SUBDIRS += src/snippets
+!CONFIG(android): SUBDIRS += src/snippets
