@@ -14,7 +14,7 @@ INCLUDEPATH+= . \
              ../ \
              ../ffmpeg
 
-LIBS += -lQtCore -lQtMultimediaKit -L../froyolibs -lcutils -lutils -lmedia -lEGL -L$$SOURCE_DIR/plugins/multimedia/android/ffmpeglibs -lffmpeg
+LIBS += -lQtCore -lQtMultimediaKit -L$$SOURCE_DIR/plugins/multimedia/android/froyolibs -lcutils -lutils -lmedia -lEGL -L$$SOURCE_DIR/plugins/multimedia/android/ffmpeglibs -lffmpeg
 
 
 DEPENDPATH += .
