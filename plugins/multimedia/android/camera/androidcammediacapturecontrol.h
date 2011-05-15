@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef ANDROIDCAMMEDIACAPTURECONTROL_H
 #define ANDROIDCAMMEDIACAPTURECONTROL_H
 
-#include <QMediaRecorderControl>
+#include <qmediarecordercontrol.h>
 #include <qmediaencodersettings.h>
 #include "androidcamjni.h"
 #include <QtCore/qurl.h>

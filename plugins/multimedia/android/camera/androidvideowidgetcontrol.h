@@ -32,11 +32,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define ANDROIDVIDEOWIDGETCONTROL_H
 
 #include <qvideowidgetcontrol.h>
-#include <QAbstractVideoSurface>
+#include <qabstractvideosurface.h>
 #include <androidvideosurface.h>
 #include <androidcamjni.h>
 #include <QThread>
-#include <QVideoSurfaceFormat>
+#include <qvideosurfaceformat.h>
 #include <QTime>
 QT_BEGIN_NAMESPACE
 class QAbstractVideoSurface;

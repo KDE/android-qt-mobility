@@ -17,8 +17,7 @@ DEPENDPATH += .
 INCLUDEPATH += . \
              $$SOURCE_DIR/src/multimedia \
              $$SOURCE_DIR/src/multimedia/video \
-             $$SOURCE_DIR/src/multimedia/audio \
-             $$SOURCE_DIR/include/QtMultimediaKit
+             $$SOURCE_DIR/src/multimedia/audio
 
 
 

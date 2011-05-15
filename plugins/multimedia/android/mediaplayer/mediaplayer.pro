@@ -12,8 +12,7 @@ INCLUDEPATH+= . \
              ../base/include/ \
              ../hardware/include/ \
              ../ \
-             ../ffmpeg \
-             $$SOURCE_DIR/include/QtMultimediaKit
+             ../ffmpeg
 
 LIBS += -lQtCore -lQtMultimediaKit -L../froyolibs -lcutils -lutils -lmedia -lEGL -L$$SOURCE_DIR/plugins/multimedia/android/ffmpeglibs -lffmpeg
 
