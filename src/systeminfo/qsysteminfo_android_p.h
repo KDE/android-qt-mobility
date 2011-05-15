@@ -78,6 +78,7 @@ public:
     static QString homeMobileNetworkCode();
 
     static QString networkName(QSystemNetworkInfo::NetworkMode mode); //signal
+    QSystemNetworkInfo::CellDataTechnology cellDataTechnology();
     QString macAddress(QSystemNetworkInfo::NetworkMode mode);
 
     static QNetworkInterface interfaceForMode(QSystemNetworkInfo::NetworkMode mode);
@@ -112,7 +113,7 @@ public:
     static int displayBrightness(int screen);
     static int colorDepth(int screen);
 
-    QSystemDisplayInfo::DisplayOrientation getOrientation(int screen);
+    QSystemDisplayInfo::DisplayOrientation orientation(int screen);
     float contrast(int screen);
     int getDPIWidth(int screen);
     int getDPIHeight(int screen);
@@ -190,6 +191,7 @@ public:
     static QString manufacturer();
     static QString model();
     static QString productName();
+    QByteArray uniqueDeviceID() const;
 
     int batteryLevel() const;
     QSystemDeviceInfo::BatteryStatus batteryStatus();
@@ -199,19 +201,24 @@ public:
     QSystemDeviceInfo::Profile currentProfile();
 
     QSystemDeviceInfo::PowerState currentPowerState();
+    QSystemDeviceInfo::ThermalState currentThermalState() const;
 
     bool currentBluetoothPowerState();
 
-    QSystemDeviceInfo::KeyboardTypeFlags keyboardType();
+    QSystemDeviceInfo::KeyboardTypeFlags keyboardTypes();
     bool isWirelessKeyboardConnected();
-    bool isKeyboardFlipOpen();
-    bool keypadLightOn(QSystemDeviceInfo::keypadType type);
-    QUuid hostId();
+    bool isKeyboardFlippedOpen();
+    bool keypadLightOn(QSystemDeviceInfo::KeypadType type);
     QSystemDeviceInfo::LockType lockStatus();
 
     virtual void onBluetoothStateChanged(bool status);
     virtual void onProfileChanged(ProfileMode mode);
     virtual void onDeviceLocked(bool isDeviceLocked);
+
+    int messageRingtoneVolume() const;
+    int voiceRingtoneVolume() const;
+    bool vibrationActive() const;
+
 Q_SIGNALS:
     void batteryLevelChanged(int);
     void batteryStatusChanged(QSystemDeviceInfo::BatteryStatus);
@@ -246,6 +253,7 @@ public:
 
     bool screenSaverInhibited();
     bool setScreenSaverInhibit();
+    void setScreenSaverInhibited(bool on);
 };
 
 class QSystemBatteryInfoPrivate : public QObject,public BatteryInfoUpdateListner

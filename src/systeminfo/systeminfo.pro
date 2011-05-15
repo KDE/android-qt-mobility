@@ -37,11 +37,13 @@ simulator {
 }
 
 android:!simulator{
-    HEADERS += qsysteminfo_android_p.h \
-               jni_android_p.h \
-
     SOURCES += qsysteminfo_android.cpp \
                jni_android.cpp \
+               qsystemalignedtimer_stub.cpp
+
+    HEADERS += qsysteminfo_android_p.h \
+               jni_android_p.h \
+               qsystemalignedtimer_stub_p.h
 }
 
 win32:!simulator {

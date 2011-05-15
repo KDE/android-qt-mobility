@@ -172,10 +172,8 @@ public:
     int indexOfEnumerator(const QByteArray& name);
     int indexOfClassInfo(const QByteArray& name);
 
-    typedef int (*StaticMetacallFunction)(QMetaObject::Call, int, void **);
-
-    QMetaObjectBuilder::StaticMetacallFunction staticMetacallFunction() const;
-    void setStaticMetacallFunction(QMetaObjectBuilder::StaticMetacallFunction value);
+    QMetaObjectExtraData::StaticMetacallFunction staticMetacallFunction() const;
+    void setStaticMetacallFunction(QMetaObjectExtraData::StaticMetacallFunction value);
 
     QMetaObject *toMetaObject() const;
     QByteArray toRelocatableData(bool * = 0) const;

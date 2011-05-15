@@ -57,14 +57,14 @@
 #   include "qgeopositioninfosource_maemo_p.h"
 #elif defined(Q_WS_MAEMO_5)
 #   include "qgeopositioninfosource_maemo5_p.h"
+#elif defined(Q_WS_ANDROID)
+#   include "qgeopositioninfosource_android_p.h"
 #endif
 
 #if defined (Q_WS_MEEGO)
 #include "qgeopositioninfosource_maemo_p.h"
 #if defined (GEOCLUE_MASTER_AVAILABLE)
 #include "qgeopositioninfosource_geocluemaster_p.h"
-#elif defined(Q_WS_ANDROID)
-#   include "qgeopositioninfosource_android_p.h"
 #endif
 #endif
 

@@ -260,7 +260,7 @@ public:
 
     QByteArray className;
     const QMetaObject *superClass;
-    QMetaObjectBuilder::StaticMetacallFunction staticMetacallFunction;
+    QMetaObjectExtraData::StaticMetacallFunction staticMetacallFunction;
     QList<QMetaMethodBuilderPrivate> methods;
     QList<QMetaMethodBuilderPrivate> constructors;
     QList<QMetaPropertyBuilderPrivate> properties;
@@ -1406,7 +1406,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     // Create the extradata block if we need one.
     if (d->relatedMetaObjects.size() > 0 || d->staticMetacallFunction) {
         ALIGN(size, QMetaObject **);
-        ALIGN(size, QMetaObjectBuilder::StaticMetacallFunction);
+        ALIGN(size, QMetaObjectExtraData::StaticMetacallFunction);
         QMetaObjectExtraData *extra =
             reinterpret_cast<QMetaObjectExtraData *>(buf + size);
         size += sizeof(QMetaObjectExtraData);
@@ -1526,7 +1526,7 @@ void QMetaObjectBuilder::fromRelocatableData(QMetaObject *output,
 
     \sa setStaticMetacallFunction()
 */
-QMetaObjectBuilder::StaticMetacallFunction QMetaObjectBuilder::staticMetacallFunction() const
+QMetaObjectExtraData::StaticMetacallFunction QMetaObjectBuilder::staticMetacallFunction() const
 {
     return d->staticMetacallFunction;
 }
@@ -1538,7 +1538,7 @@ QMetaObjectBuilder::StaticMetacallFunction QMetaObjectBuilder::staticMetacallFun
     \sa staticMetacallFunction()
 */
 void QMetaObjectBuilder::setStaticMetacallFunction
-        (QMetaObjectBuilder::StaticMetacallFunction value)
+        (QMetaObjectExtraData::StaticMetacallFunction value)
 {
     d->staticMetacallFunction = value;
 }

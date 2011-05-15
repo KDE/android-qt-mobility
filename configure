@@ -250,10 +250,10 @@ while [ "$#" -gt 0 ]; do
         -meego)
             LINUX_TARGET=meego
             ;;
-          -android)
+        -android)
             LINUX_TARGET=android
-	    ;;
-      -sdk)
+            ;;
+        -sdk)
             MAC_SDK="$2"
             shift
             ;;

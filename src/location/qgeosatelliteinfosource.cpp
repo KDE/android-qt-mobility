@@ -56,14 +56,14 @@
 #   include "qgeosatelliteinfosource_maemo_p.h"
 #elif defined(Q_WS_MAEMO_5)
 #   include "qgeosatelliteinfosource_maemo5_p.h"
+#elif defined(Q_WS_ANDROID)
+#   include "qgeosatelliteinfosource_android_p.h"
 #endif
 
 #if defined(Q_WS_MEEGO)
 #include "qgeosatelliteinfosource_maemo_p.h"
 #if defined(GYPSY_AVAILABLE)
 #include "qgeosatelliteinfosource_gypsy_p.h"
-#elif defined(Q_WS_ANDROID)
-#   include "qgeosatelliteinfosource_android_p.h"
 #endif
 #endif
 

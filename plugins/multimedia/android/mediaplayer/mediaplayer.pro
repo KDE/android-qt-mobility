@@ -1,4 +1,3 @@
-
 TEMPLATE = lib
 CONFIG += plugin
 TARGET = $$qtLibraryTarget(qtmultimediakit_androidmedia)

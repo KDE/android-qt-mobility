@@ -1,3 +1,5 @@
+CONFIG(android): CONFIG -= android_main
+
 # config.pri specifies the configure options and is pulled in via staticconfig.pri
 include(staticconfig.pri)
 !include($$QT_MOBILITY_BUILD_TREE/config.pri) {

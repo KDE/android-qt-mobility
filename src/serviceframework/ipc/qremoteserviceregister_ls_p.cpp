@@ -55,7 +55,9 @@
 #include <sys/types.h>          /* See NOTES */
 
 #ifndef Q_OS_WIN
-#include <sys/un.h>
+# ifndef Q_OS_ANDROID
+# include <sys/un.h>
+# endif
 #include <sys/socket.h>
 #else
 // Needed for ::Sleep, while we wait for a better solution

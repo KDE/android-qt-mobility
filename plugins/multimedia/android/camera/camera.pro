@@ -8,7 +8,7 @@ include (../../../../common.pri)
 
 CONFIG +=       mobility
 MOBILITY +=     multimedia
-QT = core network multimedia
+QT = core network
 
 include(camera.pri)
 

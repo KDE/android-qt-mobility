@@ -131,9 +131,7 @@ QSystemNetworkInfo::NetworkStatus QSystemNetworkInfoPrivate::networkStatus(QSyst
         case QSystemNetworkInfo::CdmaMode:
                 status= (QSystemNetworkInfo::NetworkStatus)QtSystemInfoJni::serviceStatus(mode);
                 break;
-        case QSystemNetworkInfo::GprsMode:
-        case QSystemNetworkInfo::EdgeMode:
-        case QSystemNetworkInfo::HspaMode:
+        case QSystemNetworkInfo::WcdmaMode:
                  status= (QSystemNetworkInfo::NetworkStatus)QtSystemInfoJni::networkStatus(mode);
                  break;
         case QSystemNetworkInfo::WlanMode:
@@ -143,6 +141,9 @@ QSystemNetworkInfo::NetworkStatus QSystemNetworkInfoPrivate::networkStatus(QSyst
         case QSystemNetworkInfo::BluetoothMode:
                 status= (QSystemNetworkInfo::NetworkStatus)QtSystemInfoJni::bluetoothStatus();
                 break;
+#warning FIXME !
+//        case QSystemNetworkInfo::WimaxMode:
+//        case QSystemNetworkInfo::LteMode:
         default:
                status= QSystemNetworkInfo::UndefinedStatus;
                break;
@@ -157,9 +158,7 @@ int QSystemNetworkInfoPrivate::networkSignalStrength(QSystemNetworkInfo::Network
         case QSystemNetworkInfo::WlanMode:
                 strength= QtSystemInfoJni::wifiStrength();
             break;
-        case QSystemNetworkInfo::GprsMode:
-        case QSystemNetworkInfo::EdgeMode:
-        case QSystemNetworkInfo::HspaMode:
+        case QSystemNetworkInfo::WcdmaMode:
         case QSystemNetworkInfo::GsmMode:
         case QSystemNetworkInfo::CdmaMode:
                 strength= (QSystemNetworkInfo::UndefinedStatus!=networkStatus(mode))?
@@ -206,6 +205,12 @@ QString QSystemNetworkInfoPrivate::networkName(QSystemNetworkInfo::NetworkMode m
     netname=QtSystemInfoJni::networkName(mode);
     return netname;
 } //signal
+
+QSystemNetworkInfo::CellDataTechnology QSystemNetworkInfoPrivate::cellDataTechnology()
+{
+#warning FIXME !
+    return QSystemNetworkInfo::UnknownDataTechnology;
+}
 
 QString QSystemNetworkInfoPrivate::macAddress(QSystemNetworkInfo::NetworkMode mode)
 {
@@ -270,7 +275,7 @@ int QSystemDisplayInfoPrivate::colorDepth(int)
     return (int)QtSystemInfoJni::colorDepth();
 }
 
-QSystemDisplayInfo::DisplayOrientation QSystemDisplayInfoPrivate::getOrientation(int)
+QSystemDisplayInfo::DisplayOrientation QSystemDisplayInfoPrivate::orientation(int)
 {
     return (QSystemDisplayInfo::DisplayOrientation)QtSystemInfoJni::orientation();
 }
@@ -571,7 +576,10 @@ QString QSystemDeviceInfoPrivate::productName()
 {
     return QtSystemInfoJni::productName();
 }
-
+QByteArray QSystemDeviceInfoPrivate::uniqueDeviceID() const
+{
+    return imei().toUtf8();
+}
 int QSystemDeviceInfoPrivate::batteryLevel() const
 {
     return m_batteryinfo.remainingCapacityPercent();
@@ -615,6 +623,22 @@ void QSystemDeviceInfoPrivate::onDeviceLocked(bool isDeviceLocked)
     emit deviceLocked(isDeviceLocked);
 }
 
+int QSystemDeviceInfoPrivate::messageRingtoneVolume() const
+{
+#warning FIXME !
+    return 100;
+}
+int QSystemDeviceInfoPrivate::voiceRingtoneVolume() const
+{
+#warning FIXME !
+    return 100;
+}
+bool QSystemDeviceInfoPrivate::vibrationActive() const
+{
+#warning FIXME !
+    return true;
+}
+
 QSystemDeviceInfo::SimStatus QSystemDeviceInfoPrivate::simStatus()
 {
     return (QSystemDeviceInfo::SimStatus)QtSystemInfoJni::simStatus();
@@ -650,6 +674,12 @@ QSystemDeviceInfo::PowerState QSystemDeviceInfoPrivate::currentPowerState()
                  break;
     }
     return state;
+}
+
+QSystemDeviceInfo::ThermalState QSystemDeviceInfoPrivate::currentThermalState() const
+{
+#warning FIXME !
+    return QSystemDeviceInfo::UnknownThermal;
 }
 
 void QSystemDeviceInfoPrivate::powerStateChanged(QSystemBatteryInfo::ChargerType chargerType)
@@ -717,7 +747,7 @@ void QSystemDeviceInfoPrivate::onBluetoothStateChanged(bool status)
     emit bluetoothStateChanged(status);
 }
 
-QSystemDeviceInfo::KeyboardTypeFlags QSystemDeviceInfoPrivate::keyboardType()
+QSystemDeviceInfo::KeyboardTypeFlags QSystemDeviceInfoPrivate::keyboardTypes()
 {
     return (QSystemDeviceInfo::KeyboardTypeFlags)QtSystemInfoJni::keyboardType();
 }
@@ -725,17 +755,14 @@ bool QSystemDeviceInfoPrivate::isWirelessKeyboardConnected()
 {
     return false;
 }
-bool QSystemDeviceInfoPrivate::isKeyboardFlipOpen()
+bool QSystemDeviceInfoPrivate::isKeyboardFlippedOpen()
 {
-    return  QtSystemInfoJni::isKeyboardFlipOpened ();
+    return  QtSystemInfoJni::isKeyboardFlipOpened();
 }
-bool QSystemDeviceInfoPrivate::keypadLightOn(QSystemDeviceInfo::keypadType)
+
+bool QSystemDeviceInfoPrivate::keypadLightOn(QSystemDeviceInfo::KeypadType)
 {
     return false;
-}
-QUuid QSystemDeviceInfoPrivate::hostId()
-{
-    return 0;
 }
 
 QSystemDeviceInfo::LockType QSystemDeviceInfoPrivate::lockStatus()
@@ -759,6 +786,18 @@ bool QSystemScreenSaverPrivate::setScreenSaverInhibit()
     m_screenSaverSet=true;
     QtSystemInfoJni::setScreenSaverInhibit();
     return m_screenSaverSet;
+}
+
+void QSystemScreenSaverPrivate::setScreenSaverInhibited(bool on)
+{
+#warning FIXME !
+//    if(m_screenSaverSet)
+//    {
+//        return m_screenSaverSet;
+//    }
+//    m_screenSaverSet=true;
+//    QtSystemInfoJni::setScreenSaverInhibit();
+//    return m_screenSaverSet;
 }
 
 bool QSystemScreenSaverPrivate::screenSaverInhibited()
