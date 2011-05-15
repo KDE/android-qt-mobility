@@ -260,6 +260,7 @@ QGeoSatelliteInfoSource::QGeoSatelliteInfoSource(QObject *parent)
 
     Note: Symbian applications will need to have the Location capability
     otherwise this will return 0.
+    \since 1.0
 */
 QGeoSatelliteInfoSource *QGeoSatelliteInfoSource::createDefaultSource(QObject *parent)
 {
@@ -358,6 +359,7 @@ QStringList QGeoSatelliteInfoSource::availableSources()
     currently in view.
 
     The \a satellites parameter holds the satellites currently in view.
+    \since 1.0
 */
 
 /*!
@@ -371,6 +373,7 @@ QStringList QGeoSatelliteInfoSource::availableSources()
     is, those used to determine the current position.
 
     The \a satellites parameter holds the satellites currently in use.
+    \since 1.0
 */
 
 /*!
@@ -379,6 +382,7 @@ QStringList QGeoSatelliteInfoSource::availableSources()
     Starts emitting updates at regular intervals. The updates will be
     provided whenever new satellite information becomes available.
 
+    \since 1.0
     \sa satellitesInViewUpdated(), satellitesInUseUpdated()
 */
 
@@ -386,6 +390,7 @@ QStringList QGeoSatelliteInfoSource::availableSources()
     \fn virtual void QGeoSatelliteInfoSource::stopUpdates() = 0;
 
     Stops emitting updates at regular intervals.
+    \since 1.0
 */
 
 /*!
@@ -403,6 +408,7 @@ QStringList QGeoSatelliteInfoSource::availableSources()
     This does nothing if another update request is in progress. However
     it can be called even if startUpdates() has already been called and
     regular updates are in progress.
+    \since 1.0
 */
 
 /*!
@@ -410,6 +416,7 @@ QStringList QGeoSatelliteInfoSource::availableSources()
 
     Emitted if requestUpdate() was called and the current satellite
     information could not be retrieved within the specified timeout.
+    \since 1.0
 */
 
 #include "moc_qgeosatelliteinfosource.cpp"
