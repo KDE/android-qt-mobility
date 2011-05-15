@@ -29,6 +29,7 @@ PKGCONFIG += \
     gstreamer-video-0.10
 
 maemo*:PKGCONFIG +=gstreamer-plugins-bad-0.10
+contains(gstreamer-appsrc_enabled, yes): PKGCONFIG += gstreamer-app-0.10
 
 maemo5 {
   HEADERS += camerabuttonlistener_maemo.h
@@ -42,6 +43,13 @@ maemo6 {
     SOURCES += camerabuttonlistener_meego.cpp
 
     PKGCONFIG += qmsystem2 libresourceqt1
+
+    isEqual(QT_ARCH,armv6) {
+        HEADERS += qgstreamergltexturerenderer.h
+        SOURCES += qgstreamergltexturerenderer.cpp
+        QT += opengl
+        LIBS += -lEGL -lgstmeegointerfaces-0.10
+    }
 }
 
 # Input
@@ -55,7 +63,9 @@ HEADERS += \
     qgstvideobuffer.h \
     qvideosurfacegstsink.h \
     qgstreamervideoinputdevicecontrol.h \
-    gstvideoconnector.h
+    gstvideoconnector.h \
+    qabstractgstbufferpool.h \
+    qgstutils.h
 
 SOURCES += \
     qgstreamermessage.cpp \
@@ -67,10 +77,11 @@ SOURCES += \
     qgstvideobuffer.cpp \
     qvideosurfacegstsink.cpp \
     qgstreamervideoinputdevicecontrol.cpp \
-    gstvideoconnector.c
+    gstvideoconnector.c \
+    qgstutils.cpp
 
 
-!win32:!embedded:!mac:!symbian:!simulator {
+!win32:!contains(QT_CONFIG,embedded):!mac:!symbian:!simulator:!contains(QT_CONFIG, qpa) {
     LIBS += -lXv -lX11 -lXext
 
     HEADERS += \

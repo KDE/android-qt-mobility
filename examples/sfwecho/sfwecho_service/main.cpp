@@ -63,11 +63,8 @@ public slots:
     {
         emit broadcastMessage(msg, QDateTime::currentDateTime());
     }
-
 private:
-
 };
-
 
 void unregisterExampleService()
 {

@@ -122,7 +122,6 @@
    \qmlclass DetailFilter QDeclarativeContactDetailFilter
    \brief The \l DetailFilter element provides a filter based around a detail value criterion.
 
-   \qmlmodule contacts
    \ingroup qml-contacts
 
    This element is part of the \bold{QtMobility.contacts 1.1} module.
@@ -262,7 +261,7 @@
  */
 
 /*!
-  \qmlproperty QDeclarativeListProperty IntersectionFilter::filters
+  \qmlproperty list<Filter> IntersectionFilter::filters
 
   This property holds the list of filters which form the intersection filter.
   */
@@ -280,7 +279,7 @@
  */
 
 /*!
-  \qmlproperty QDeclarativeListProperty UnionFilter::filters
+  \qmlproperty list<Filter> UnionFilter::filters
 
   This property holds the list of filters which form the union filter.
   */
@@ -353,3 +352,40 @@
 
    \sa QContactInvalidFilter
  */
+
+QDeclarativeListProperty<QDeclarativeContactFilter> QDeclarativeContactCompoundFilter::filters()
+{
+    return QDeclarativeListProperty<QDeclarativeContactFilter>(this,
+                                                          0, // opaque data parameter
+                                                          filters_append,
+                                                          filters_count,
+                                                          filters_at,
+                                                          filters_clear);
+}
+
+void QDeclarativeContactCompoundFilter::filters_append(QDeclarativeListProperty<QDeclarativeContactFilter>* prop, QDeclarativeContactFilter* filter)
+{
+    QDeclarativeContactCompoundFilter* compoundFilter = static_cast<QDeclarativeContactCompoundFilter*>(prop->object);
+    compoundFilter->m_filters.append(filter);
+    QObject::connect(filter, SIGNAL(filterChanged()), compoundFilter, SIGNAL(filterChanged()));
+    emit compoundFilter->filterChanged();
+}
+
+int QDeclarativeContactCompoundFilter::filters_count(QDeclarativeListProperty<QDeclarativeContactFilter>* prop)
+{
+    // The 'prop' is in a sense 'this' for this static function (as given in filters() function)
+    return static_cast<QDeclarativeContactCompoundFilter*>(prop->object)->m_filters.count();
+}
+
+QDeclarativeContactFilter* QDeclarativeContactCompoundFilter::filters_at(QDeclarativeListProperty<QDeclarativeContactFilter>* prop, int index)
+{
+    return static_cast<QDeclarativeContactCompoundFilter*>(prop->object)->m_filters.at(index);
+}
+
+void QDeclarativeContactCompoundFilter::filters_clear(QDeclarativeListProperty<QDeclarativeContactFilter>* prop)
+{
+    QDeclarativeContactCompoundFilter* filter = static_cast<QDeclarativeContactCompoundFilter*>(prop->object);
+    qDeleteAll(filter->m_filters);
+    filter->m_filters.clear();
+    emit filter->filterChanged();
+}

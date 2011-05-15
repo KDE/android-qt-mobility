@@ -51,12 +51,16 @@ Q_DEFINE_LATIN1_CONSTANT(QVersitOrganizerHandlerFactory::ProfileBackup, "Backup"
   \brief The QVersitOrganizerHandler class is a union of the
   QVersitOrganizerImporterPropertyHandlerV2 and QVersitOrganizerExporterDetailHandlerV2 interfaces.
   \ingroup versit-extension
+  \inmodule QtVersit
+  \since 1.1
  */
 
 /*!
   \class QVersitOrganizerHandlerFactory
   \brief The QVersitOrganizerHandlerFactory class provides the interface for Versit plugins.
   \ingroup versit-extension
+  \inmodule QtVersit
+    \since 1.2
 
   This class provides a simple interface for the creation of QVersitOrganizerHandler instances.
   Implement this interface to write a Versit plugin.  For more details, see \l{Versit Plugins}.

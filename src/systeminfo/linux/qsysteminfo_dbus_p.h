@@ -42,81 +42,65 @@
 #ifndef QSYSTEMINFO_DBUS_P_H
 #define QSYSTEMINFO_DBUS_P_H
 
+#if !defined(QT_NO_HAL)
 static bool halAvailable()
 {
-#if !defined(QT_NO_DBUS)
-    QDBusConnection dbusConnection = QDBusConnection::systemBus();
-    if (dbusConnection.isConnected()) {
-        QDBusConnectionInterface *dbiface = dbusConnection.interface();
-        QDBusReply<bool> reply = dbiface->isServiceRegistered("org.freedesktop.Hal");
+    if (QDBusConnection::systemBus().isConnected()) {
+        QDBusReply<bool> reply = QDBusConnection::systemBus().interface()->isServiceRegistered("org.freedesktop.Hal");
         if (reply.isValid() && reply.value()) {
             return reply.value();
         }
     }
-#endif
     return false;
 }
+#endif // QT_NO_HAL
 
+#if !defined(QT_NO_UDISKS)
 static bool udisksAvailable()
 {
-#if !defined(QT_NO_DBUS)
-    QDBusConnection dbusConnection = QDBusConnection::systemBus();
-    if (dbusConnection.isConnected()) {
-        QDBusConnectionInterface *dbiface = dbusConnection.interface();
-        QDBusReply<bool> reply = dbiface->isServiceRegistered("org.freedesktop.UDisks");
+    if (QDBusConnection::systemBus().isConnected()) {
+        QDBusReply<bool> reply = QDBusConnection::systemBus().interface()->isServiceRegistered("org.freedesktop.UDisks");
         if (reply.isValid() && reply.value()) {
             return reply.value();
         }
     }
-#endif
     return false;
 }
+#endif // QT_NO_UDISKS
 
-
-static bool connmanAvailable()
+#if !defined(QT_NO_UPOWER)
+static bool uPowerAvailable()
 {
-#if !defined(QT_NO_DBUS)
-    QDBusConnection dbusConnection = QDBusConnection::systemBus();
-    if (dbusConnection.isConnected()) {
-        QDBusConnectionInterface *dbiface = dbusConnection.interface();
-        QDBusReply<bool> reply = dbiface->isServiceRegistered("org.moblin.connman");
+    if (QDBusConnection::systemBus().isConnected()) {
+        QDBusReply<bool> reply = QDBusConnection::systemBus().interface()->isServiceRegistered("org.freedesktop.UPower");
         if (reply.isValid() && reply.value()) {
             return reply.value();
         }
     }
-#endif
+    return false;
+}
+#endif // QT_NO_UPOWER
+
+#if !defined(QT_NO_CONNMAN)
+static bool connmanAvailable()
+{
+    if (QDBusConnection::systemBus().isConnected()) {
+        QDBusReply<bool> reply = QDBusConnection::systemBus().interface()->isServiceRegistered("net.connman");
+        if (reply.isValid() && reply.value())
+            return reply.value();
+    }
     return false;
 }
 
 static bool ofonoAvailable()
 {
-#if !defined(QT_NO_DBUS)
-    QDBusConnection dbusConnection = QDBusConnection::systemBus();
-    if (dbusConnection.isConnected()) {
-        QDBusConnectionInterface *dbiface = dbusConnection.interface();
-        QDBusReply<bool> reply = dbiface->isServiceRegistered("org.ofono");
-        if (reply.isValid() && reply.value()) {
+    if (QDBusConnection::systemBus().isConnected()) {
+        QDBusReply<bool> reply = QDBusConnection::systemBus().interface()->isServiceRegistered("org.ofono");
+        if (reply.isValid() && reply.value())
             return reply.value();
-        }
     }
-#endif
     return false;
 }
-
-
-static bool uPowerAvailable()
-{
-#if !defined(QT_NO_DBUS)
-    QDBusConnection dbusConnection = QDBusConnection::systemBus();
-    if (dbusConnection.isConnected()) {
-        QDBusConnectionInterface *dbiface = dbusConnection.interface();
-        QDBusReply<bool> reply = dbiface->isServiceRegistered("org.freedesktop.UPower");
-        if (reply.isValid() && reply.value()) {
-            return reply.value();
-        }
-    }
-#endif
-    return false;
-}
+#endif // QT_NO_CONNMAN
 
 #endif // QSYSTEMINFO_DBUS_P_H

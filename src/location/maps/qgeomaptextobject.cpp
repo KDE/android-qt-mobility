@@ -50,6 +50,7 @@ QTM_BEGIN_NAMESPACE
     text on a map.
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup maps-mapping-objects
 
@@ -63,14 +64,18 @@ QTM_BEGIN_NAMESPACE
     Constructs a new text object.
 */
 QGeoMapTextObject::QGeoMapTextObject()
-    : d_ptr(new QGeoMapTextObjectPrivate()) {}
+    : d_ptr(new QGeoMapTextObjectPrivate())
+{
+    setUnits(QGeoMapObject::PixelUnit);
+}
 
 /*!
     Constructs a new text object which will display the text \a text with font
     \a font at the coordinate \a coordinate on the map.
 
-    The text will be displayed at an on-screen offset from the coordinate of \a 
+    The text will be displayed at an on-screen offset from the coordinate of \a
     offset pixels, and will be aligned according to \a alignment.
+    \since 1.1
 */
 QGeoMapTextObject::QGeoMapTextObject(const QGeoCoordinate &coordinate,
                                      const QString &text,
@@ -79,11 +84,12 @@ QGeoMapTextObject::QGeoMapTextObject(const QGeoCoordinate &coordinate,
                                      Qt::Alignment alignment)
     : d_ptr(new QGeoMapTextObjectPrivate())
 {
-    d_ptr->coordinate = coordinate;
+    setOrigin(coordinate);
     d_ptr->text = text;
     d_ptr->font = font;
     d_ptr->offset = offset;
     d_ptr->alignment = alignment;
+    setUnits(QGeoMapObject::PixelUnit);
 }
 
 /*!
@@ -96,6 +102,7 @@ QGeoMapTextObject::~QGeoMapTextObject()
 
 /*!
     \reimp
+    \since 1.1
 */
 QGeoMapObject::Type QGeoMapTextObject::type() const
 {
@@ -114,17 +121,18 @@ QGeoMapObject::Type QGeoMapTextObject::type() const
     the text will be drawn so that it is centered both horizontally and
     vertically around the position of QGeoMapTextObject::coordinate on the
     screen.
+    \since 1.1
 */
 QGeoCoordinate QGeoMapTextObject::coordinate() const
 {
-    return d_ptr->coordinate;
+    return origin();
 }
 
 void QGeoMapTextObject::setCoordinate(const QGeoCoordinate &coordinate)
 {
-    if (d_ptr->coordinate != coordinate) {
-        d_ptr->coordinate = coordinate;
-        emit coordinateChanged(d_ptr->coordinate);
+    if (origin() != coordinate) {
+        setOrigin(coordinate);
+        emit coordinateChanged(coordinate);
     }
 }
 
@@ -134,6 +142,7 @@ void QGeoMapTextObject::setCoordinate(const QGeoCoordinate &coordinate)
     object.
 
     The default value of this property is an empty string.
+    \since 1.1
 */
 QString QGeoMapTextObject::text() const
 {
@@ -144,7 +153,7 @@ void QGeoMapTextObject::setText(const QString &text)
 {
     if (d_ptr->text != text) {
         d_ptr->text = text;
-        emit textChanged(d_ptr->text);
+        emit textChanged(text);
     }
 }
 
@@ -158,6 +167,7 @@ void QGeoMapTextObject::setText(const QString &text)
     It is not necessary to account for the zoom level of the map, since text
     objects are scaled such that they appear to be independent of the zoom
     level.
+    \since 1.1
 */
 QFont QGeoMapTextObject::font() const
 {
@@ -168,7 +178,7 @@ void QGeoMapTextObject::setFont(const QFont &font)
 {
     if (d_ptr->font != font) {
         d_ptr->font = font;
-        emit fontChanged(d_ptr->font);
+        emit fontChanged(font);
     }
 }
 
@@ -181,6 +191,7 @@ void QGeoMapTextObject::setFont(const QFont &font)
 
     The pen will be treated as a cosmetic pen, which means that the width
     of the pen will be independent of the zoom level of the map.
+    \since 1.1
 */
 QPen QGeoMapTextObject::pen() const
 {
@@ -196,7 +207,7 @@ void QGeoMapTextObject::setPen(const QPen &pen)
         return;
 
     d_ptr->pen = newPen;
-    emit penChanged(d_ptr->pen);
+    emit penChanged(pen);
 }
 
 /*!
@@ -207,6 +218,7 @@ void QGeoMapTextObject::setPen(const QPen &pen)
 
     The outline around the perimeter of the glyphs is drawn using the
     QGeoMapTextObject::pen property.
+    \since 1.1
 */
 QBrush QGeoMapTextObject::brush() const
 {
@@ -217,7 +229,7 @@ void QGeoMapTextObject::setBrush(const QBrush &brush)
 {
     if (d_ptr->brush != brush) {
         d_ptr->brush = brush;
-        emit brushChanged(d_ptr->brush);
+        emit brushChanged(brush);
     }
 }
 
@@ -228,17 +240,19 @@ void QGeoMapTextObject::setBrush(const QBrush &brush)
     drawing this text object.
 
     The default value of this property is QPoint(0,0).
+    \since 1.1
 */
 QPoint QGeoMapTextObject::offset() const
 {
-    return d_ptr->offset;
+    return QPoint(d_ptr->offset.x(), d_ptr->offset.y());
 }
 
-void QGeoMapTextObject::setOffset(const QPoint &offset)
+void QGeoMapTextObject::setOffset(const QPoint &off)
 {
-    if (d_ptr->offset != offset) {
-        d_ptr->offset = offset;
-        emit offsetChanged(d_ptr->offset);
+    QPointF offset = off;
+    if (d_ptr->offset != off) {
+        d_ptr->offset = off;
+        emit offsetChanged(off);
     }
 }
 
@@ -252,8 +266,30 @@ void QGeoMapTextObject::setOffset(const QPoint &offset)
     QGeoMapTextObject::offset pixels away from the position of
     QGeoMapTextObject::coordinate on the screen.
 
+    Using
+    \code
+    textObject->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    \endcode
+    will place the text so that the point halway up the left edge of
+    the text is at the anchor point defined by
+    QGeoMapTextObject::offset and QGeoMapTextObject::coordinate.
+
+    The alignment property is a flag, so using
+    \code
+    textObject->setAlignment(Qt::AlignLeft);
+    \endcode
+    may alter the vertical alignment as well.
+
+    The Qt::AlignVertical_Mask and Qt::AlignHorizontal_Mask enum
+    values can be used to alter one component of the alignment
+    independent of the other.
+    \code
+    textObject->setAlignment(Qt::AlignLeft | (textObject->alignment() & Qt::AlignVertical_Mask));
+    \endcode
+
     The alignment does not take the width of QGeoMapTextObject::pen into
     consideration.
+    \since 1.1
 */
 Qt::Alignment QGeoMapTextObject::alignment() const
 {
@@ -271,37 +307,41 @@ void QGeoMapTextObject::setAlignment(Qt::Alignment alignment)
 /*!
 \fn void QGeoMapTextObject::coordinateChanged(const QGeoCoordinate &coordinate)
 
-    This signal is emitted when the coordinate at which this text 
+    This signal is emitted when the coordinate at which this text
     object will be drawn has changed.
 
     The new value is \a coordinate.
+    \since 1.1
 */
 
 /*!
 \fn void QGeoMapTextObject::textChanged(const QString &text)
 
-    This signal is emitted when the text to be drawn by this text object 
+    This signal is emitted when the text to be drawn by this text object
     has changed.
 
     The new value is \a text.
+    \since 1.1
 */
 
 /*!
 \fn void QGeoMapTextObject::fontChanged(const QFont &font)
 
-    This signal is emitted when the font use to draw this text object 
+    This signal is emitted when the font use to draw this text object
     has changed.
 
     The new value is \a font.
+    \since 1.1
 */
 
 /*!
 \fn void QGeoMapTextObject::penChanged(const QPen &pen)
 
-    This signal is emitted when the pen used to draw the outline of the 
+    This signal is emitted when the pen used to draw the outline of the
     letters for this text object has changed.
 
     The new value is \a pen.
+    \since 1.1
 */
 
 /*!
@@ -311,15 +351,17 @@ void QGeoMapTextObject::setAlignment(Qt::Alignment alignment)
     letters for this text object has changed.
 
     The new value is \a brush.
+    \since 1.1
 */
 
 /*!
 \fn void QGeoMapTextObject::offsetChanged(const QPoint &offset)
 
-    This signal is emitted when the on screen offset from the coordinate at 
+    This signal is emitted when the on screen offset from the coordinate at
     which this text object will be drawn has changed.
 
     The new value is \a offset.
+    \since 1.1
 */
 
 /*!
@@ -328,12 +370,14 @@ void QGeoMapTextObject::setAlignment(Qt::Alignment alignment)
     This signal is emitted when the alignment of this text object has changed.
 
     The new value is \a alignment.
+    \since 1.1
 */
 
 /*******************************************************************************
 *******************************************************************************/
 
-QGeoMapTextObjectPrivate::QGeoMapTextObjectPrivate()
+QGeoMapTextObjectPrivate::QGeoMapTextObjectPrivate() :
+    offset(0, 0)
 {
     pen.setCosmetic(true);
     alignment = Qt::AlignCenter;

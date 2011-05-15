@@ -44,9 +44,11 @@
 
 #include "qmediaobject.h"
 #include "qmediacontent.h"
+#include <qmediaenumdebug.h>
 
 QT_BEGIN_NAMESPACE
 
+class QAbstractVideoSurface;
 class QGraphicsVideoItem;
 class QMediaPlaylist;
 class QVideoWidget;
@@ -92,6 +94,7 @@ public:
 
     void setVideoOutput(QVideoWidget *widget);
     void setVideoOutput(QGraphicsVideoItem *item);
+    void setVideoOutput(QAbstractVideoSurface *surface);
 
     bool bind(QObject *);
     void unbind(QObject *);
@@ -122,5 +125,11 @@ private:
 };
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QMediaImageViewer::State)
+Q_DECLARE_METATYPE(QMediaImageViewer::MediaStatus)
+
+Q_MEDIA_ENUM_DEBUG(QMediaImageViewer, State)
+Q_MEDIA_ENUM_DEBUG(QMediaImageViewer, MediaStatus)
 
 #endif

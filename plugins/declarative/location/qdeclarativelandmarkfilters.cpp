@@ -47,7 +47,7 @@ QTM_BEGIN_NAMESPACE
 /*!
     \qmlclass LandmarkNameFilter QDeclarativeLandmarkNameFilter
     \brief The LandmarkNameFilter element specifies a name filter for landmark model.
-    \ingroup qml-location
+    \ingroup qml-location-landmarks
 
     The LandmarkNameFilter element specifies a name filter for landmark model.
     Logical combinations of this and other landmark filters can be
@@ -102,7 +102,7 @@ QLandmarkFilter* QDeclarativeLandmarkNameFilter::filter()
 /*!
     \qmlclass LandmarkCategoryFilter QDeclarativeLandmarkCategoryFilter
     \brief The LandmarkCategoryFilter element specifies a category filter for landmark model.
-    \ingroup qml-location
+    \ingroup qml-location-landmarks
 
     This element is part of the \bold{QtMobility.location 1.1} module.
 
@@ -150,7 +150,7 @@ QLandmarkFilter* QDeclarativeLandmarkCategoryFilter::filter()
 /*!
     \qmlclass LandmarkBoxFilter QDeclarativeLandmarkBoxFilter
     \brief The LandmarkBoxFilter element specifies a box (rectangle) filter for landmark model.
-    \ingroup qml-location
+    \ingroup qml-location-landmarks
 
     This element is part of the \bold{QtMobility.location 1.1} module.
 
@@ -188,7 +188,11 @@ QDeclarativeCoordinate* QDeclarativeLandmarkBoxFilter::topLeft() const
 
 void QDeclarativeLandmarkBoxFilter::setTopLeft(QDeclarativeCoordinate* coordinate)
 {
+    if (m_topLeft == coordinate)
+        return;
+
     m_topLeft = coordinate;
+
     if (m_topLeft && m_bottomRight)
         m_filter.setBoundingBox(QGeoBoundingBox(m_topLeft->coordinate(), m_bottomRight->coordinate()));
     emit topLeftChanged();
@@ -207,6 +211,9 @@ QDeclarativeCoordinate* QDeclarativeLandmarkBoxFilter::bottomRight() const
 
 void QDeclarativeLandmarkBoxFilter::setBottomRight(QDeclarativeCoordinate* coordinate)
 {
+    if (m_bottomRight == coordinate)
+        return;
+
     m_bottomRight = coordinate;
     if (m_topLeft && m_bottomRight)
         m_filter.setBoundingBox(QGeoBoundingBox(m_topLeft->coordinate(), m_bottomRight->coordinate()));
@@ -224,7 +231,7 @@ QLandmarkFilter* QDeclarativeLandmarkBoxFilter::filter()
 /*!
     \qmlclass LandmarkProximityFilter QDeclarativeLandmarkProximityFilter
     \brief The LandmarkProximityFilter element specifies a proximity filter for landmark model.
-    \ingroup qml-location
+    \ingroup qml-location-landmarks
 
     The LandmarkProximityFilter element specifies a proximity filter for landmark model.
     Logical combinations of this and other landmark filters can be
@@ -285,9 +292,14 @@ QDeclarativeCoordinate* QDeclarativeLandmarkProximityFilter::center() const
 
 void QDeclarativeLandmarkProximityFilter::setCenter(QDeclarativeCoordinate* coordinate)
 {
+    if (m_coordinate == coordinate)
+        return;
     m_coordinate = coordinate;
-    QObject::connect(m_coordinate, SIGNAL(latitudeChanged(double)), this, SIGNAL(filterContentChanged()));
-    QObject::connect(m_coordinate, SIGNAL(longitudeChanged(double)), this, SIGNAL(filterContentChanged()));
+
+    if (m_coordinate) {
+        QObject::connect(m_coordinate, SIGNAL(latitudeChanged(double)), this, SIGNAL(filterContentChanged()));
+        QObject::connect(m_coordinate, SIGNAL(longitudeChanged(double)), this, SIGNAL(filterContentChanged()));
+    }
     emit centerChanged();
     emit filterContentChanged();
 }
@@ -374,7 +386,7 @@ template <class T>
 /*!
     \qmlclass LandmarkUnionFilter QDeclarativeLandmarkUnionFilter
     \brief The LandmarkUnionFilter element specifies a union of landmark filters.
-    \ingroup qml-location
+    \ingroup qml-location-landmarks
 
     This element is part of the \bold{QtMobility.location 1.1} module.
 
@@ -403,7 +415,7 @@ QDeclarativeLandmarkUnionFilter::QDeclarativeLandmarkUnionFilter(QObject* parent
 /*!
     \qmlclass LandmarkIntersectionFilter QDeclarativeLandmarkIntersectionFilter
     \brief The LandmarkIntersectionFilter element specifies an insection of landmark filters.
-    \ingroup qml-location
+    \ingroup qml-location-landmarks
 
     This element is part of the \bold{QtMobility.location 1.1} module.
 

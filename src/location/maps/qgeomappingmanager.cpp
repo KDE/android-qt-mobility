@@ -54,6 +54,7 @@ QTM_BEGIN_NAMESPACE
     and interacting with maps.
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup maps-mapping
 
@@ -110,6 +111,7 @@ QGeoMappingManager::~QGeoMappingManager()
 
     The combination of managerName() and managerVersion() should be unique
     amongst the plugin implementations.
+    \since 1.1
 */
 QString QGeoMappingManager::managerName() const
 {
@@ -122,6 +124,7 @@ QString QGeoMappingManager::managerName() const
 
     The combination of managerName() and managerVersion() should be unique
     amongst the plugin implementations.
+    \since 1.1
 */
 int QGeoMappingManager::managerVersion() const
 {
@@ -130,6 +133,7 @@ int QGeoMappingManager::managerVersion() const
 
 /*!
     Returns a new QGeoMapData instance which will be managed by this manager.
+    \since 1.1
 */
 QGeoMapData* QGeoMappingManager::createMapData()
 {
@@ -138,6 +142,7 @@ QGeoMapData* QGeoMappingManager::createMapData()
 
 /*!
     Returns a list of the map types supported by this manager.
+    \since 1.1
 */
 QList<QGraphicsGeoMap::MapType> QGeoMappingManager::supportedMapTypes() const
 {
@@ -146,6 +151,7 @@ QList<QGraphicsGeoMap::MapType> QGeoMappingManager::supportedMapTypes() const
 
 /*!
     Returns a list of the connectivity modes supported by this manager.
+    \since 1.1
 */
 QList<QGraphicsGeoMap::ConnectivityMode> QGeoMappingManager::supportedConnectivityModes() const
 {
@@ -157,6 +163,7 @@ QList<QGraphicsGeoMap::ConnectivityMode> QGeoMappingManager::supportedConnectivi
 
     Larger values of the zoom level correspond to more detailed views of the
     map.
+    \since 1.1
 */
 qreal QGeoMappingManager::minimumZoomLevel() const
 {
@@ -168,10 +175,66 @@ qreal QGeoMappingManager::minimumZoomLevel() const
 
     Larger values of the zoom level correspond to more detailed views of the
     map.
+    \since 1.1
 */
 qreal QGeoMappingManager::maximumZoomLevel() const
 {
     return d_ptr->engine->maximumZoomLevel();
+}
+
+/*!
+    Return whether bearing is supported by this manager.
+    \since 1.2
+*/
+bool QGeoMappingManager::supportsBearing() const
+{
+    return d_ptr->engine->supportsBearing();
+}
+
+/*!
+    Return whether tilting is supported by this manager.
+    \since 1.2
+*/
+bool QGeoMappingManager::supportsTilting() const
+{
+    return d_ptr->engine->supportsTilting();
+}
+
+/*!
+    Returns minimum tilt supported by this manager.
+
+    Value in degrees where 0 is equivalent to 90 degrees between view and earth's
+    surface i.e. looking straight down to earth.
+    \since 1.2
+*/
+qreal QGeoMappingManager::minimumTilt() const
+{
+    return d_ptr->engine->minimumTilt();
+}
+
+/*!
+    Returns maximum tilt supported by this manager.
+
+    Value in degrees where 0 is equivalent to 90 degrees between view and earth's
+    surface i.e. looking straight down to earth.
+    \since 1.2
+*/
+qreal QGeoMappingManager::maximumTilt() const
+{
+    return d_ptr->engine->maximumTilt();
+}
+
+/*!
+    Returns whether custom map objects are supported by this engine.
+
+    Custom map objects are map objects based on QGraphicsItem instances, which
+    are hard to support in cases where the map rendering is not being
+    performed by the Qt Graphics View framwork.
+    \since 1.2
+*/
+bool QGeoMappingManager::supportsCustomMapObjects() const
+{
+    return d_ptr->engine->supportsCustomMapObjects();
 }
 
 /*!
@@ -181,6 +244,7 @@ qreal QGeoMappingManager::maximumZoomLevel() const
     in different languages, they will be returned in the language of \a locale.
 
     The locale used defaults to the system locale if this is not set.
+    \since 1.1
 */
 void QGeoMappingManager::setLocale(const QLocale &locale)
 {
@@ -190,6 +254,7 @@ void QGeoMappingManager::setLocale(const QLocale &locale)
 /*!
     Returns the locale used to hint to this mapping manager about what
     language to use for map labels.
+    \since 1.1
 */
 QLocale QGeoMappingManager::locale() const
 {

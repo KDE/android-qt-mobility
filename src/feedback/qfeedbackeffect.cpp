@@ -54,6 +54,7 @@ QTM_BEGIN_NAMESPACE
     \brief The QFeedbackEffect class is the abstract base class for feedback effects.
     \ingroup feedback
     \inmodule QtFeedback
+    \since 1.1
 
     It represents an effect to provide feedback to a person (i.e., an effect that
     affect human senses). The technology available today usually only
@@ -65,7 +66,8 @@ QTM_BEGIN_NAMESPACE
 
     Feedback effects have a duration, which is measured in
     milliseconds. Subclasses reimplement duration() to inform how long
-    the effect lasts.
+    the effect lasts.  The duration is the total time the effect will
+    last, and thus includes any envelope modifiers (attack and fade).
 
     At any given time, a feedback effect is in one of four states:
     Loading, Stopped, Running, or Paused. See the
@@ -74,7 +76,8 @@ QTM_BEGIN_NAMESPACE
     state an effect is in, and setState() to receive state change
     requests. The start(), pause(), and stop() slots calls
     setState() with the corresponding new \l{QFeedbackEffect::}{State}.  Changes
-    in state are reported through the stateChanged() signal.
+    in state are reported through the stateChanged() signal and may happen
+    asynchronously some time after the state change request.
 
     A system often has a set of standard feedback effects for user
     interface interaction (e.g., button clicks). The
@@ -98,6 +101,7 @@ QTM_BEGIN_NAMESPACE
     This signal is emitted by subclasses if an \a error occurred during
     playback of an effect. The \l{QFeedbackEffect::}{ErrorType} enum
     describes the errors that can be reported.
+    \since 1.1
 */
 
 /*!
@@ -106,6 +110,7 @@ QTM_BEGIN_NAMESPACE
     This signal is emitted by subclasses when the \l State of the
     effect changes.
 
+    \since 1.1
     \sa state()
 */
 
@@ -216,7 +221,7 @@ QTM_BEGIN_NAMESPACE
     In some cases the duration will be unknown, which will be reported as 0.  If the duration
     is infinite, QFeedbackEffect::Infinite will be returned.  Some subclasses may have
     more than one type of duration (for example, \l QFeedbackHapticsEffect), and this
-    property will only return the duration of the main part of the effect.
+    property will return the total duration of the effect.
 */
 
 /*!
@@ -235,6 +240,7 @@ QFeedbackEffect::QFeedbackEffect(QObject *parent) : QObject(parent)
     error() signal will be emitted.
 
     \sa stop()
+    \since 1.1
 */
 void QFeedbackEffect::start()
 {
@@ -248,6 +254,7 @@ void QFeedbackEffect::start()
     error() signal will be emitted.
 
     \sa start(), pause(), setState()
+    \since 1.1
 */
 void QFeedbackEffect::stop()
 {
@@ -260,6 +267,7 @@ void QFeedbackEffect::stop()
     Pauses a playing effect. If an error occurs the
     error() signal will be emitted.  Not all systems
     support pausing an effect during playback.
+    \since 1.1
 */
 void QFeedbackEffect::pause()
 {
@@ -305,7 +313,7 @@ bool QFeedbackEffect::supportsThemeEffect()
     it can be played:
 
     \list
-        \o duration(): The duration of the main part of the effect in milliseconds.
+        \o duration(): The total duration of the effect in milliseconds.
         \o intensity(): The intensity, e.g., how hard the device will vibrate.
     \endlist
 
@@ -349,7 +357,8 @@ bool QFeedbackEffect::supportsThemeEffect()
     \endcode
 
     When using fade-in and fade-out the total duration of the haptics
-    effect will be: attackTime() + duration() + fadeTime().
+    effect will be: duration(); the main intensity() will be played for
+    (duration() - (attackTime() + fadeTime())) milliseconds.
 
     A QFeedbackHapticsEffect is played on an
     \l{QFeedbackHapticsEffect::}{actuator()}, which is the physical component that
@@ -361,6 +370,7 @@ bool QFeedbackEffect::supportsThemeEffect()
     error() signal.
 
     \sa QFeedbackActuator
+    \since 1.1
 */
 
 /*!
@@ -370,6 +380,7 @@ bool QFeedbackEffect::supportsThemeEffect()
 
     Subclasses reimplement this function to handle state change requests
     for the effect.
+    \since 1.1
 */
 
 /*!
@@ -380,12 +391,7 @@ bool QFeedbackEffect::supportsThemeEffect()
 */
 QFeedbackHapticsEffect::QFeedbackHapticsEffect(QObject *parent) : QFeedbackEffect(parent), priv(new QFeedbackHapticsEffectPrivate)
 {
-    QList<QFeedbackActuator*> list = QFeedbackActuator::actuators();
-    if  (!list.isEmpty()) {
-        priv->actuator = list.first();
-    } else {
-        priv->actuator = new QFeedbackActuator(this);
-    }
+    setActuator(0);
 }
 
 
@@ -401,11 +407,16 @@ QFeedbackHapticsEffect::~QFeedbackHapticsEffect()
     \property QFeedbackHapticsEffect::duration
     \brief the expected duration of the effect.
 
-    This property defines the duration of the main part of feedback effect, in milliseconds.
+    This property defines the total duration of the feedback effect, in milliseconds.
+    It includes the duration of any fade-in or fade-out parts, if any, in non-periodic
+    effects, and includes all repetitions of the period in periodic-effects, if any.
 
-    It does not include the duration of any fade-in or fade-out parts, if any.
+    If the duration is set to a value less than attackTime() + fadeTime(), or less
+    than the period() of the effect, the waveform which will result is
+    backend-specific.
 
-    \sa fadeTime(), attackTime()
+    \since 1.1
+    \sa fadeTime(), attackTime(), period()
 */
 int QFeedbackHapticsEffect::duration() const
 {
@@ -425,6 +436,12 @@ void QFeedbackHapticsEffect::setDuration(int msecs)
 
     This property defines the intensity of the feedback effect.
     The value can be between 0 and 1.
+
+    For non-periodic effects, the effect will be at this intensity for
+    (duration() - (attackTime() + fadeTime())) milliseconds.
+    For periodic effects, the effect will be at this intensity once per
+    period for (period() - (attackTime() + fadeTime())) milliseconds.
+    \since 1.1
 */
 qreal QFeedbackHapticsEffect::intensity() const
 {
@@ -443,6 +460,15 @@ void QFeedbackHapticsEffect::setIntensity(qreal intensity)
     \brief the duration of the fade-in effect.
 
     This property defines the duration of the fade-in effect in milliseconds.
+    The effect will ramp up (or down) from attackIntensity() to intensity() in attackTime() milliseconds.
+
+    If the attack time is set to a value such that attackTime() + fadeTime()
+    is greater than duration() for non-periodic effects, or greater than
+    period() for periodic effects, the waveform which will result is
+    backend-specific.
+
+    \since 1.1
+    \sa duration(), period()
 */
 int QFeedbackHapticsEffect::attackTime() const
 {
@@ -461,7 +487,9 @@ void QFeedbackHapticsEffect::setAttackTime(int msecs)
     \brief the initial intensity of the effect.
 
     This property defines the initial intensity of the effect, before it fades in.
-    It is usually lower than \l intensity.
+    It is usually lower than \l intensity.  The effect will ramp up (or down) from
+    attackIntensity() to intensity() in attackTime() milliseconds.
+    \since 1.1
 */
 qreal QFeedbackHapticsEffect::attackIntensity() const
 {
@@ -480,6 +508,15 @@ void QFeedbackHapticsEffect::setAttackIntensity(qreal intensity)
     \brief the duration of the fade-out effect.
 
     This property defines the duration of the fade-out effect in milliseconds.
+    The effect will ramp down (or up) from intensity() to fadeIntensity() in fadeTime() milliseconds.
+
+    If the fade time is set to a value such that attackTime() + fadeTime()
+    is greater than duration() for non-periodic effects, or greater than
+    period() for periodic effects, the waveform which will result is
+    backend-specific.
+
+    \since 1.1
+    \sa duration(), period()
 */
 int QFeedbackHapticsEffect::fadeTime() const
 {
@@ -499,6 +536,8 @@ void QFeedbackHapticsEffect::setFadeTime(int msecs)
 
     This property defines the final intensity of the effect, after it fades out.
     It is usually lower than \l intensity.
+    The effect will ramp down (or up) from intensity() to fadeIntensity() in fadeTime() milliseconds.
+    \since 1.1
 */
 qreal QFeedbackHapticsEffect::fadeIntensity() const
 {
@@ -517,7 +556,9 @@ void QFeedbackHapticsEffect::setFadeIntensity(qreal intensity)
     \brief the actuator on which the effect operates.
 
     This property defines the actuator on which the effect operates.  You can only
-    change the actuator used when the effect is stopped.
+    change the actuator used when the effect is stopped.  Setting a null actuator
+    resets the effect to use the default actuator.
+    \since 1.1
 */
 QFeedbackActuator* QFeedbackHapticsEffect::actuator() const
 {
@@ -530,7 +571,16 @@ void QFeedbackHapticsEffect::setActuator(QFeedbackActuator *actuator)
         return;
     }
 
-    priv->actuator = actuator;
+    if (actuator) {
+        priv->actuator = actuator;
+    } else {
+        QList<QFeedbackActuator*> list = QFeedbackActuator::actuators();
+        if  (!list.isEmpty()) {
+            priv->actuator = list.first();
+        } else {
+            priv->actuator = new QFeedbackActuator(this);
+        }
+    }
 }
 
 /*!
@@ -542,6 +592,17 @@ void QFeedbackHapticsEffect::setActuator(QFeedbackActuator *actuator)
     The duration of the effect should be set to a value larger than the
     period of the effect if you wish the periodicity to be discernable.
     \note Not all actuators support periodic effects
+
+    The period defines the total length of the periodic envelope, which will
+    be repeated up until duration() milliseconds has elapsed.  For a periodic
+    effect, the intensity will start at attackIntensity(), ramp to intensity()
+    (where it stays for (period() - (attackTime() + fadeTime())) milliseconds),
+    then ramp to fadeIntensity().  This waveform will be repeated as many times
+    as required until the duration() has elapsed.
+
+    If the period is set to a value which is less than attackTime() + fadeTime(),
+    the waveform which will result is backend-specific.
+    \since 1.1
 */
 int QFeedbackHapticsEffect::period() const
 {
@@ -558,6 +619,7 @@ void QFeedbackHapticsEffect::setPeriod(int msecs)
 
 /*!
     \internal
+    \since 1.1
 */
 void QFeedbackHapticsEffect::setState(State state)
 {
@@ -570,6 +632,7 @@ void QFeedbackHapticsEffect::setState(State state)
 
 /*!
     \internal
+    \since 1.1
 */
 QFeedbackEffect::State QFeedbackHapticsEffect::state() const
 {
@@ -618,6 +681,7 @@ QFeedbackEffect::State QFeedbackHapticsEffect::state() const
 
     QFeedbackFileEffect reports errors through the error() signal.
 
+    \since 1.1
     \sa QFeedbackHapticsEffect
 */
 
@@ -651,6 +715,7 @@ QFeedbackFileEffect::~QFeedbackFileEffect()
 
 /*!
     \reimp
+    \since 1.1
 */
 int QFeedbackFileEffect::duration() const
 {
@@ -666,6 +731,7 @@ int QFeedbackFileEffect::duration() const
     local files.
 
     You can only change the source of an effect when it is stopped.
+    \since 1.1
 */
 QUrl QFeedbackFileEffect::source() const
 {
@@ -687,6 +753,7 @@ void QFeedbackFileEffect::setSource(const QUrl &source)
 /*!
     \property QFeedbackFileEffect::loaded
     \brief reports if the file has been successfully loaded.
+    \since 1.1
 */
 bool QFeedbackFileEffect::isLoaded() const
 {
@@ -712,6 +779,7 @@ void QFeedbackFileEffect::setLoaded(bool load)
     Makes sure that the file associated with the feedback object is loaded.
     It will be automatically loaded when the setSource() or start() functions
     are called.
+    \since 1.1
 */
 void QFeedbackFileEffect::load()
 {
@@ -724,6 +792,7 @@ void QFeedbackFileEffect::load()
     makes sure that the file associated with the feedback object is unloaded.
     It will be automatically unloaded when the setSource function is called with
     another file or the object is destroyed.
+    \since 1.1
 */
 void QFeedbackFileEffect::unload()
 {
@@ -744,6 +813,7 @@ QStringList QFeedbackFileEffect::supportedMimeTypes()
 
 /*!
 \reimp
+\since 1.1
 */
 void QFeedbackFileEffect::setState(State newState)
 {
@@ -758,6 +828,7 @@ void QFeedbackFileEffect::setState(State newState)
 
 /*!
 \reimp
+\since 1.1
 */
 QFeedbackEffect::State QFeedbackFileEffect::state() const
 {

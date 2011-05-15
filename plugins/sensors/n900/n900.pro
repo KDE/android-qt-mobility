@@ -6,13 +6,13 @@ TEMPLATE = lib
 CONFIG += plugin
 TARGET = $$qtLibraryTarget(qtsensors_n900)
 
-include(version.pri)
 include(n900.pri)
 include(../../../common.pri)
 
 QT=core
 CONFIG+=mobility
 MOBILITY+=sensors
+LIBS += -lrt
 
 CONFIG+=strict_flags
 

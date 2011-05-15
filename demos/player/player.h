@@ -45,7 +45,7 @@
 
 #include <qmediaplayer.h>
 #include <qmediaplaylist.h>
-#include <qvideowidget.h>
+#include "videowidget.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -100,13 +100,14 @@ private:
     void setTrackInfo(const QString &info);
     void setStatusInfo(const QString &info);
     void handleCursor(QMediaPlayer::MediaStatus status);
-
+    void updateDurationInfo(qint64 currentInfo);
 
     QMediaPlayer *player;
     QMediaPlaylist *playlist;
-    QVideoWidget *videoWidget;
+    VideoWidget *videoWidget;
     QLabel *coverLabel;
     QSlider *slider;
+    QLabel *labelDuration;
     QPushButton *fullScreenButton;
 #ifndef PLAYER_NO_COLOROPTIONS
     QPushButton *colorButton;
@@ -116,6 +117,7 @@ private:
     QAbstractItemView *playlistView;
     QString trackInfo;
     QString statusInfo;
+    qint64 duration;
 };
 
 #endif

@@ -55,30 +55,13 @@ QT_BEGIN_NAMESPACE
     \qmlclass SoundEffect QSoundEffect
     \brief The SoundEffect element provides a way to play sound effects in QML.
 
+    \inmodule QtMultimediaKit
+
     This element is part of the \bold{QtMultimediaKit 1.1} module.
 
-    The following example plays a wav file on mouse click.
+    The following example plays a WAV file on mouse click.
 
-    \qml
-    import Qt 4.7
-    import QtMultimediaKit 1.1
-
-    Text {
-        text: "Click Me!";
-        font.pointSize: 24;
-        width: 150; height: 50;
-
-        SoundEffect {
-            id: playSound
-            source: "soundeffect.wav"
-        }
-        MouseArea {
-            id: playArea
-            anchors.fill: parent
-            onPressed: { playSound.play() }
-        }
-    }
-    \endqml
+    \snippet doc/src/snippets/multimedia-snippets/soundeffect.qml complete snippet
 */
 
 /*!
@@ -96,9 +79,10 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlproperty int SoundEffect::volume
+    \qmlproperty qreal SoundEffect::volume
 
     This property holds the volume of the playback, from 0.0 (silent) to 1.0 (maximum volume).
+    Note: Currently this has no effect on Mac OS X and Symbian.
 */
 
 /*!
@@ -237,7 +221,6 @@ void QSoundEffect::setVolume(qreal volume)
         return;
 
     d->setVolume(iVolume);
-    emit volumeChanged();
 }
 
 bool QSoundEffect::isMuted() const
@@ -251,7 +234,6 @@ void QSoundEffect::setMuted(bool muted)
         return;
 
     d->setMuted(muted);
-    emit mutedChanged();
 }
 
 bool QSoundEffect::isLoaded() const
@@ -267,12 +249,7 @@ bool QSoundEffect::isLoaded() const
 
   This is the default method for SoundEffect.
 
-  \qml
-  MouseArea {
-      anchors.fill: parent
-      onPressed: { SoundEffect { source:"soundeffect.wav" } }
-  }
-  \endqml
+  \snippet doc/src/snippets/multimedia-snippets/soundeffect.qml play sound on click
 */
 void QSoundEffect::play()
 {

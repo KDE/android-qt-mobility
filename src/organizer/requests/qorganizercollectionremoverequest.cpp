@@ -49,12 +49,16 @@ QTM_BEGIN_NAMESPACE
   \brief The QOrganizerCollectionRemoveRequest class allows a client to asynchronously
     request organizeritems from a organizeritems store manager.
 
+  \inmodule QtOrganizer
+
 
   For a QOrganizerCollectionRemoveRequest, the resultsAvailable() signal will be emitted when the resultant
   organizeritems (which may be retrieved by calling organizeritems()), are updated, as well as if
   the overall operation error (which may be retrieved by calling error()) is updated.
 
   \ingroup organizeritems-requests
+
+  \inmodule QtOrganizer
  */
 
 /*! Constructs a new organizeritem fetch request whose parent is the specified \a parent */

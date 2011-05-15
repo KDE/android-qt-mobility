@@ -82,7 +82,8 @@ QLandmarkAttributeFilterPrivate::QLandmarkAttributeFilterPrivate()
 QLandmarkAttributeFilterPrivate::QLandmarkAttributeFilterPrivate(const QLandmarkAttributeFilterPrivate &other)
     : QLandmarkFilterPrivate(other),
     attributes(other.attributes),
-    flags(other.flags)
+    flags(other.flags),
+    operationType(other.operationType)
 {
 }
 
@@ -97,6 +98,7 @@ QLandmarkAttributeFilterPrivate::~QLandmarkAttributeFilterPrivate()
     \inmodule QtLocation
 
     \ingroup landmarks-filter
+    \since 1.1
 
     You can provide various keys which describe the attribute(s) to search.
     Precisely which keys may be used depends on the manager
@@ -127,8 +129,12 @@ QLandmarkAttributeFilterPrivate::~QLandmarkAttributeFilterPrivate()
     \endtable
 
         Please note that different platforms support different capabilities with the attribute filter.
-        The S60 3.1, 3.2 and 5.0 platforms do not support an OR type attribute filter.
-        The S60 3.1, 3.2, 5.0 and Symbian platforms do not support the MatchContains flag.
+        \list
+            \o The S60 3.1, 3.2 and 5.0 platforms do not support an OR type attribute filter.
+            \o The S60 3.1, 3.2, 5.0 and Symbian platforms do not support the MatchContains flag.
+            \o The S60 3.1, 3.2, 5.0 and Symbian platforms do not support multiple attributes with an
+	AND type attribute filter(using a single attribute however is supported).
+        \endlist
 */
 Q_IMPLEMENT_LANDMARKFILTER_PRIVATE(QLandmarkAttributeFilter);
 
@@ -150,6 +156,7 @@ QLandmarkAttributeFilter::QLandmarkAttributeFilter()
 /*!
     \fn QLandmarkAttributeFilter::QLandmarkAttributeFilter(const QLandmarkFilter &other)
     Constructs a copy of \a other if possible, otherwise constructs a new attribute filter.
+    \since 1.1
 */
 
 /*!
@@ -163,6 +170,7 @@ QLandmarkAttributeFilter::~QLandmarkAttributeFilter()
     Returns the value of the attribute corresponding to \a key.
 
     If the attribute isn't set an invalid QVariant is returned.
+    \since 1.1
 */
 QVariant QLandmarkAttributeFilter::attribute(const QString &key) const
 {
@@ -177,6 +185,7 @@ QVariant QLandmarkAttributeFilter::attribute(const QString &key) const
     to define how the string values should be matched.
     For non-string based attributes the \a flags are ignored.
     The beahviour of the filter is undefined if an invalid QVariant is used as a \a value
+    \since 1.1
 */
 void QLandmarkAttributeFilter::setAttribute(const QString &key, const QVariant &value, QLandmarkFilter::MatchFlags flags)
 {
@@ -192,6 +201,7 @@ void QLandmarkAttributeFilter::setAttribute(const QString &key, const QVariant &
     set of matching \a flags can be provided to define how the string values should be matched.
     For non-string based attributes the \a flags are ignored.
     The behaviour of the filter is undefined if an invalid QVariant is used as \a value.
+    \since 1.1
 */
 void QLandmarkAttributeFilter::setAttributes(const QStringList &keys, const QVariant &value, QLandmarkFilter::MatchFlags flags)
 {
@@ -204,6 +214,7 @@ void QLandmarkAttributeFilter::setAttributes(const QStringList &keys, const QVar
 
 /*!
     Removes the attribute corresponding to \a key from the filter.
+    \since 1.1
 */
 void QLandmarkAttributeFilter::removeAttribute(const QString &key)
 {
@@ -214,6 +225,7 @@ void QLandmarkAttributeFilter::removeAttribute(const QString &key)
 
 /*!
     Clears all attributes from the filter.
+    \since 1.1
 */
 void QLandmarkAttributeFilter::clearAttributes()
 {
@@ -224,6 +236,7 @@ void QLandmarkAttributeFilter::clearAttributes()
 
 /*!
     Returns the keys of all attributes set in the filter.
+    \since 1.1
 */
 QStringList QLandmarkAttributeFilter::attributeKeys() const
 {
@@ -234,6 +247,7 @@ QStringList QLandmarkAttributeFilter::attributeKeys() const
 /*!
     Returns the operation to be used by the filter when multiple attributes
     are provided.
+    \since 1.1
 */
 QLandmarkAttributeFilter::OperationType QLandmarkAttributeFilter::operationType() const
 {
@@ -244,6 +258,7 @@ QLandmarkAttributeFilter::OperationType QLandmarkAttributeFilter::operationType(
 /*!
     Sets the operation to be used by the filter when multiple attributes
     are provided to \a operationType.
+    \since 1.1
 */
 void QLandmarkAttributeFilter::setOperationType(QLandmarkAttributeFilter::OperationType operationType)
 {
@@ -254,6 +269,7 @@ void QLandmarkAttributeFilter::setOperationType(QLandmarkAttributeFilter::Operat
 /*!
     Returns the match flags for a particular \a key.  The match flags are only take into consideration
     when the attribute for a particular key is a string.  In all other cases the match flags are ignored.
+    \since 1.1
 */
 QLandmarkFilter::MatchFlags QLandmarkAttributeFilter::matchFlags(const QString &key) const
 {

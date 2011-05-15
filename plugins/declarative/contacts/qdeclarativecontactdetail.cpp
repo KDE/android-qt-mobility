@@ -1169,7 +1169,6 @@ QString QDeclarativeContactDetail::fieldName(ContactDetailType detailType, int f
    \list
    \o Ringtone.AudioRingtoneUrl
    \o Ringtone.VideoRingtoneUrl
-   \o Ringtone.VibrationRingtoneUrl
    \endlist
 
   This element is part of the \bold{QtMobility.contacts 1.1} module.
@@ -1185,7 +1184,9 @@ QString QDeclarativeContactDetail::fieldName(ContactDetailType detailType, int f
 
   This property holds the value of the URL for a video ringtone.
   */
-/*!
+
+// Not in use (note the missing ! below)
+/*
   \qmlproperty url Ringtone::vibrationRingtoneUrl
 
   This property holds the value of the URL for a vibration ringtone.
@@ -1202,6 +1203,7 @@ QString QDeclarativeContactDetail::fieldName(ContactDetailType detailType, int f
    \o SyncTarget.SyncTarget
    \endlist
 
+  \sa QContactSyncTarget
   This element is part of the \bold{QtMobility.contacts 1.1} module.
  */
 /*!
@@ -1220,7 +1222,7 @@ QString QDeclarativeContactDetail::fieldName(ContactDetailType detailType, int f
    \list
    \o Tag.Tag
    \endlist
-
+  \sa QContactTag
   This element is part of the \bold{QtMobility.contacts 1.1} module.
  */
 /*!

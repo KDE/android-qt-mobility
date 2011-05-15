@@ -46,7 +46,7 @@ QTM_BEGIN_NAMESPACE
 /*!
     \qmlclass Landmark QDeclarativeLandmark
     \brief The Landmark element presents one landmark.
-    \ingroup qml-location
+    \ingroup qml-location-landmarks
     \inherits Place
 
     This element is part of the \bold{QtMobility.location 1.1} module.
@@ -213,6 +213,11 @@ void QDeclarativeLandmark::setLandmark(const QLandmark& landmark)
 QList<QLandmarkCategoryId> QDeclarativeLandmark::categoryIds () const
 {
     return m_landmark.categoryIds();
+}
+
+QLandmark QDeclarativeLandmark::landmark()
+{
+    return m_landmark;
 }
 
 #include "moc_qdeclarativelandmark_p.cpp"

@@ -43,10 +43,13 @@
 
 #include <QDebug>
 
+ #include <QProcessEnvironment>
+
 #include <qbluetoothsocket.h>
 #include <qbluetoothdeviceinfo.h>
 #include <qbluetoothserviceinfo.h>
 #include <qbluetoothservicediscoveryagent.h>
+#include <qbluetoothlocaldevice.h>
 
 #include <sys/utsname.h>
 
@@ -59,6 +62,9 @@ Q_DECLARE_METATYPE(QBluetoothSocket::SocketType)
 
 //#define BTADDRESS "00:1A:9F:92:9E:5A"
 char BTADDRESS[] = "00:00:00:00:00:00";
+#ifdef Q_OS_SYMBIAN
+static const QString peerNameSymbian("Patagonia_bluetooth_client");
+#endif
 
 // Max time to wait for connection
 
@@ -98,6 +104,8 @@ private slots:
     void tst_localPeer_data();
     void tst_localPeer();
 
+    void tst_error();
+
 public slots:
     void serviceDiscovered(const QBluetoothServiceInfo &info);
     void finished();
@@ -121,30 +129,47 @@ tst_QBluetoothSocket::~tst_QBluetoothSocket()
 
 void tst_QBluetoothSocket::initTestCase()
 {
-    // Go find an echo server for BTADDRESS
-    QBluetoothServiceDiscoveryAgent *sda = new QBluetoothServiceDiscoveryAgent(this);
-    connect(sda, SIGNAL(serviceDiscovered(QBluetoothServiceInfo)), this, SLOT(serviceDiscovered(QBluetoothServiceInfo)));
-    connect(sda, SIGNAL(error(QBluetoothServiceDiscoveryAgent::Error)), this, SLOT(error(QBluetoothServiceDiscoveryAgent::Error)));
-    connect(sda, SIGNAL(finished()), this, SLOT(finished()));
+    // start Bluetooth if not started
+    QBluetoothLocalDevice *device = new QBluetoothLocalDevice();
+    device->powerOn();
+    delete device;
 
-    qDebug() << "Starting discovery";
-    done_discovery = false;
-    memset(BTADDRESS, 0, 18);
-
-    sda->start();
-
-    int connectTime = MaxConnectTime;
-    while (!done_discovery) {
-        QTest::qWait(1000);
-        connectTime -= 1000;
+    QProcessEnvironment pe = QProcessEnvironment::systemEnvironment();
+    QLatin1String t("TESTSERVER");
+    if(pe.contains(t)){
+        qDebug() << pe.value(t);
+        strcpy(BTADDRESS, pe.value(t).toAscii());
     }
 
-    sda->stop();
+    if(QBluetoothAddress(BTADDRESS).isNull()){
+        // Go find an echo server for BTADDRESS
+        QBluetoothServiceDiscoveryAgent *sda = new QBluetoothServiceDiscoveryAgent(this);
+        connect(sda, SIGNAL(serviceDiscovered(QBluetoothServiceInfo)), this, SLOT(serviceDiscovered(QBluetoothServiceInfo)));
+        connect(sda, SIGNAL(error(QBluetoothServiceDiscoveryAgent::Error)), this, SLOT(error(QBluetoothServiceDiscoveryAgent::Error)));
+        connect(sda, SIGNAL(finished()), this, SLOT(finished()));
 
-    if(BTADDRESS[0] == 0){
-        QFAIL("Unable to find test service");
+
+        qDebug() << "Starting discovery";
+        done_discovery = false;
+        memset(BTADDRESS, 0, 18);
+
+        sda->setUuidFilter(QBluetoothUuid(QString(ECHO_SERVICE_UUID)));
+        sda->start(QBluetoothServiceDiscoveryAgent::MinimalDiscovery);
+
+        int connectTime = MaxConnectTime;
+        while (!done_discovery) {
+            QTest::qWait(1000);
+            connectTime -= 1000;
+        }
+
+        sda->stop();
+
+        if(QBluetoothAddress(BTADDRESS).isNull()){
+            QFAIL("Unable to find test service");
+        }
+        delete sda;
+        sda = 0x0;
     }
-    delete sda;
 
 }
 
@@ -162,11 +187,9 @@ void tst_QBluetoothSocket::finished()
 
 void tst_QBluetoothSocket::serviceDiscovered(const QBluetoothServiceInfo &info)
 {
-    if(info.serviceUuid() == QBluetoothUuid(QString(ECHO_SERVICE_UUID)))
-    {
-        strcpy(BTADDRESS, info.device().address().toString().toAscii());
-        done_discovery = true;
-    }
+    qDebug() << "Found: " << info.device().name() << info.serviceUuid();
+    strcpy(BTADDRESS, info.device().address().toString().toAscii());
+    done_discovery = true;
 }
 
 void tst_QBluetoothSocket::tst_construction_data()
@@ -197,6 +220,7 @@ void tst_QBluetoothSocket::tst_construction()
 
 void tst_QBluetoothSocket::tst_clientConnection_data()
 {
+    QTest::addColumn<QBluetoothSocket::SocketType>("sockettype");
     QTest::addColumn<ClientConnectionShutdown>("shutdown");
     QTest::addColumn<QBluetoothAddress>("address");
     QTest::addColumn<quint16>("port");
@@ -206,18 +230,41 @@ void tst_QBluetoothSocket::tst_clientConnection_data()
     QBluetoothAddress address(BTADDRESS);
     quint16 port = 10;
 
-    QTest::newRow("unavailable, error") << Error << QBluetoothAddress("112233445566") << quint16(10) << QByteArray();
+    QTest::newRow("unavailable, error") << QBluetoothSocket::RfcommSocket
+                                        << Error << QBluetoothAddress("112233445566") << quint16(10) << QByteArray();
 
-    QTest::newRow("available, disconnect") << Disconnect << address << port << QByteArray();
-    QTest::newRow("available, disconnect with data") << Disconnect << address << port << QByteArray("Test message\n");
-    QTest::newRow("available, close") << Close << address << port << QByteArray();
-    QTest::newRow("available, abort") << Abort << address << port << QByteArray();
-    QTest::newRow("available, abort with data") << Abort << address << port << QByteArray("Test message\n");
+    QTest::newRow("available, disconnect") << QBluetoothSocket::RfcommSocket
+                                           << Disconnect << address << port << QByteArray();
+    QTest::newRow("available, disconnect with data") << QBluetoothSocket::RfcommSocket
+                                                     << Disconnect << address << port << QByteArray("Test message\n");
+    QTest::newRow("available, close") << QBluetoothSocket::RfcommSocket
+                                      << Close << address << port << QByteArray();
+    QTest::newRow("available, abort") << QBluetoothSocket::RfcommSocket
+                                      << Abort << address << port << QByteArray();
+    QTest::newRow("available, abort with data") << QBluetoothSocket::RfcommSocket
+                                                << Abort << address << port << QByteArray("Test message\n");
+
+
+    port = 0x1011;
+    QTest::newRow("unavailable, error") << QBluetoothSocket::L2capSocket
+                                        << Error << QBluetoothAddress("112233445566") << quint16(10) << QByteArray();
+
+    QTest::newRow("available, disconnect") << QBluetoothSocket::L2capSocket
+                                           << Disconnect << address << port << QByteArray();
+    QTest::newRow("available, disconnect with data") << QBluetoothSocket::L2capSocket
+                                                     << Disconnect << address << port << QByteArray("Test message\n");
+    QTest::newRow("available, close") << QBluetoothSocket::L2capSocket
+                                      << Close << address << port << QByteArray();
+    QTest::newRow("available, abort") << QBluetoothSocket::L2capSocket
+                                      << Abort << address << port << QByteArray();
+    QTest::newRow("available, abort with data") << QBluetoothSocket::L2capSocket
+                                                << Abort << address << port << QByteArray("Test message\n");
 
 }
 
 void tst_QBluetoothSocket::tst_clientConnection()
 {
+    QFETCH(QBluetoothSocket::SocketType, sockettype);
     QFETCH(ClientConnectionShutdown, shutdown);
     QFETCH(QBluetoothAddress, address);
     QFETCH(quint16, port);
@@ -226,11 +273,11 @@ void tst_QBluetoothSocket::tst_clientConnection()
 
     tryagain:
     /* Construction */
-    QBluetoothSocket *socket = new QBluetoothSocket(QBluetoothSocket::RfcommSocket);
+    QBluetoothSocket *socket = new QBluetoothSocket(sockettype);
 
     QSignalSpy stateSpy(socket, SIGNAL(stateChanged(QBluetoothSocket::SocketState)));
 
-    QCOMPARE(socket->socketType(), QBluetoothSocket::RfcommSocket);
+    QCOMPARE(socket->socketType(), sockettype);
     QCOMPARE(socket->state(), QBluetoothSocket::UnconnectedState);
 
     /* Connection */
@@ -293,7 +340,7 @@ void tst_QBluetoothSocket::tst_clientConnection()
 // TODO: no buffereing, all data is sent on write
         if (!data.isEmpty()) {
             // Check that pending write did not complete.
-            QEXPECT_FAIL("", "TODO: need to implement write buffering", Continue);
+//            QEXPECT_FAIL("", "TODO: need to implement write buffering", Continue);
             QCOMPARE(bytesWrittenSpy.count(), 0);
         }
 
@@ -495,7 +542,7 @@ void tst_QBluetoothSocket::tst_clientCommunication()
 
             socket->write(line.toUtf8());
 
-            QEXPECT_FAIL("", "TODO: need to implement write buffering", Continue);
+//            QEXPECT_FAIL("", "TODO: need to implement write buffering", Continue);
             QCOMPARE(socket->bytesToWrite(), qint64(line.length()));
 
             int readWriteTime = MaxReadWriteTime;
@@ -566,7 +613,7 @@ void tst_QBluetoothSocket::tst_clientCommunication()
         QString joined = data.join(QString());
         socket->write(joined.toUtf8());
 
-        QEXPECT_FAIL("", "TODO: need to implement write buffering", Continue);
+//        QEXPECT_FAIL("", "TODO: need to implement write buffering", Continue);
         QCOMPARE(socket->bytesToWrite(), qint64(joined.length()));
 
         int readWriteTime = MaxReadWriteTime;
@@ -636,6 +683,7 @@ void tst_QBluetoothSocket::tst_localPeer()
     QFETCH(QBluetoothAddress, peerAddress);
     QFETCH(quint16, peerPort);
 
+#ifndef Q_OS_SYMBIAN
     QStringList args;
     args << "name" << peerAddress.toString();
     QProcess *hcitool = new QProcess();
@@ -644,6 +692,7 @@ void tst_QBluetoothSocket::tst_localPeer()
     QString peerNameHCI = hcitool->readLine().trimmed();
     hcitool->close();
     delete hcitool;
+#endif
 
 
     /* Construction */
@@ -688,7 +737,11 @@ void tst_QBluetoothSocket::tst_localPeer()
     QCOMPARE(socket->localName(), list[2]);
     QCOMPARE(socket->localAddress(), QBluetoothAddress(list[3]));
     QCOMPARE(socket->localPort(), list[4].toUShort());
+#ifndef Q_OS_SYMBIAN
     QCOMPARE(socket->peerName(), peerNameHCI);
+#else
+    QCOMPARE(socket->peerName(), peerNameSymbian);
+#endif
 
     /* Disconnection */
     QSignalSpy disconnectedSpy(socket, SIGNAL(disconnected()));
@@ -707,6 +760,22 @@ void tst_QBluetoothSocket::tst_localPeer()
     QCOMPARE(qvariant_cast<QBluetoothSocket::SocketState>(stateSpy.takeFirst().at(0)), QBluetoothSocket::UnconnectedState);
 
     delete socket;
+}
+
+void tst_QBluetoothSocket::tst_error()
+{
+    QBluetoothSocket socket;
+    QSignalSpy errorSpy(&socket, SIGNAL(error(QBluetoothSocket::SocketError)));
+    QCOMPARE(errorSpy.count(), 0);
+
+    QVERIFY(socket.error() != (QBluetoothSocket::ConnectionRefusedError ||
+        QBluetoothSocket::HostNotFoundError ||
+        QBluetoothSocket::NetworkError ||
+        QBluetoothSocket::RemoteHostClosedError ||
+        QBluetoothSocket::ServiceNotFoundError ||
+        QBluetoothSocket::UnknownSocketError));
+
+    QVERIFY(socket.errorString() == QString());
 }
 
 QTEST_MAIN(tst_QBluetoothSocket)

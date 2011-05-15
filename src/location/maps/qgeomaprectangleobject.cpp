@@ -53,6 +53,7 @@ QTM_BEGIN_NAMESPACE
     a rectangular region on a map.
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup maps-mapping-objects
 
@@ -65,25 +66,35 @@ QTM_BEGIN_NAMESPACE
     Constructs a new rectangle object.
 */
 QGeoMapRectangleObject::QGeoMapRectangleObject()
-    : d_ptr(new QGeoMapRectangleObjectPrivate()) {}
+    : d_ptr(new QGeoMapRectangleObjectPrivate())
+{
+    setUnits(QGeoMapObject::AbsoluteArcSecondUnit);
+    setTransformType(QGeoMapObject::ExactTransform);
+}
 
 /*!
     Constructs a new rectangle object based on the bounding box \a boundingBox.
+    \since 1.1
 */
 QGeoMapRectangleObject::QGeoMapRectangleObject(const QGeoBoundingBox &boundingBox)
     : d_ptr(new QGeoMapRectangleObjectPrivate())
 {
     d_ptr->bounds = boundingBox;
+    setUnits(QGeoMapObject::AbsoluteArcSecondUnit);
+    setTransformType(QGeoMapObject::ExactTransform);
 }
 
 /*!
     Constructs a new rectangle object with the top left coordinate at \a
     topLeft and the bottom right coordinate at \a bottomRight.
+    \since 1.1
 */
 QGeoMapRectangleObject::QGeoMapRectangleObject(const QGeoCoordinate &topLeft, const QGeoCoordinate &bottomRight)
     : d_ptr(new QGeoMapRectangleObjectPrivate())
 {
     d_ptr->bounds = QGeoBoundingBox(topLeft, bottomRight);
+    setUnits(QGeoMapObject::AbsoluteArcSecondUnit);
+    setTransformType(QGeoMapObject::ExactTransform);
 }
 
 /*!
@@ -96,6 +107,7 @@ QGeoMapRectangleObject::~QGeoMapRectangleObject()
 
 /*!
     \reimp
+    \since 1.1
 */
 QGeoMapObject::Type QGeoMapRectangleObject::type() const
 {
@@ -112,6 +124,7 @@ QGeoMapObject::Type QGeoMapRectangleObject::type() const
         // setup object
         QGeoBoundingBox(object->topLeft(), object->bottomRight());
     \endcode
+    \since 1.1
 */
 QGeoBoundingBox QGeoMapRectangleObject::bounds() const
 {
@@ -128,6 +141,7 @@ QGeoBoundingBox QGeoMapRectangleObject::bounds() const
         object->setTopLeft(bounds.topLeft());
         object->setBottomRight(bounds.bottomRight());
     \endcode
+    \since 1.1
 */
 void QGeoMapRectangleObject::setBounds(const QGeoBoundingBox &bounds)
 {
@@ -153,6 +167,7 @@ void QGeoMapRectangleObject::setBounds(const QGeoBoundingBox &bounds)
     The default value of this property is an invalid coordinate.  While
     the value of this property is invalid the rectangle object will not be
     displayed.
+    \since 1.1
 */
 QGeoCoordinate QGeoMapRectangleObject::topLeft() const
 {
@@ -175,6 +190,7 @@ void QGeoMapRectangleObject::setTopLeft(const QGeoCoordinate &topLeft)
     The default value of this property is an invalid coordinate.  While
     the value of this property is invalid the rectangle object will not be
     displayed.
+    \since 1.1
 */
 QGeoCoordinate QGeoMapRectangleObject::bottomRight() const
 {
@@ -198,6 +214,7 @@ void QGeoMapRectangleObject::setBottomRight(const QGeoCoordinate &bottomRight)
 
     The pen will be treated as a cosmetic pen, which means that the width
     of the pen will be independent of the zoom level of the map.
+    \since 1.1
 */
 QPen QGeoMapRectangleObject::pen() const
 {
@@ -213,7 +230,7 @@ void QGeoMapRectangleObject::setPen(const QPen &pen)
         return;
 
     d_ptr->pen = newPen;
-    emit penChanged(d_ptr->pen);
+    emit penChanged(newPen);
 }
 
 /*!
@@ -224,6 +241,7 @@ void QGeoMapRectangleObject::setPen(const QPen &pen)
 
     The outline around the perimeter of the rectangle is drawn using the
     QGeoMapRectangleObject::pen property.
+    \since 1.1
 */
 QBrush QGeoMapRectangleObject::brush() const
 {
@@ -241,37 +259,41 @@ void QGeoMapRectangleObject::setBrush(const QBrush &brush)
 /*!
 \fn void QGeoMapRectangleObject::topLeftChanged(const QGeoCoordinate &topLeft)
 
-    This signal is emitted when the top left coordinate of this rectangle 
+    This signal is emitted when the top left coordinate of this rectangle
     object has changed.
 
     The new value is \a topLeft.
+    \since 1.1
 */
 
 /*!
 \fn void QGeoMapRectangleObject::bottomRightChanged(const QGeoCoordinate &bottomRight)
 
-    This signal is emitted when the bottom right coordinate of this rectangle 
+    This signal is emitted when the bottom right coordinate of this rectangle
     object has changed.
 
     The new value is \a bottomRight.
+    \since 1.1
 */
 
 /*!
 \fn void QGeoMapRectangleObject::penChanged(const QPen &pen)
 
-    This signal is emitted when the pen used to draw the perimeter of this 
+    This signal is emitted when the pen used to draw the perimeter of this
     rectangle object has changed.
 
     The new value is \a pen.
+    \since 1.1
 */
 
 /*!
 \fn void QGeoMapRectangleObject::brushChanged(const QBrush &brush)
 
-    This signal is emitted when the brush used to fill in the interior of 
+    This signal is emitted when the brush used to fill in the interior of
     this rectangle object has changed.
 
     The new value is \a brush.
+    \since 1.1
 */
 
 /*******************************************************************************

@@ -52,10 +52,13 @@ QTM_USE_NAMESPACE
 /*!
   \deprecated
   \class QVersitContactExporterDetailHandler
-  \brief The QVersitContactExporterDetailHandler class is an interface for clients wishing to
-  implement custom export behaviour for certain contact details.
+  \brief The QVersitContactExporterDetailHandler class is the legacy interface for clients wishing
+  to implement custom export behaviour for certain contact details.
+    \since 1.1
 
-  This interface is replaced by QVersitContactExporterDetailHandlerV2.
+  This interface is replaced by QVersitContactExporterDetailHandlerV2.  For general information on
+  extending Qt Versit, see the document on \l{Versit Plugins}.
+
 
   \sa QVersitContactExporter
  */
@@ -91,12 +94,14 @@ QTM_USE_NAMESPACE
 
 /*!
   \class QVersitContactExporterDetailHandlerV2
-  \brief The QVersitContactExporterDetailHandlerV2 class is an interface for clients wishing to
-  implement custom export behaviour for certain contact details.
+  \brief The QVersitContactExporterDetailHandlerV2 class is an interface for specifying custom
+  export behaviour for certain contact details.
   \ingroup versit-extension
   \inmodule QtVersit
 
-  This interface supercedes QVersitContactImporterPropertyHandler.
+  This interface supercedes QVersitContactExporterDetailHandler.  For general information on
+  extending Qt Versit, see the document on \l{Versit Plugins}.
+
 
   \sa QVersitContactExporter
  */
@@ -110,7 +115,7 @@ QTM_USE_NAMESPACE
   \fn void QVersitContactExporterDetailHandlerV2::detailProcessed(const QContact& contact, const QContactDetail& detail, const QVersitDocument& document, QSet<QString>* processedFields, QList<QVersitProperty>* toBeRemoved, QList<QVersitProperty>* toBeAdded)
 
   Process \a detail and provide a list of updated \l{QVersitProperty}{QVersitProperties} by
-  modifying the \a toBeRemoved and \a toBeAdded lists.  
+  modifying the \a toBeRemoved and \a toBeAdded lists.
 
   This function is called on every QContactDetail encountered during an export, after the detail has
   been processed by the QVersitContactExporter.  An implementation of this function can be made to
@@ -120,7 +125,7 @@ QTM_USE_NAMESPACE
   fields in the \a detail that were considered by the QVersitContactExporter or another handler in
   processing the detail.  \a document holds the state of the document before the detail was
   processed by the exporter.
-  
+
   \a toBeRemoved and \a toBeAdded are initially filled with a list of properties that the exporter
   will remove from and add to the document.  These lists can be modified (by removing, modifying or
   adding properties) by the handler to control the changes that will actually be made to the
@@ -192,6 +197,15 @@ QTM_USE_NAMESPACE
   does this translation.
 
   \snippet ../../doc/src/snippets/qtversitdocsample/qtversitdocsample.cpp Export relationship example
+
+  \section1 Other implementation notes
+
+  Some Symbian and Android devices do not properly handle the \c FN vCard property.  If a
+  CustomLabel is set on a contact and this class is used to generate a vCard, the receiving device
+  might display this label in an unexpected field (eg. Last Name).
+
+  The vCard specification requires the \c FN property to be present.  However, because of this
+  interoperability issue, Qt Versit only generates an FN property if a CustomLabel is set.
 
   \sa QVersitDocument, QVersitProperty, QVersitResourceHandler, QVersitContactExporterDetailHandlerV2
  */
@@ -267,6 +281,12 @@ bool QVersitContactExporter::exportContacts(
     d->mErrors.clear();
     bool ok = true;
     foreach (const QContact& contact, contacts) {
+        if (contact.isEmpty()) {
+            d->mErrors[contactIndex] = EmptyContactError;
+            ok = false;
+            continue;
+        }
+
         QVersitDocument versitDocument;
         versitDocument.setType(versitType);
         versitDocument.setComponentType(QLatin1String("VCARD"));

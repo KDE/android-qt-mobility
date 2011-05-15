@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -64,7 +64,6 @@ class Q_CONNECTIVITY_EXPORT QBluetoothServiceDiscoveryAgent : public QObject
 public:
     enum Error {
         NoError,
-        Canceled,
         DeviceDiscoveryError,
         UnknownError = 100
     };
@@ -75,7 +74,8 @@ public:
     };
 
     QBluetoothServiceDiscoveryAgent(QObject *parent = 0);
-    QBluetoothServiceDiscoveryAgent(const QBluetoothAddress &remoteAddress, QObject *parent = 0);
+    explicit QBluetoothServiceDiscoveryAgent(const QBluetoothAddress &remoteAddress, QObject *parent = 0);
+    ~QBluetoothServiceDiscoveryAgent();
 
     bool isActive() const;
 
@@ -96,13 +96,18 @@ public slots:
 signals:
     void serviceDiscovered(const QBluetoothServiceInfo &info);
     void finished();
+    void canceled();
     void error(QBluetoothServiceDiscoveryAgent::Error error);
 
 private:
+    QBluetoothServiceDiscoveryAgentPrivate *d_ptr;
+
+    Q_PRIVATE_SLOT(d_func(), void _q_deviceDiscovered(const QBluetoothDeviceInfo &info))
     Q_PRIVATE_SLOT(d_func(), void _q_deviceDiscoveryFinished())
     Q_PRIVATE_SLOT(d_func(), void _q_serviceDiscoveryFinished())
 #ifndef QT_NO_DBUS
     Q_PRIVATE_SLOT(d_func(), void _q_discoveredServices(QDBusPendingCallWatcher*))
+    Q_PRIVATE_SLOT(d_func(), void _q_createdDevice(QDBusPendingCallWatcher*))
 #endif
 };
 

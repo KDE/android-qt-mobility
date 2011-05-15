@@ -49,14 +49,23 @@ QTM_BEGIN_NAMESPACE
     \brief The QLandmarkNameFilter class is used to search for landmarks by name.
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup landmarks-filter
+
+    Please note that different platforms support different capabilities with the attribute filter.
+    \list
+        \o The S60 3.1, 3.2 and 5.0 platforms do not support the MatchContains flag while the Symbian
+    platform does.
+        \o Note also that MatchContains is supported using the sparql and sqlite \l {Landmark Managers and Plugins} {managers}.
+    \endlist
 */
 
 Q_IMPLEMENT_LANDMARKFILTER_PRIVATE(QLandmarkNameFilter)
 
 /*!
     Creates a filter that selects landmarks by \a name.
+    \since 1.1
 */
 QLandmarkNameFilter::QLandmarkNameFilter(const QString &name)
         : QLandmarkFilter(new QLandmarkNameFilterPrivate(name)) {}
@@ -76,6 +85,7 @@ QLandmarkNameFilter::~QLandmarkNameFilter()
 
 /*!
     Returns the name that the filter will use to determine matches.
+    \since 1.1
 */
 QString QLandmarkNameFilter::name() const
 {
@@ -85,6 +95,7 @@ QString QLandmarkNameFilter::name() const
 
 /*!
     Sets the \a name that the filter will use to determine matches.
+    \since 1.1
 */
 void QLandmarkNameFilter::setName(const QString &name)
 {
@@ -94,6 +105,7 @@ void QLandmarkNameFilter::setName(const QString &name)
 
 /*!
     Returns the matching criteria of the filter.
+    \since 1.1
 */
 QLandmarkFilter::MatchFlags QLandmarkNameFilter::matchFlags() const
 {
@@ -103,6 +115,7 @@ QLandmarkFilter::MatchFlags QLandmarkNameFilter::matchFlags() const
 
 /*!
     Sets the matching criteria to those defined in \a flags.
+    \since 1.1
 */
 void QLandmarkNameFilter::setMatchFlags(QLandmarkFilter::MatchFlags flags)
 {

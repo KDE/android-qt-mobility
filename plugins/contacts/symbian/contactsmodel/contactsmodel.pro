@@ -35,6 +35,8 @@ deploy.path = /
 iby.path = epoc32/rom/include
 iby.sources = cntmodel.iby
 
+
+
 #
 # The CI system currently builds against latest stable Qt,
 # which doesn't get installed to epoc32/include
@@ -48,6 +50,11 @@ iby.sources += cntplsql.iby
 
 for(iby, iby.sources):BLD_INF_RULES.prj_exports += "groupsql/$$iby $$deploy.path$$iby.path/$$iby"
 
+# IBY files
+matchlogiby.path = epoc32/rom/include
+matchlogiby.sources = cntmatchlog.iby 
+for(iby, matchlogiby.sources):BLD_INF_RULES.prj_exports += "cntmatchlog/group/$$iby $$deploy.path$$matchlogiby.path/$$iby"
+
 # Seems we currently need to export headers to both epoc32\include and the proper app directory
 # (until the build environment gets cleaned up to not have any contactsmodel headers by default)
 # otherwise we have problems with stale headers
@@ -58,10 +65,16 @@ publicincheaders = cntdef.h cntdb.h cntdbobs.h cntfield.h cntfldst.h cntfilt.h c
 
 # these headers come from ./inc and go to APP_LAYER_PLATFORM_EXPORT_PATH
 platformincheaders = cntmodel.rh cntviewfindconfig.h cntviewfindconfig.inl cntviewstore.h \
-    cntphonenumparser.h cntviewsortpluginbase.h cntsyncecom.h cntconvertercallback.h cntdb_internal.h
+    cntphonenumparser.h cntviewsortpluginbase.h cntsyncecom.h cntconvertercallback.h cntdb_internal.h cntimagesutility.h
 
 # these headers come from ./cntvcard and go to APP_LAYER_PUBLIC_EXPORT_PATH
 publiccntvcardheaders = cntvcard.h
+
+# these confml  comes from ./conf and go to APP_LAYER_EXPORTS_CONFML
+publicconfmls = contactsmodel.confml
+
+# these crml comes from ./conf and go to APP_LAYER_EXPORTS_CRML
+publiccrmls = contactsmodel_10003a73.crml
 
 for(header, publicincheaders):BLD_INF_RULES.prj_exports += "./inc/$$header APP_LAYER_PUBLIC_EXPORT_PATH($$header)"
 for(header, platformincheaders):BLD_INF_RULES.prj_exports += "./inc/$$header APP_LAYER_PLATFORM_EXPORT_PATH($$header)"
@@ -72,4 +85,6 @@ for(header, publicincheaders):BLD_INF_RULES.prj_exports += "./inc/$$header /epoc
 for(header, platformincheaders):BLD_INF_RULES.prj_exports += "./inc/$$header /epoc32/include/$$header"
 for(header, publiccntvcardheaders):BLD_INF_RULES.prj_exports += "./cntvcard/$$header /epoc32/include/$$header"
 
+for(header, publicconfmls ):BLD_INF_RULES.prj_exports += "./conf/$$header APP_LAYER_EXPORTS_CONFML($$header)"
+for(header, publiccrmls):BLD_INF_RULES.prj_exports += "./conf/$$header APP_LAYER_EXPORTS_CRML($$header)"
 

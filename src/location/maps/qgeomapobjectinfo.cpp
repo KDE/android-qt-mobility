@@ -57,6 +57,7 @@ QTM_BEGIN_NAMESPACE
     particular QGeoMapData subclass.
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup maps-impl
 
@@ -97,14 +98,16 @@ QGeoMapObjectInfo::~QGeoMapObjectInfo()
     This function is run after the constructor.
 
     The default implementation does nothing.
+    \since 1.1
 */
 void QGeoMapObjectInfo::init() {}
 
 /*!
-    This function is called when the window size of the map changes to 
+    This function is called when the window size of the map changes to
     \a windowSize.
 
     The default implementation does nothing.
+    \since 1.1
 */
 void QGeoMapObjectInfo::windowSizeChanged(const QSizeF &windowSize)
 {
@@ -112,10 +115,11 @@ void QGeoMapObjectInfo::windowSizeChanged(const QSizeF &windowSize)
 }
 
 /*!
-    This function is called when the zoom level of the map changes to 
+    This function is called when the zoom level of the map changes to
     \a zoomLevel.
 
     The default implementation does nothing.
+    \since 1.1
 */
 void QGeoMapObjectInfo::zoomLevelChanged(qreal zoomLevel)
 {
@@ -123,10 +127,11 @@ void QGeoMapObjectInfo::zoomLevelChanged(qreal zoomLevel)
 }
 
 /*!
-    This function is called when the center of the map changes to 
+    This function is called when the center of the map changes to
     \a coordinate.
 
     The default implementation does nothing.
+    \since 1.1
 */
 void QGeoMapObjectInfo::centerChanged(const QGeoCoordinate &coordinate)
 {
@@ -137,6 +142,7 @@ void QGeoMapObjectInfo::centerChanged(const QGeoCoordinate &coordinate)
     This function is run when the z value of the object changes to \a zValue.
 
     The default implementation does nothing.
+    \since 1.1
 */
 void QGeoMapObjectInfo::zValueChanged(int zValue)
 {
@@ -144,10 +150,11 @@ void QGeoMapObjectInfo::zValueChanged(int zValue)
 }
 
 /*!
-    This function is run when the visible state of the object changes to 
+    This function is run when the visible state of the object changes to
     \a visible.
 
     The default implementation does nothing.
+    \since 1.1
 */
 void QGeoMapObjectInfo::visibleChanged(bool visible)
 {
@@ -155,10 +162,11 @@ void QGeoMapObjectInfo::visibleChanged(bool visible)
 }
 
 /*!
-    This function is run when the selected state of the object changes to 
+    This function is run when the selected state of the object changes to
     \a selected.
 
     The default implementation does nothing.
+    \since 1.1
 */
 void QGeoMapObjectInfo::selectedChanged(bool selected)
 {
@@ -166,9 +174,46 @@ void QGeoMapObjectInfo::selectedChanged(bool selected)
 }
 
 /*!
+    This function is run when the origin of the object changes to
+    \a origin.
+
+    The default implementation does nothing.
+    \since 1.2
+*/
+void QGeoMapObjectInfo::originChanged(const QGeoCoordinate &origin)
+{
+    Q_UNUSED(origin);
+}
+
+/*!
+    This function is run when the coordinate units of the object changes to
+    \a units.
+
+    The default implementation does nothing.
+    \since 1.2
+*/
+void QGeoMapObjectInfo::unitsChanged(QGeoMapObject::CoordinateUnit units)
+{
+    Q_UNUSED(units);
+}
+
+/*!
+    This function is run when the transform type of the object changes to
+    \a transformType.
+
+    The default implementation does nothing.
+    \since 1.2
+*/
+void QGeoMapObjectInfo::transformTypeChanged(QGeoMapObject::TransformType transformType)
+{
+    Q_UNUSED(transformType);
+}
+
+/*!
     Returns a bounding box which contains this map object.
 
     The default implementation returns an invalid bounding box.
+    \since 1.1
 */
 QGeoBoundingBox QGeoMapObjectInfo::boundingBox() const
 {
@@ -180,6 +225,7 @@ QGeoBoundingBox QGeoMapObjectInfo::boundingBox() const
     map object.
 
     The default implementation returns false.
+    \since 1.1
 */
 bool QGeoMapObjectInfo::contains(const QGeoCoordinate &coordinate) const
 {
@@ -189,16 +235,29 @@ bool QGeoMapObjectInfo::contains(const QGeoCoordinate &coordinate) const
 
 /*!
     Returns the QGeoMapData instance associated with this info object.
+    \since 1.1
 */
 QGeoMapData* QGeoMapObjectInfo::mapData()
 {
     return d_ptr->mapData;
 }
 
+// Need to keep this for BC, otherwise would probably replace with const
+// version
 /*!
     Returns the QGeoMapObject instance associated with this info object.
+    \since 1.1
 */
 QGeoMapObject* QGeoMapObjectInfo::mapObject()
+{
+    return d_ptr->mapObject;
+}
+
+/*!
+    Returns the QGeoMapObject instance associated with this info object.
+    \since 1.2
+*/
+QGeoMapObject* QGeoMapObjectInfo::mapObject() const
 {
     return d_ptr->mapObject;
 }

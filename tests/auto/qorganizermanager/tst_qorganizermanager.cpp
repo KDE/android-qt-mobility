@@ -168,6 +168,7 @@ private slots:
     void update();
     void remove();
     void batch();
+    void observerDeletion();
     void signalEmission();
     void detailDefinitions();
     void detailOrders();
@@ -192,6 +193,8 @@ private slots:
     void changeSet();
     void fetchHint();
     void testFilterFunction();
+    void testItemOccurrences();
+    void errorSemantics();
 
     /* Special test with special data */
     void uriParsing_data();
@@ -224,6 +227,7 @@ private slots:
     void idComparison_data() {addManagers();}
     void emptyItemManipulation_data() {addManagers();}
     void partialSave_data() {addManagers();}
+    void testItemOccurrences_data(){addManagers();}
 };
 
 class BasicItemLocalId : public QOrganizerItemEngineId
@@ -1144,6 +1148,112 @@ void tst_QOrganizerManager::addExceptions()
     QCOMPARE(thirdEvent.startDateTime(), QDateTime(QDate(2010, 1, 15), QTime(13, 0, 0)));
     QCOMPARE(thirdEvent.endDateTime(), QDateTime(QDate(2010, 1, 15), QTime(14, 0, 0)));
     QVERIFY(!thirdEvent.id().isNull());
+}
+
+/*test ItemOccurrences function maxCount parameters*/
+void tst_QOrganizerManager::testItemOccurrences()
+{
+    //Get the uri value
+    QFETCH (QString, uri);
+    //Create the QOrganizerManager
+    QScopedPointer<QOrganizerManager> cm (QOrganizerManager::fromUri (uri));
+
+    //Create the weekly recurrence event data that is used by the test
+    QOrganizerEvent event;
+    event.setDisplayLabel (QLatin1String ("meeting"));
+    event.setStartDateTime (QDateTime (QDate (2010, 1, 1), QTime (11, 0, 0)));
+    event.setEndDateTime (QDateTime (QDate (2010, 1, 1), QTime (12, 0, 0)));
+
+    //Create weekly recurrence rule and count limit is 3
+    QOrganizerRecurrenceRule rrule;
+    rrule.setFrequency (QOrganizerRecurrenceRule::Weekly);
+    rrule.setLimit (3);
+    event.setRecurrenceRule (rrule);
+
+    //Save the event
+    QVERIFY (cm->saveItem (&event));
+
+    //Varify the event data guid
+    QVERIFY (!event.id().isNull ());
+    event = cm->item (event.id ());
+    //The guid(Globally unique identifier) must be set so when it is exported to iCalendar, the relationship can be represented
+    QVERIFY (!event.guid().isEmpty ());
+
+    //Use default parameter value to fetch
+    QList<QOrganizerItem> items = cm->itemOccurrences(
+                                            event,     //parantItem
+                                            QDateTime (QDate (2010, 1, 1), QTime (0, 0, 0)), //start date
+                                            QDateTime (QDate (2010, 2, 1), QTime (0, 0, 0))  //end date
+                                            );
+    //The result should be same as rrule's limitation 3
+    QCOMPARE(items.size(), 3);
+
+    //Assign maxCount negative value to get same result as default value
+    QList<QOrganizerItem> items2 = cm->itemOccurrences(
+                                            event,     //parantItem
+                                            QDateTime (QDate (2010, 1, 1), QTime (0, 0, 0)), //start date
+                                            QDateTime (QDate (2010, 2, 1), QTime (0, 0, 0)), //end date
+                                            -5   //maxCount
+                                            );
+    //The result should be same as rrule's limitation
+    QCOMPARE(items2.size(), 3);
+
+    //Assign maxCount bigger value to get same result as default value
+    QList<QOrganizerItem> items3 = cm->itemOccurrences(
+                                            event,
+                                            QDateTime (QDate (2010, 1, 1), QTime (0, 0, 0)),
+                                            QDateTime (QDate (2010, 2, 1), QTime (0, 0, 0)),
+                                            4
+                                            );
+    //The result should be same as rrule's limitation since the maxCount is bigger than the actually data
+    QCOMPARE(items3.size(), 3);
+
+/*------------------------------------------------------------------------
+    Create 2nd Daily event data, now We have Weekly and Daily 2 different events and make the situation more complex.
+    maxCount is also smaller than the actual item data.
+*/
+    //Create 2nd Daily event data and limitation is 20
+    QOrganizerEvent event2;
+    event2.setDisplayLabel (QLatin1String ("meeting2"));
+    event2.setStartDateTime (QDateTime (QDate (2010, 1, 1), QTime (11, 0, 0)));
+    event2.setEndDateTime (QDateTime (QDate (2010, 1, 1), QTime (12, 0, 0)));
+    rrule.setFrequency (QOrganizerRecurrenceRule::Daily);
+    rrule.setLimit (20);
+    event2.setRecurrenceRule (rrule);
+    QVERIFY (cm->saveItem (&event2));
+    event2 = cm->item (event2.id ());
+    // The guid must be set so when it is exported to iCalendar, the relationship can be represented
+    QVERIFY (!event2.guid().isEmpty ());
+
+    //Use default maxCount parameter value to fetch
+    QList<QOrganizerItem> items4 = cm->itemOccurrences(
+                                            event2,
+                                            QDateTime (QDate (2010, 1, 1), QTime (0, 0, 0)),
+                                            QDateTime (QDate (2010, 2, 1), QTime (0, 0, 0))
+                                            );
+
+    //The result should be same as rrule's limitation 20
+    QCOMPARE (items4.size (), 20);
+
+    //Normal daily event items fetch with 5 max count limitation
+    QList<QOrganizerItem> items5 = cm->itemOccurrences(
+                                            event2,
+                                            QDateTime (QDate (2010, 1, 1), QTime (0, 0, 0)),
+                                            QDateTime (QDate (2010, 2, 1), QTime (0, 0, 0)),
+                                            5
+                                            );
+    //The result should be same as maxCount 5 which is smaller than event rrule's limitation 20
+    QCOMPARE (items5.size (), 5);
+
+    //Normal daily event items fetch with 0 max count limitation
+    QList<QOrganizerItem> items6 = cm->itemOccurrences(
+                                            event2,
+                                            QDateTime (QDate (2010, 1, 1), QTime (0, 0, 0)),
+                                            QDateTime (QDate (2010, 2, 1), QTime (0, 0, 0)),
+                                            0
+                                            );
+    //The result should be 0
+    QCOMPARE (items6.size (), 0);
 }
 
 void tst_QOrganizerManager::addExceptionsWithGuid()
@@ -2458,6 +2568,20 @@ void tst_QOrganizerManager::itemValidation()
     c.removeDetail(&d7);
 }
 
+void tst_QOrganizerManager::observerDeletion()
+{
+    QOrganizerManager *manager = new QOrganizerManager("memory");
+    QOrganizerItem c;
+    QVERIFY(manager->saveItem(&c));
+    QOrganizerItemId id = c.id();
+    QOrganizerItemObserver *observer = new QOrganizerItemObserver(manager, id);
+    Q_UNUSED(observer)
+    delete manager;
+    delete observer;
+    // Test for bug MOBILITY-2566 - that QOrganizerItemObserver doesn't crash when it is
+    // destroyed after the associated QOrganizerManager
+}
+
 void tst_QOrganizerManager::signalEmission()
 {
     QTest::qWait(500); // clear the signal queue
@@ -2495,7 +2619,7 @@ void tst_QOrganizerManager::signalEmission()
     QVERIFY(arg.count() == 1);
     QCOMPARE(QOrganizerItemId(arg.at(0)), cid);
 
-    QSharedPointer<QOrganizerItemObserver> todo1Observer = m1->observeItem(cid);
+    QScopedPointer<QOrganizerItemObserver> todo1Observer(new QOrganizerItemObserver(m1.data(), cid));
     QScopedPointer<QSignalSpy> spyObserverModified1(new QSignalSpy(todo1Observer.data(), SIGNAL(itemChanged())));
     QScopedPointer<QSignalSpy> spyObserverRemoved1(new QSignalSpy(todo1Observer.data(), SIGNAL(itemRemoved())));
 
@@ -2539,8 +2663,8 @@ void tst_QOrganizerManager::signalEmission()
 
     spyObserverModified1->clear();
     spyObserverRemoved1->clear();
-    QSharedPointer<QOrganizerItemObserver> todo2Observer = m1->observeItem(todo2.id());
-    QSharedPointer<QOrganizerItemObserver> todo3Observer = m1->observeItem(todo3.id());
+    QScopedPointer<QOrganizerItemObserver> todo2Observer(new QOrganizerItemObserver(m1.data(), todo2.id()));
+    QScopedPointer<QOrganizerItemObserver> todo3Observer(new QOrganizerItemObserver(m1.data(), todo3.id()));
     QScopedPointer<QSignalSpy> spyObserverModified2(new QSignalSpy(todo2Observer.data(), SIGNAL(itemChanged())));
     QScopedPointer<QSignalSpy> spyObserverModified3(new QSignalSpy(todo3Observer.data(), SIGNAL(itemChanged())));
     QScopedPointer<QSignalSpy> spyObserverRemoved2(new QSignalSpy(todo2Observer.data(), SIGNAL(itemRemoved())));
@@ -2601,9 +2725,9 @@ void tst_QOrganizerManager::signalEmission()
     QTRY_WAIT( while(spyAdded.size() > 0) {sigids += spyAdded.takeFirst().at(0).value<QList<QOrganizerItemId> >(); }, sigids.contains(todo.id()) && sigids.contains(todo2.id()) && sigids.contains(todo3.id()));
     QTRY_COMPARE(spyModified.count(), 0);
 
-    todo1Observer = m1->observeItem(todo.id());
-    todo2Observer = m1->observeItem(todo2.id());
-    todo3Observer = m1->observeItem(todo3.id());
+    todo1Observer.reset(new QOrganizerItemObserver(m1.data(), todo.id()));
+    todo2Observer.reset(new QOrganizerItemObserver(m1.data(), todo2.id()));
+    todo3Observer.reset(new QOrganizerItemObserver(m1.data(), todo3.id()));
     spyObserverModified1.reset(new QSignalSpy(todo1Observer.data(), SIGNAL(itemChanged())));
     spyObserverModified2.reset(new QSignalSpy(todo2Observer.data(), SIGNAL(itemChanged())));
     spyObserverModified3.reset(new QSignalSpy(todo3Observer.data(), SIGNAL(itemChanged())));
@@ -3342,13 +3466,66 @@ void tst_QOrganizerManager::itemFetch()
     QCOMPARE(eventOccurrenceCount, 3);
 }
 
-// This is just a copy of itemFetch(), but for todos
+// This is mostly a copy of itemFetch(), but for todos
 void tst_QOrganizerManager::todoItemFetch()
 {
     QFETCH(QString, uri);
     QScopedPointer<QOrganizerManager> cm(QOrganizerManager::fromUri(uri));
+    QList<QOrganizerItem> items;
 
     cm->removeItems(cm->itemIds()); // empty the calendar to prevent the previous test from interfering this one
+
+    QOrganizerTodo todoStartDueDate;
+    todoStartDueDate.setDisplayLabel("todo startdue");
+    todoStartDueDate.setStartDateTime(QDateTime(QDate(2011, 3, 27), QTime(11, 0, 0)));
+    todoStartDueDate.setDueDateTime(QDateTime(QDate(2011, 3, 29), QTime(11, 30, 0)));
+    QVERIFY(cm->saveItem(&todoStartDueDate));
+
+    QOrganizerTodo todoStartDate;
+    todoStartDate.setDisplayLabel("todo start");
+    todoStartDate.setStartDateTime(QDateTime(QDate(2011, 3, 25), QTime(11, 0, 0)));
+    QVERIFY(cm->saveItem(&todoStartDate));
+
+    QOrganizerTodo todoDueDate;
+    todoDueDate.setDisplayLabel("todo due");
+    todoDueDate.setDueDateTime(QDateTime(QDate(2011, 3, 25), QTime(11, 30, 0)));
+    QVERIFY(cm->saveItem(&todoDueDate));
+
+    QOrganizerTodo todoNoDate;
+    todoNoDate.setDisplayLabel("todo nodate");
+    QVERIFY(cm->saveItem(&todoNoDate));
+
+    items = cm->items();
+    QCOMPARE(items.count(), 4);
+
+    items = cm->items(QDateTime(), QDateTime(QDate(2011, 3, 25), QTime(13, 0, 0)));
+    QCOMPARE(items.count(), 2);
+
+    items = cm->items(QDateTime(), QDateTime(QDate(2011, 3, 25), QTime(11, 15, 0)));
+    QCOMPARE(items.count(), 1);
+
+    items = cm->items(QDateTime(QDate(2011, 3, 27), QTime(10, 0, 0)), QDateTime());
+    QCOMPARE(items.count(), 1);
+
+    items = cm->items(QDateTime(QDate(2011, 3, 29), QTime(13, 0, 0)), QDateTime());
+    QCOMPARE(items.count(), 0);
+
+    items = cm->items(QDateTime(QDate(2011, 3, 26), QTime(11, 0, 0)),
+                      QDateTime(QDate(2011, 3, 28), QTime(11, 0, 0)));
+    QEXPECT_FAIL("mgr='mkcal'", "Needs NB#238116 fixed", Continue);
+    QCOMPARE(items.count(), 1);
+
+    items = cm->items(QDateTime(QDate(2011, 3, 28), QTime(11, 0, 0)),
+                      QDateTime(QDate(2011, 3, 30), QTime(11, 0, 0)));
+    QCOMPARE(items.count(), 1);
+
+    items = cm->items(QDateTime(QDate(2011, 3, 28), QTime(11, 0, 0)),
+                      QDateTime(QDate(2011, 3, 28), QTime(11, 0, 0)));
+    QEXPECT_FAIL("mgr='mkcal'", "Needs NB#238116 fixed", Continue);
+    QCOMPARE(items.count(), 1);
+
+
+    cm->removeItems(cm->itemIds());
 
     QOrganizerTodo todo;
     todo.setDisplayLabel("todo");
@@ -3367,8 +3544,8 @@ void tst_QOrganizerManager::todoItemFetch()
     QVERIFY(cm->saveItem(&recTodo));
 
     //fetch all recurrences
-    QList<QOrganizerItem> items = cm->items(QDateTime(QDate(2010, 9, 8)),
-                                            QDateTime(QDate(2010, 9, 12)));
+    items = cm->items(QDateTime(QDate(2010, 9, 8)),
+                      QDateTime(QDate(2010, 9, 12)));
     QCOMPARE(items.count(), 4); // should return todo + 3 x occurrencesOfRecTodo
 
     //fetch only the originating items
@@ -3654,6 +3831,24 @@ void tst_QOrganizerManager::recurrence()
         // Fetch events on a day where the recurrence is no longer valid
         items = cm->items(QDateTime(QDate(2012, 8, 12), QTime(0,0,0)), QDateTime(QDate(2012, 8, 12), QTime(23,59,59)));
         QCOMPARE(items.count(), 0);
+    }
+
+    //test for unlimited count limit
+    //for bug:MOBILITY-2125
+    cm->removeItems(cm->itemIds());
+    event.setId(QOrganizerItemId());
+    rrule.setLimit(INT_MAX);
+    rrule.setFrequency(QOrganizerRecurrenceRule::Weekly);
+    rrule.setInterval(4);
+    rrule.setDaysOfWeek(QSet<Qt::DayOfWeek>() << Qt::Friday);
+    event.setEndDateTime(QDateTime(QDate(2013, 8, 9), QTime(11, 30, 0)));
+    event.setRecurrenceRule(rrule);
+    QVERIFY(cm->saveItem(&event));
+    {
+        // Fetch all events with occurrences
+        QList<QOrganizerItem> items = cm->items(QDateTime(QDate(2012, 8, 9)),
+                                                QDateTime(QDate(2013, 8, 12), QTime(23,59,59)));
+        QVERIFY(items.count() > 1);
     }
 
     // second, test date limit.  The results should be the same as the count limit, if the limit date is the 11th.
@@ -4332,6 +4527,71 @@ void tst_QOrganizerManager::collections()
         }
     }
 }
+
+class errorSemanticsTester : public QObject {
+    Q_OBJECT;
+public:
+    bool initialErrorWasDoesNotExist;
+    bool slotErrorWasBadArgument;
+    QOrganizerManager* mManager;
+
+    errorSemanticsTester(QOrganizerManager* manager)
+        : initialErrorWasDoesNotExist(false),
+        slotErrorWasBadArgument(false),
+        mManager(manager)
+    {
+        connect(manager, SIGNAL(itemsAdded(QList<QOrganizerItemId>)), this, SLOT(handleAdded()));
+    }
+
+public slots:
+    void handleAdded()
+    {
+        // Make sure the initial error state is correct
+        initialErrorWasDoesNotExist = mManager->error() == QOrganizerManager::DoesNotExistError;
+        // Now force a different error
+        mManager->removeItems(QList<QOrganizerItemId>());
+        slotErrorWasBadArgument = mManager->error() == QOrganizerManager::BadArgumentError;
+        // and return
+    }
+};
+
+void tst_QOrganizerManager::errorSemantics()
+{
+    /*
+        Test to make sure that calling functions in response to signals doesn't upset the correct error results
+        This relies on the memory engine emitting signals before e.g. saveItems returns
+     */
+
+    QOrganizerManager m("memory");
+    errorSemanticsTester t(&m);
+
+    QVERIFY(m.error() == QOrganizerManager::NoError);
+
+    QString type;
+    if (m.detailDefinitions(QOrganizerItemType::TypeNote).count())
+        type = QLatin1String(QOrganizerItemType::TypeNote);
+    else if (m.detailDefinitions(QOrganizerItemType::TypeTodo).count())
+        type = QLatin1String(QOrganizerItemType::TypeTodo);
+    else
+        QSKIP("This manager does not support note or todo item", SkipSingle);
+
+    QOrganizerItem item;
+    item.setType(type);
+    item.setDisplayLabel("This is a note");
+    item.setDescription("This note is a particularly notey note");
+
+    // Try creating some specific error so we can test it later on
+    QVERIFY(!m.removeItem(QOrganizerItemId()));
+    QVERIFY(m.error() == QOrganizerManager::DoesNotExistError);
+
+    // Now save something
+    QVERIFY(m.saveItem(&item));
+
+    QVERIFY(t.initialErrorWasDoesNotExist);
+    QVERIFY(t.slotErrorWasBadArgument);
+    QVERIFY(m.error() == QOrganizerManager::NoError);
+}
+
 
 QTEST_MAIN(tst_QOrganizerManager)
 #include "tst_qorganizermanager.moc"

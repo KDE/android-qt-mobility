@@ -66,8 +66,9 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMediaPluginLoader, playlistIOLoader,
     \class QMediaPlaylist
     \inmodule QtMultimediaKit
     \ingroup multimedia
+    \since 1.0
 
-    
+
     \brief The QMediaPlaylist class provides a list of media content to play.
 
     QMediaPlaylist is intended to be used with other media objects,
@@ -76,20 +77,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMediaPluginLoader, playlistIOLoader,
     QMediaPlaylist allows to access the service intrinsic playlist functionality
     if available, otherwise it provides the the local memory playlist implementation.
 
-\code
-    player = new QMediaPlayer;
-
-    playlist = new QMediaPlaylist;
-    playlist->append(QUrl("http://example.com/movie1.mp4"));
-    playlist->append(QUrl("http://example.com/movie2.mp4"));
-    playlist->append(QUrl("http://example.com/movie3.mp4"));
-
-    playlist->setCurrentIndex(1);
-
-    player->setPlaylist(playlist);
-
-    player->play();
-\endcode
+    \snippet doc/src/snippets/multimedia-snippets/media.cpp Movie playlist
 
     Depending on playlist source implementation, most of the playlist mutating
     operations can be asynchronous.
@@ -118,7 +106,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMediaPluginLoader, playlistIOLoader,
 
 
 /*!
-  Create a new playlist object for with the given \a parent.  
+  Create a new playlist object for with the given \a parent.
 */
 
 QMediaPlaylist::QMediaPlaylist(QObject *parent)

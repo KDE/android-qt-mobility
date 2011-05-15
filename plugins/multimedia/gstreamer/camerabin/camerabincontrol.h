@@ -81,6 +81,9 @@ private slots:
     void handleResourcesGranted();
     void handleResourcesLost();
 
+    void handleBusyChanged(bool);
+    void handleCameraError(int error, const QString &errorString);
+
 private:
     void updateSupportedResolutions(const QString &device);
 

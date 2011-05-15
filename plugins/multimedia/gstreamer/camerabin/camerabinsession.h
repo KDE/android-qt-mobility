@@ -66,6 +66,8 @@ class CameraBinFlash;
 class CameraBinFocus;
 class CameraBinImageProcessing;
 class CameraBinLocks;
+class CameraBinCaptureDestination;
+class CameraBinCaptureBufferFormat;
 class QGstreamerVideoRendererInterface;
 
 class QGstreamerElementFactory
@@ -112,6 +114,9 @@ public:
     CameraBinFocus *cameraFocusControl() const  { return m_cameraFocusControl; }
     CameraBinImageProcessing *imageProcessingControl() const { return m_imageProcessingControl; }
     CameraBinLocks *cameraLocksControl() const { return m_cameraLocksControl; }
+    CameraBinCaptureDestination *captureDestinationControl() const { return m_captureDestinationControl; }
+    CameraBinCaptureBufferFormat *captureBufferFormatControl() const { return m_captureBufferFormatControl; }
+
 
     CameraBinRecorder *recorderControl() const { return m_recorderControl; }
     CameraBinContainer *mediaContainerControl() const { return m_mediaContainerControl; }
@@ -129,6 +134,8 @@ public:
     void captureImage(int requestId, const QString &fileName);
 
     QCamera::State state() const;
+    bool isBusy() const;
+
     qint64 duration() const;
 
     void recordVideo();
@@ -139,7 +146,6 @@ public:
     bool isMuted() const;
 
     bool processSyncMessage(const QGstreamerMessage &message);
-    void processSavedImage(const QString &filename);
 
 signals:
     void stateChanged(QCamera::State state);
@@ -147,11 +153,11 @@ signals:
     void error(int error, const QString &errorString);
     void imageExposed(int requestId);
     void imageCaptured(int requestId, const QImage &img);
-    void imageSaved(int requestId, const QString &fileName);
-    void focusStatusChanged(QCamera::LockStatus status, QCamera::LockChangeReason reason);
     void mutedChanged(bool);
     void viewfinderChanged();
     void readyChanged(bool);
+    void busyChanged(bool);
+    void busMessage(const QGstreamerMessage &message);
 
 public slots:
     void setDevice(const QString &device);
@@ -160,9 +166,8 @@ public slots:
     void setMetaData(const QMap<QByteArray, QVariant>&);
     void setMuted(bool);
 
-
 private slots:
-    void busMessage(const QGstreamerMessage &message);
+    void handleBusMessage(const QGstreamerMessage &message);
     void handleViewfinderChange();
 
 private:
@@ -170,6 +175,7 @@ private:
     void setupCaptureResolution();
     void updateVideoSourceCaps();
     GstElement *buildVideoSrc();
+    static void updateBusyStatus(GObject *o, GParamSpec *p, gpointer d);
 
     QUrl m_sink;
     QUrl m_actualSink;
@@ -179,8 +185,9 @@ private:
     QCamera::State m_pendingState;
     QString m_inputDevice;
     bool m_pendingResolutionUpdate;
+    bool m_muted;
+    bool m_busy;
 
-    bool m_muted;    
     QCamera::CaptureMode m_captureMode;
     QMap<QByteArray, QVariant> m_metaData;
 
@@ -199,6 +206,8 @@ private:
     CameraBinFocus *m_cameraFocusControl;
     CameraBinImageProcessing *m_imageProcessingControl;
     CameraBinLocks *m_cameraLocksControl;
+    CameraBinCaptureDestination *m_captureDestinationControl;
+    CameraBinCaptureBufferFormat *m_captureBufferFormatControl;
 
     QGstreamerBusHelper *m_busHelper;
     GstBus* m_bus;

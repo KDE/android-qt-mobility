@@ -41,6 +41,7 @@
 
 #include <QtCore/QtPlugin>
 #include <QtCore/QCoreApplication>
+#include <QtCore/QFile>
 
 #include <QDebug>
 #include "qfeedback.h"
@@ -79,20 +80,28 @@ void QFeedbackMMK::setLoaded(QFeedbackFileEffect *effect, bool load)
                 return;
             } else {
                 // New sound effect!
-                fi.soundEffect = new QSoundEffect(this);
-                mEffects.insert(effect, fi);
-                mEffectMap.insert(fi.soundEffect, effect);
+                QUrl url = effect->source();
+                if (QFile::exists(url.toLocalFile())) {
+                    fi.soundEffect = new QSoundEffect(this);
+                    mEffects.insert(effect, fi);
+                    mEffectMap.insert(fi.soundEffect, effect);
 
-                connect(fi.soundEffect, SIGNAL(statusChanged()), this, SLOT(soundEffectStatusChanged()));
-                connect(fi.soundEffect, SIGNAL(playingChanged()), this, SLOT(soundEffectPlayingChanged()));
-                fi.soundEffect->setSource(effect->source());
+                    connect(fi.soundEffect, SIGNAL(statusChanged()), this, SLOT(soundEffectStatusChanged()));
+                    connect(fi.soundEffect, SIGNAL(playingChanged()), this, SLOT(soundEffectPlayingChanged()));
+                    fi.soundEffect->setSource(url);
+
+                    // conceptually we're now loading, so we have to do this manually??
+                    QMetaObject::invokeMethod(effect, "stateChanged");
+                } else {
+                    reportLoadFinished(effect, false);
+                }
             }
         }
     } else {
         // Time to unload.
         if (fi.soundEffect) {
             mEffectMap.remove(fi.soundEffect);
-            delete fi.soundEffect;
+            fi.soundEffect->deleteLater();
         }
         mEffects.remove(effect);
     }
@@ -106,8 +115,9 @@ void QFeedbackMMK::setEffectState(QFeedbackFileEffect *effect, QFeedbackEffect::
         case QFeedbackEffect::Stopped:
             if (fi.playing) {
                 Q_ASSERT(fi.soundEffect);
-                fi.soundEffect->stop();
                 fi.playing = false;
+                mEffects.insert(effect, fi); // overwrite previous version
+                fi.soundEffect->stop();
             }
             break;
 
@@ -119,9 +129,10 @@ void QFeedbackMMK::setEffectState(QFeedbackFileEffect *effect, QFeedbackEffect::
         case QFeedbackEffect::Running:
             if (fi.playing) {
                 // We're already playing.
-            } else if (fi.soundEffect){
-                fi.soundEffect->play();
+            } else if (fi.soundEffect) {
                 fi.playing = true;
+                mEffects.insert(effect, fi); // overwrite previous version
+                fi.soundEffect->play();
             }
             break;
         default:
@@ -132,9 +143,8 @@ void QFeedbackMMK::setEffectState(QFeedbackFileEffect *effect, QFeedbackEffect::
 QFeedbackEffect::State QFeedbackMMK::effectState(const QFeedbackFileEffect *effect)
 {
     FeedbackInfo fi = mEffects.value(effect);
-
     if (fi.soundEffect) {
-        if (fi.playing)
+        if (fi.playing) // we might not be loaded, however
             return QFeedbackEffect::Running;
         if (fi.loaded)
             return QFeedbackEffect::Stopped; // No idle?
@@ -164,18 +174,30 @@ void QFeedbackMMK::soundEffectStatusChanged()
         if (!fe)
             return;
 
+        FeedbackInfo fi = mEffects.value(fe);
+
         switch(se->status()) {
             case QSoundEffect::Error:
-                if (fe->state() == QFeedbackEffect::Loading) {
-                    reportLoadFinished(fe, false);
+                if (!fi.soundEffect || !fi.loaded) {
+                    // Error before we got loaded, so fail the load
+                    mEffectMap.remove(se);
+                    mEffects.remove(fe);
+                    se->deleteLater();
+                    reportLoadFinished(fe, false); // this ends our involvement
                 } else {
-                    reportError(fe, QFeedbackEffect::UnknownError);
+                    reportError(fe, QFeedbackEffect::UnknownError); // this doesn't do much
                 }
                 break;
 
             case QSoundEffect::Ready:
                 if (fe->state() == QFeedbackEffect::Loading) {
                     reportLoadFinished(fe, true);
+
+                    FeedbackInfo fi = mEffects.value(fe);
+                    fi.loaded = true;
+                    mEffects.insert(fe, fi);
+
+                    QMetaObject::invokeMethod(fe, "stateChanged");
                 }
                 break;
 
@@ -194,12 +216,17 @@ void QFeedbackMMK::soundEffectPlayingChanged()
         FeedbackInfo fi = mEffects.value(fileEffect);
 
         if (fi.soundEffect == se) {
-            fi.playing = se->isPlaying();
+            if (fi.playing != se->isPlaying()) {
+                fi.playing = se->isPlaying();
+                mEffects.insert(fileEffect, fi); // overwrite previous version
 
-            QFeedbackFileEffect* fe = mEffectMap.value(se);
-            // Emit the stateChanged() signal
-            if (fe) {
-                QMetaObject::invokeMethod(fe, "stateChanged");
+                QFeedbackFileEffect* fe = mEffectMap.value(se);
+                // Emit the stateChanged() signal
+                if (fe) {
+                    QMetaObject::invokeMethod(fe, "stateChanged");
+                }
+            } else {
+                // Do nothing, internal state is already ok
             }
         }
     }

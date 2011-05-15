@@ -41,8 +41,6 @@
 
 #include "qorganizerasynchmanager.h"
 #include "qtorganizer.h"
-#include "mkcalengine.h"
-#include "mkcalid.h"
 
 QTM_USE_NAMESPACE
 
@@ -137,7 +135,8 @@ void AsyncWorker::processRequest(QOrganizerAbstractRequest* req)
     QOrganizerAbstractRequest::State state = req->state();
 
     //if the request is in inactive state, start the request (this could happen due to thread scheduling)
-    if (state == QOrganizerAbstractRequest::InactiveState) {
+    if (state == QOrganizerAbstractRequest::InactiveState ||
+        state == QOrganizerAbstractRequest::FinishedState) {
         QOrganizerManagerEngine::updateRequestState(req, QOrganizerAbstractRequest::ActiveState);
     } else if (state != QOrganizerAbstractRequest::ActiveState) {
         return;
@@ -373,7 +372,6 @@ bool OrganizerAsynchManager::startRequest(QOrganizerAbstractRequest *req)
     QMutexLocker locker(&m_mutex);
 
     AsyncWorker *worker = 0;
-
     //first check if there is a lazy, idle worker around
     if (m_idleWorkers.size() > 0) {
         worker = m_idleWorkers.dequeue();
@@ -382,6 +380,9 @@ bool OrganizerAsynchManager::startRequest(QOrganizerAbstractRequest *req)
         if (m_activeWorkers.size() < m_maxWorkers) {
             worker = new AsyncWorker(this);
         }
+
+    //update the request state to active
+    QOrganizerManagerEngine::updateRequestState(req, QOrganizerAbstractRequest::ActiveState);
 
     //if we found a worker assign him the request
     if (worker) {
@@ -394,9 +395,6 @@ bool OrganizerAsynchManager::startRequest(QOrganizerAbstractRequest *req)
     }
 
     locker.unlock();
-
-    //update the request state to active
-    QOrganizerManagerEngine::updateRequestState(req, QOrganizerAbstractRequest::ActiveState);
 
     return true;
 }

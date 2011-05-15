@@ -56,7 +56,7 @@ CCompassSym* CCompassSym::NewL(QSensor *sensor)
     CleanupStack::PushL(self);
     self->ConstructL();
     CleanupStack::Pop();
-    return self;    
+    return self;
     }
 
 /**
@@ -80,7 +80,7 @@ CCompassSym::CCompassSym(QSensor *sensor):CSensorBackendSym(sensor)
 
 /**
  * start() overrides CSensorBackendSym::start()
- * This is to allow starting magnetometer before stopping the compass 
+ * This is to allow starting magnetometer before stopping the compass
  */
 void CCompassSym::start()
     {
@@ -92,7 +92,7 @@ void CCompassSym::start()
 
 /**
  * stop() overrides CSensorBackendSym::stop()
- * This is to allow stopping magnetometer before stopping the compass 
+ * This is to allow stopping magnetometer before stopping the compass
  */
 void CCompassSym::stop()
     {
@@ -103,21 +103,19 @@ void CCompassSym::stop()
     }
 
 /*
- * RecvData is used to retrieve the sensor reading from sensor server
+ * DataReceived is used to retrieve the sensor reading from sensor server
  * It is implemented here to handle compass sensor specific
  * reading data and provides conversion and utility code
- */  
-void CCompassSym::RecvData(CSensrvChannel &aChannel)
+ */
+void CCompassSym::DataReceived(CSensrvChannel &aChannel, TInt aCount, TInt /*aDataLost*/)
     {
-    TPckg<TSensrvMagneticNorthData> proxpkg( iData );
-    TInt ret = aChannel.GetData( proxpkg );
-    if(KErrNone != ret)
-        {
-        // If there is no reading available, return without setting
-        return;
-        }
+    ProcessData(aChannel, aCount, iData);
+    }
+
+void CCompassSym::ProcessReading()
+    {
     // Get a lock on the reading data
-    iBackendData.iReadingLock.Wait();    
+    iBackendData.iReadingLock.Wait();
     iReading.setAzimuth(iData.iAngleFromMagneticNorth);
     // Retrieve and set the calibration level
     iReading.setCalibrationLevel(iMagnetometer->GetCalibrationLevel());
@@ -125,6 +123,8 @@ void CCompassSym::RecvData(CSensrvChannel &aChannel)
     iReading.setTimestamp(iData.iTimeStamp.Int64());
     // Release the lock
     iBackendData.iReadingLock.Signal();
+    // Notify that a reading is available
+    newReadingAvailable();
     }
 
 /**
@@ -137,7 +137,8 @@ void CCompassSym::ConstructL()
     InitializeL();
     // Create magnetometer, this is required as in sensor server,
     // calibration data is available only for magnetometer
-    iMagnetometer = CMagnetometerSensorSym::NewL(NULL);
+    // We need to have a QSensor instance for the magnetometer backend or we will crash
+    iMagnetometer = CMagnetometerSensorSym::NewL(new QSensor("QMagnetometer", this));
     // Listen only for property change on magnetometer as we are
     // interested only in calibration property
     iMagnetometer->SetListening(EFalse, ETrue);

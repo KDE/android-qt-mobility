@@ -53,13 +53,14 @@ public:
     virtual GstElement *videoSink() = 0;
     virtual void precessNewStream() {}
 
+    //stopRenderer() is called when the renderer element is stopped.
+    //it can be reimplemented when video renderer can't detect
+    //changes to NULL state but has to free video resources.
+    virtual void stopRenderer() {}
+
     //the video output is configured, usually after the first paint event
     //(winId is known,
     virtual bool isReady() const { return true; }
-
-    //video renderer can declare it's confident it can play
-    //video frames  without colorspace converter inserted before.
-    virtual bool isColorSpaceElementRequired() const { return true; }
 
     //video renderer may handle video sink specific gstreamer messages.
     virtual void handleBusMessage(GstMessage*) {};

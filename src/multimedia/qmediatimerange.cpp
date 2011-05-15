@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qdebug.h>
+
 #include "qmediatimerange.h"
 
 QT_BEGIN_NAMESPACE
@@ -48,6 +50,7 @@ QT_BEGIN_NAMESPACE
     \brief The QMediaTimeInterval class represents a time interval with integer precision.
     \inmodule QtMultimediaKit
     \ingroup multimedia
+    \since 1.0
 
     An interval is specified by an inclusive start() and end() time.  These
     must be set in the constructor, as this is an immutable class.  The
@@ -238,7 +241,7 @@ QMediaTimeRangePrivate::QMediaTimeRangePrivate(const QMediaTimeInterval &interva
 }
 
 void QMediaTimeRangePrivate::addInterval(const QMediaTimeInterval &interval)
-{    
+{
     // Handle normalized intervals only
     if(!interval.isNormal())
         return;
@@ -702,6 +705,18 @@ QMediaTimeRange operator-(const QMediaTimeRange &r1, const QMediaTimeRange &r2)
 {
     return (QMediaTimeRange(r1) -= r2);
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QMediaTimeRange &range)
+{
+    dbg.nospace() << "QMediaTimeRange( ";
+    foreach (const QMediaTimeInterval &interval, range.intervals()) {
+        dbg.nospace() << "(" <<  interval.start() << ", " << interval.end() << ") ";
+    }
+    dbg.space() << ")";
+    return dbg;
+}
+#endif
 
 QT_END_NAMESPACE
 

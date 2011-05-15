@@ -95,6 +95,7 @@ public:
     bool isVideoAvailable() const;
 
     bool isSeekable() const;
+    QMediaTimeRange availablePlaybackRanges() const;
 
     qreal playbackRate() const;
 
@@ -176,8 +177,6 @@ private:
     ResourceHandler m_resourceHandler;
 
     QT7VideoOutput * m_videoOutput;
-
-    mutable qint64 m_currentTime;
 
     bool m_muted;
     bool m_tryingAsync;

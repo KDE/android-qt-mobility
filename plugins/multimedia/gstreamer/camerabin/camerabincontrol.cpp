@@ -87,6 +87,8 @@ CameraBinControl::CameraBinControl(CameraBinSession *session)
             SLOT(reloadLater()));
     connect(m_session, SIGNAL(readyChanged(bool)),
             SLOT(reloadLater()));
+    connect(m_session, SIGNAL(error(int,QString)),
+            SLOT(handleCameraError(int,QString)));
 
     m_resourcePolicy = new CamerabinResourcePolicy(this);
     connect(m_resourcePolicy, SIGNAL(resourcesGranted()),
@@ -95,6 +97,9 @@ CameraBinControl::CameraBinControl(CameraBinSession *session)
             SLOT(handleResourcesLost()));
     connect(m_resourcePolicy, SIGNAL(resourcesLost()),
             SLOT(handleResourcesLost()));
+
+    connect(m_session, SIGNAL(busyChanged(bool)),
+            SLOT(handleBusyChanged(bool)));
 }
 
 CameraBinControl::~CameraBinControl()
@@ -118,6 +123,7 @@ void CameraBinControl::setCaptureMode(QCamera::CaptureMode mode)
                             CamerabinResourcePolicy::ImageCaptureResources :
                             CamerabinResourcePolicy::VideoCaptureResources);
         }
+        emit captureModeChanged(mode);
     }
 }
 
@@ -139,6 +145,18 @@ void CameraBinControl::setState(QCamera::State state)
 #endif
     if (m_state != state) {
         m_state = state;
+
+        //special case for stopping the camera while it's busy,
+        //it should be delayed until the camera is idle
+        if (state == QCamera::LoadedState &&
+                m_session->state() == QCamera::ActiveState &&
+                m_session->isBusy()) {
+#ifdef CAMEABIN_DEBUG
+            qDebug() << Q_FUNC_INFO << "Camera is busy, QCamera::stop() is delayed";
+#endif
+            emit stateChanged(m_state);
+            return;
+        }
 
         CamerabinResourcePolicy::ResourceSet resourceSet;
         switch (state) {
@@ -190,10 +208,17 @@ void CameraBinControl::updateStatus()
         m_status = QCamera::UnloadedStatus;
         break;
     case QCamera::LoadedState:
-        if (sessionState != QCamera::UnloadedState)
-            m_status = QCamera::LoadedStatus;
-        else
+        switch (sessionState) {
+        case QCamera::UnloadedState:
             m_status = QCamera::LoadingStatus;
+            break;
+        case QCamera::LoadedState:
+            m_status = QCamera::LoadedStatus;
+            break;
+        case QCamera::ActiveState:
+            m_status = QCamera::ActiveStatus;
+            break;
+        }
         break;
     case QCamera::ActiveState:
         switch (sessionState) {
@@ -224,8 +249,11 @@ void CameraBinControl::reloadLater()
 #endif
     if (!m_reloadPending && m_state == QCamera::ActiveState) {
         m_reloadPending = true;
-        m_session->setState(QCamera::LoadedState);
-        QMetaObject::invokeMethod(this, "delayedReload", Qt::QueuedConnection);
+
+        if (!m_session->isBusy()) {
+            m_session->setState(QCamera::LoadedState);
+            QMetaObject::invokeMethod(this, "delayedReload", Qt::QueuedConnection);
+        }
     }
 }
 
@@ -243,14 +271,35 @@ void CameraBinControl::handleResourcesGranted()
     qDebug() << Q_FUNC_INFO << ENUM_NAME(QCamera, "State", m_state);
 #endif
 
-    //camera will be started soon
-    if (m_reloadPending)
+    //camera will be started soon by delayedReload()
+    if (m_reloadPending && m_state == QCamera::ActiveState)
         return;
 
     if (m_state == QCamera::ActiveState && m_session->isReady())
         m_session->setState(QCamera::ActiveState);
     else if (m_state == QCamera::LoadedState)
         m_session->setState(QCamera::LoadedState);
+}
+
+void CameraBinControl::handleBusyChanged(bool busy)
+{
+    if (!busy && m_session->state() == QCamera::ActiveState) {
+        if (m_state == QCamera::LoadedState) {
+            //handle delayed stop() because of busy camera
+            m_resourcePolicy->setResourceSet(CamerabinResourcePolicy::LoadedResources);
+            m_session->setState(QCamera::LoadedState);
+        } else if (m_state == QCamera::ActiveState && m_reloadPending) {
+            //handle delayed reload because of busy camera
+            m_session->setState(QCamera::LoadedState);
+            QMetaObject::invokeMethod(this, "delayedReload", Qt::QueuedConnection);
+        }
+    }
+}
+
+void CameraBinControl::handleCameraError(int errorCode, const QString &errorString)
+{
+    emit error(errorCode, errorString);
+    setState(QCamera::UnloadedState);
 }
 
 void CameraBinControl::delayedReload()

@@ -42,7 +42,6 @@
 #include "n900lightsensor.h"
 #include <QFile>
 #include <QDebug>
-#include <time.h>
 
 char const * const n900lightsensor::id("n900.light");
 char const * const n900lightsensor::filename("/sys/class/i2c-adapter/i2c-2/2-0029/lux");
@@ -53,8 +52,7 @@ n900lightsensor::n900lightsensor(QSensor *sensor)
     setReading<QLightReading>(&m_reading);
     // Sensor takes 12-400ms to complete one reading and is triggered by
     // a read of the /sys file (no interrupt/timing loop/etc. is used).
-    // Since no continuous operation is possible, don't set a data rate.
-    addDataRate(2, 2); // Close enough to 2 Hz
+    addDataRate(1, 2);
     setDescription(QLatin1String("tsl2563"));
 
     sensor->setProperty("fieldOfView", 1); // very narrow field of view.
@@ -81,8 +79,8 @@ void n900lightsensor::poll()
     fclose(fd);
     if (rs != 1) return;
 
-    if (m_reading.lux() != lux) {
-        m_reading.setTimestamp(clock());
+    if (m_reading.lux() != lux || m_reading.timestamp() == 0) {
+        m_reading.setTimestamp(getTimestamp());
         m_reading.setLux(lux);
 
         newReadingAvailable();

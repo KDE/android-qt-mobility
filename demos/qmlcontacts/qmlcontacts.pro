@@ -5,6 +5,12 @@ include(../demos.pri)
 
 QT += declarative
 
+win32 {
+    #required by Qt SDK to resolve Mobility libraries
+    CONFIG+=mobility
+    MOBILITY+=contacts
+}
+
 HEADERS = qmlapplicationviewer.h
 SOURCES = \
     main.cpp  \
@@ -12,6 +18,9 @@ SOURCES = \
 
 OTHER_FILES += \
     contacts.qml \
+    contents/ContactView.qml \
+    contents/ContactListView.qml \
+    contents/FieldRow.qml \
     contents/ToolBar.qml \
     contents/TitleBar.qml \
     contents/ScrollBar.qml \

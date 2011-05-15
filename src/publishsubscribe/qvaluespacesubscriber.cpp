@@ -59,6 +59,7 @@ QTM_BEGIN_NAMESPACE
 
     \inmodule QtPublishSubscribe
     \ingroup publishsubscribe
+    \since 1.0
 
     By default QValueSpaceSubscriber can read values from and report change notifications for all
     available Value Space layers.  Only data from the layer with the highest order and that
@@ -90,49 +91,6 @@ QTM_BEGIN_NAMESPACE
     will invoke the \c {buttonInfoChanged()} slot whenever any value under \c {/Device/Buttons}
     changes.  This includes the value of \c {/Device/Buttons} itself, a change of a subpath such as
     \c {/Device/Buttons/2/Name} or the creation or removal of a subpath.
-*/
-
-/*!
-    \qmlclass ValueSpaceSubscriber QValueSpaceSubscriber
-    \brief The ValueSpaceSubscriber elements accesses a single Value Space value.
-    \inherits QObject
-    \ingroup qml-publishsubscribe
-
-    The ValueSpaceSubscriber element is part of the \bold {QtMobility.publishsubscribe 1.1} module.
-
-    The \l ValueSpaceSubscriber element enables the creation of QML bindings that use values stored
-    in the Value Space. The QML binding is automatically reevaluated when the value in the Value
-    Space changes.
-
-    Each \l ValueSpaceSubscriber element represents a single value or path in the Value Space. The
-    path is set using the \i path property.
-
-    \code
-    ValueSpaceSubscriber {
-        id: nowPlaying
-        path: "/applications/mediaplayer/now-playing"
-    }
-    \endcode
-
-    The value is accessed using the \i value property.
-
-    \code
-    Text {
-        text: nowPlaying.value
-    }
-    \endcode
-*/
-
-/*!
-    \qmlproperty QString ValueSpaceSubscriber::path
-
-    This property holds that path that the element accesses.
-*/
-
-/*!
-    \qmlproperty QVariant ValueSpaceSubscriber::value read-only
-
-    This property hold the value of the Value Space value.
 */
 
 /*!
@@ -355,8 +313,7 @@ bool QValueSpaceSubscriberPrivate::disconnect(QValueSpaceSubscriber * space)
 /*!
     Constructs a QValueSpaceSubscriber with the specified \a parent that refers to the root path.
 
-    The constructed Value Space subscriber will access all available
-    QAbstractValueSpaceLayer layers.
+    The constructed Value Space subscriber will access all available layers.
 */
 QValueSpaceSubscriber::QValueSpaceSubscriber(QObject *parent)
 :   QObject(parent)
@@ -367,8 +324,7 @@ QValueSpaceSubscriber::QValueSpaceSubscriber(QObject *parent)
 /*!
     Constructs a QValueSpaceSubscriber with the specified \a parent that refers to \a path.
 
-    The constructed Value Space subscriber will access all available
-    QAbstractValueSpaceLayer layers.
+    The constructed Value Space subscriber will access all available layers.
 */
 QValueSpaceSubscriber::QValueSpaceSubscriber(const QString &path, QObject *parent)
 :   QObject(parent)
@@ -398,12 +354,12 @@ QValueSpaceSubscriber::QValueSpaceSubscriber(QValueSpace::LayerOptions filter,
     QValueSpaceSubscriber will only use the layer identified by \a uuid.
 
     Use of this constructor is not platform agnostic.  If possible use one of the constructors that
-    take a QAbstractValueSpaceLayer::LayerOptions parameter instead.
+    take a QValueSpace::LayerOptions parameter instead.
 
     If a layer with a matching \a uuid is not found, the constructed QValueSpaceSubscriber will be
     unconnected.
 
-    \sa QAbstractValueSpaceLayer::id(), QValueSpace, isConnected()
+    \sa QValueSpace, isConnected()
 */
 QValueSpaceSubscriber::QValueSpaceSubscriber(const QUuid &uuid,
                                              const QString &path,

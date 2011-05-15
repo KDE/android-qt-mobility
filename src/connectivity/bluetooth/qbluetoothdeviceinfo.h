@@ -122,9 +122,9 @@ public:
         Camcorder = 13,
         VideoMonitor = 14,
         VideoDisplayAndLoudspeaker = 15,
-        VideoConferencing = 17,
-        // reserved = 18,
-        GamingDevice = 19,
+        VideoConferencing = 16,
+        // reserved = 17,
+        GamingDevice = 18,
     };
 
     enum MinorPeripheralClass {
@@ -174,8 +174,8 @@ public:
         HealthWeightScale = 0x3,
         HealthGlucoseMeter = 0x4,
         HealthPulseOximeter = 0x5,
-        HealthDataDisplay = 0x6,
-        HealthStepCounter = 0x7
+        HealthDataDisplay = 0x7,
+        HealthStepCounter = 0x8
     };
 
     enum ServiceClass {
@@ -204,8 +204,12 @@ public:
     ~QBluetoothDeviceInfo();
 
     bool isValid() const;
+    bool isCached() const;
+
+    void setCached(bool cached);
 
     QBluetoothDeviceInfo &operator=(const QBluetoothDeviceInfo &other);
+    bool operator==(const QBluetoothDeviceInfo &other) const;
 
     QBluetoothAddress address() const;
     QString name() const;
@@ -213,6 +217,9 @@ public:
     ServiceClasses serviceClasses() const;
     MajorDeviceClass majorDeviceClass() const;
     quint8 minorDeviceClass() const;
+
+    qint16 rssi() const;
+    void setRssi(qint16 signal);
 
 //    bool matchesMinorClass(MinorComputerClass minor) const;
 //    bool matchesMinorClass(MinorPhoneClass minor) const;

@@ -51,6 +51,7 @@ QTM_BEGIN_NAMESPACE
     a pixmap on a map.
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup maps-mapping-objects
 
@@ -64,7 +65,9 @@ QTM_BEGIN_NAMESPACE
     Constructs a new pixmap object.
 */
 QGeoMapPixmapObject::QGeoMapPixmapObject()
-    : d_ptr(new QGeoMapPixmapObjectPrivate()) {}
+    : d_ptr(new QGeoMapPixmapObjectPrivate())
+{
+}
 
 /*!
     Constructs a new pixmap object which will draw the pixmap \a pixmap at an
@@ -73,7 +76,7 @@ QGeoMapPixmapObject::QGeoMapPixmapObject()
 QGeoMapPixmapObject::QGeoMapPixmapObject(const QGeoCoordinate &coordinate, const QPoint &offset, const QPixmap &pixmap)
     : d_ptr(new QGeoMapPixmapObjectPrivate())
 {
-    d_ptr->coordinate = coordinate;
+    setOrigin(coordinate);
     d_ptr->pixmap = pixmap;
     d_ptr->offset = offset;
 }
@@ -88,6 +91,7 @@ QGeoMapPixmapObject::~QGeoMapPixmapObject()
 
 /*!
     \reimp
+    \since 1.1
 */
 QGeoMapObject::Type QGeoMapPixmapObject::type() const
 {
@@ -101,17 +105,18 @@ QGeoMapObject::Type QGeoMapPixmapObject::type() const
 
     The default value of this property is an invalid coordinate. While the
     value of this property is invalid the pixmap object will not be displayed.
+    \since 1.1
 */
 QGeoCoordinate QGeoMapPixmapObject::coordinate() const
 {
-    return d_ptr->coordinate;
+    return origin();
 }
 
 void QGeoMapPixmapObject::setCoordinate(const QGeoCoordinate &coordinate)
 {
-    if (d_ptr->coordinate != coordinate) {
-        d_ptr->coordinate = coordinate;
-        emit coordinateChanged(d_ptr->coordinate);
+    if (origin() != coordinate) {
+        setOrigin(coordinate);
+        emit coordinateChanged(coordinate);
     }
 }
 
@@ -126,6 +131,7 @@ void QGeoMapPixmapObject::setCoordinate(const QGeoCoordinate &coordinate)
     The pixmap will be drawn such that the upper left corner of the pixmap
     will be drawn QGeoMapPixmapObject::offset pixels away from the position of
     QGeoMapPixmapObject::coordinate on the map.
+    \since 1.1
 */
 QPixmap QGeoMapPixmapObject::pixmap() const
 {
@@ -134,14 +140,15 @@ QPixmap QGeoMapPixmapObject::pixmap() const
 
 void QGeoMapPixmapObject::setPixmap(const QPixmap &pixmap)
 {
-    if (d_ptr->pixmap.isNull() && pixmap.isNull())
+    QPixmap curPixmap = d_ptr->pixmap;
+    if (curPixmap.isNull() && pixmap.isNull())
         return;
 
-    if ((d_ptr->pixmap.isNull() && !pixmap.isNull())
-            || (!d_ptr->pixmap.isNull() && pixmap.isNull())
-            || (d_ptr->pixmap.toImage() != pixmap.toImage())) {
+    if ((curPixmap.isNull() && !pixmap.isNull())
+            || (!curPixmap.isNull() && pixmap.isNull())
+            || (curPixmap.toImage() != pixmap.toImage())) {
         d_ptr->pixmap = pixmap;
-        emit pixmapChanged(d_ptr->pixmap);
+        emit pixmapChanged(pixmap);
     }
 }
 
@@ -157,45 +164,56 @@ void QGeoMapPixmapObject::setPixmap(const QPixmap &pixmap)
     The offset is in pixels and is independent of the zoom level of the map.
     The offset property is provided so that pixmaps such as arrows can be drawn
     with the point of the arrow placed exactly on the associated coordinate.
+    \since 1.1
 */
 QPoint QGeoMapPixmapObject::offset() const
 {
     return d_ptr->offset;
+//    QPointF pt = d_ptr->offset;
+//
+//    QPoint rounded;
+//    rounded.setX(int(pt.x() > 0 ? pt.x() + 0.5 : pt.x() - 0.5));
+//    rounded.setY(int(pt.y() > 0 ? pt.y() + 0.5 : pt.y() - 0.5));
+//
+//    return rounded;
 }
 
 void QGeoMapPixmapObject::setOffset(const QPoint &offset)
 {
     if (d_ptr->offset != offset) {
         d_ptr->offset = offset;
-        emit offsetChanged(d_ptr->offset);
+        emit offsetChanged(offset);
     }
 }
 
 /*!
 \fn void QGeoMapPixmapObject::coordinateChanged(const QGeoCoordinate &coordinate)
 
-    This signal is emitted when the coordinate at which the pixmap 
+    This signal is emitted when the coordinate at which the pixmap
     should be drawn has changed.
 
     The new value will be \a coordinate.
+    \since 1.1
 */
 
 /*!
 \fn void QGeoMapPixmapObject::pixmapChanged(const QPixmap &pixmap)
-    
-    This signal is emitted when the pixmap associated with this 
+
+    This signal is emitted when the pixmap associated with this
     pixmap object has changed.
 
     The new value will be \a pixmap.
+    \since 1.1
 */
 
 /*!
 \fn void QGeoMapPixmapObject::offsetChanged(const QPoint &offset)
-    
-    This signal is emitted when the on-screen offset from the coordinate 
+
+    This signal is emitted when the on-screen offset from the coordinate
     at which this pixmap object should be drawn has changed.
 
     The new value will be \a offset.
+    \since 1.1
 */
 
 /*******************************************************************************

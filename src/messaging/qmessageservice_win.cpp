@@ -46,7 +46,7 @@
 #include "qmessagefolderid_p.h"
 #include "qmessageaccountid_p.h"
 #include "qmessage_p.h"
-#include "qmessagestore_p.h"
+#include "qmessagestore_p_p.h"
 #include "qmessagecontentcontainer_p.h"
 #include "qmessagecontentcontainerid_p.h"
 #include <QDebug>
@@ -994,6 +994,21 @@ bool QMessageService::show(const QMessageId& id)
 }
 
 bool QMessageService::exportUpdates(const QMessageAccountId &id)
+{
+    Q_UNUSED(id);
+
+    if(d_ptr->_active) {
+        qWarning() << "Service is currently busy";
+        return false;
+    }
+
+    d_ptr->_error = QMessageManager::NotYetImplemented;
+    d_ptr->setFinished(false);
+
+    return false;
+}
+
+bool QMessageService::synchronize(const QMessageAccountId& id)
 {
     Q_UNUSED(id);
 

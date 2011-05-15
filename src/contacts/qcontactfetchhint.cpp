@@ -54,6 +54,7 @@ QTM_BEGIN_NAMESPACE
   \class QContactFetchHint
 
   \inmodule QtContacts
+   \since 1.0
 
   \brief The QContactFetchHint class provides hints to the manager about which contact
   information needs to be retrieved in an asynchronous fetch request or a synchronous
@@ -118,6 +119,7 @@ QContactFetchHint::~QContactFetchHint()
 
 /*!
   Assigns this fetch hint to be equal to the \a other fetch hint
+  \since 1.0
  */
 QContactFetchHint& QContactFetchHint::operator=(const QContactFetchHint& other)
 {
@@ -132,6 +134,7 @@ QContactFetchHint& QContactFetchHint::operator=(const QContactFetchHint& other)
   each contact retrieved.
 
   \sa setDetailDefinitionsHint()
+  \since 1.0
  */
 QStringList QContactFetchHint::detailDefinitionsHint() const
 {
@@ -145,6 +148,7 @@ QStringList QContactFetchHint::detailDefinitionsHint() const
   each contact retrieved.
 
   \sa detailDefinitionsHint()
+  \since 1.0
  */
 void QContactFetchHint::setDetailDefinitionsHint(const QStringList& definitionNames)
 {
@@ -158,6 +162,7 @@ void QContactFetchHint::setDetailDefinitionsHint(const QStringList& definitionNa
   relationships for each contact retrieved.
 
   \sa setRelationshipTypesHint(), QContact::relationships()
+  \since 1.0
  */
 QStringList QContactFetchHint::relationshipTypesHint() const
 {
@@ -171,6 +176,7 @@ QStringList QContactFetchHint::relationshipTypesHint() const
   relationships for each contact retrieved.
 
   \sa relationshipTypesHint(), QContact::relationships()
+  \since 1.0
  */
 void QContactFetchHint::setRelationshipTypesHint(const QStringList& relationshipTypes)
 {
@@ -218,6 +224,7 @@ void QContactFetchHint::setPreferredImageSize(const QSize& size)
   relationships, action preferences, and binary blobs.
 
   \sa setOptimizationHints()
+  \since 1.0
  */
 QContactFetchHint::OptimizationHints QContactFetchHint::optimizationHints() const
 {
@@ -231,6 +238,7 @@ QContactFetchHint::OptimizationHints QContactFetchHint::optimizationHints() cons
   relationships, action preferences, and binary blobs.
 
   \sa optimizationHints()
+  \since 1.0
  */
 void QContactFetchHint::setOptimizationHints(OptimizationHints hints)
 {
@@ -252,7 +260,7 @@ void QContactFetchHint::setOptimizationHints(OptimizationHints hints)
   A negative value for count denotes that the client wishes to
   retrieve all results.  The default value is -1.
  */
-int QContactFetchHint::maxCount() const
+int QContactFetchHint::maxCountHint() const
 {
     return d->m_maxCount;
 }
@@ -271,7 +279,7 @@ int QContactFetchHint::maxCount() const
   A negative value for count denotes that the client wishes to
   retrieve all results.  The default value is -1.
 */
-void QContactFetchHint::setMaxCount(int count)
+void QContactFetchHint::setMaxCountHint(int count)
 {
     count < 0 ? (d->m_maxCount = -1) : (d->m_maxCount = count);
 }
@@ -279,12 +287,13 @@ void QContactFetchHint::setMaxCount(int count)
 #ifndef QT_NO_DATASTREAM
 QDataStream& operator<<(QDataStream& out, const QContactFetchHint& hint)
 {
-    quint8 formatVersion = 1; // Version of QDataStream format for QContactFetchHint
+    quint8 formatVersion = 2; // Version of QDataStream format for QContactFetchHint
     return out << formatVersion
                << hint.detailDefinitionsHint()
                << hint.relationshipTypesHint()
                << static_cast<quint32>(hint.optimizationHints())
-               << hint.preferredImageSize();
+               << hint.preferredImageSize()
+               << hint.maxCountHint();
 }
 
 QDataStream& operator>>(QDataStream& in, QContactFetchHint& hint)
@@ -292,7 +301,7 @@ QDataStream& operator>>(QDataStream& in, QContactFetchHint& hint)
     hint = QContactFetchHint();
     quint8 formatVersion;
     in >> formatVersion;
-    if (formatVersion == 1) {
+    if (formatVersion == 1 || formatVersion == 2) {
         QStringList detailDefinitionHints;
         QStringList relationshipTypeHints;
         quint32 optimizations;
@@ -302,6 +311,13 @@ QDataStream& operator>>(QDataStream& in, QContactFetchHint& hint)
         hint.setRelationshipTypesHint(relationshipTypeHints);
         hint.setOptimizationHints(QContactFetchHint::OptimizationHints(optimizations));
         hint.setPreferredImageSize(dimensions);
+
+        // version two also has a maximum fetch count hint.
+        if (formatVersion == 2) {
+            int maxCountHint = -1;
+            in >> maxCountHint;
+            hint.setMaxCountHint(maxCountHint);
+        }
     } else {
         in.setStatus(QDataStream::ReadCorruptData);
     }
@@ -321,6 +337,7 @@ QDebug operator<<(QDebug dbg, const QContactFetchHint& hint)
                   << "relationshipTypesHint=" << hint.relationshipTypesHint() << ","
                   << "optimizationHints=" << static_cast<quint32>(hint.optimizationHints()) << ","
                   << "preferredImageSize=" << hint.preferredImageSize()
+                  << "maxCountHint=" << hint.maxCountHint()
                   << ")";
     return dbg.maybeSpace();
 }

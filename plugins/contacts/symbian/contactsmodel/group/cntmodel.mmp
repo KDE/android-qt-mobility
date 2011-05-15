@@ -19,7 +19,7 @@
 
 #include "cntmodel.mmh"
 
-target          cntmodel.dll
+TARGET          cntmodel.dll
 targettype      DLL
 
 APP_LAYER_SYSTEMINCLUDE_SYMBIAN
@@ -47,6 +47,8 @@ source		ccntpackager.cpp
 source		ccntnotificationmonitor.cpp
 source		rcntmodel.cpp
 source		cntimagerescaler.cpp
+source		cntimagerescaleutility.cpp
+source		cntimagesutility.cpp
 
 //Parts of original contacts model
 SOURCEPATH	../src
@@ -92,7 +94,6 @@ library         centralrepository.lib
 LIBRARY         platformenv.lib
 LIBRARY         imageconversion.lib
 LIBRARY         bitmaptransforms.lib
-LIBRARY         hal.lib
 LIBRARY         fbscli.lib
 LIBRARY         charconv.lib
 

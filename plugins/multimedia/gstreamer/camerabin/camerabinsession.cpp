@@ -49,6 +49,8 @@
 #include "camerabinfocus.h"
 #include "camerabinimageprocessing.h"
 #include "camerabinlocks.h"
+#include "camerabincapturedestination.h"
+#include "camerabincapturebufferformat.h"
 #include "qgstreamerbushelper.h"
 #include "qgstreamervideorendererinterface.h"
 #include <qmediarecorder.h>
@@ -127,13 +129,15 @@
 #define PREVIEW_CAPS_4_3 \
     "video/x-raw-rgb, width = (int) 640, height = (int) 480"
 
+#define VIEWFINDER_RESOLUTION_4x3 QSize(640, 480)
+#define VIEWFINDER_RESOLUTION_3x2 QSize(720, 480)
+#define VIEWFINDER_RESOLUTION_16x9 QSize(800, 450)
+
 //using GST_STATE_READY for QCamera::LoadedState
 //doesn't work reliably at least with some webcams.
-#if defined(Q_WS_MAEMO_5) || defined(Q_WS_MAEMO_5)
+#if defined(Q_WS_MAEMO_5) || defined(Q_WS_MAEMO_6)
 #define USE_READY_STATE_ON_LOADED
 #endif
-
-static gboolean imgCaptured(GstElement *camera, const gchar *filename, gpointer user_data);
 
 CameraBinSession::CameraBinSession(QObject *parent)
     :QObject(parent),
@@ -142,6 +146,7 @@ CameraBinSession::CameraBinSession(QObject *parent)
      m_recordingActive(false),
      m_pendingResolutionUpdate(false),
      m_muted(false),
+     m_busy(false),
      m_captureMode(QCamera::CaptureStillImage),
      m_audioInputFactory(0),
      m_videoInputFactory(0),
@@ -161,8 +166,7 @@ CameraBinSession::CameraBinSession(QObject *parent)
      m_muxer(0)
 {
     m_pipeline = gst_element_factory_make("camerabin", "camerabin");
-
-    g_signal_connect(G_OBJECT(m_pipeline), IMAGE_DONE_SIGNAL, G_CALLBACK(imgCaptured), this);
+    g_signal_connect(G_OBJECT(m_pipeline), "notify::idle", G_CALLBACK(updateBusyStatus), this);
 
     gstRef(m_pipeline);
 
@@ -170,7 +174,7 @@ CameraBinSession::CameraBinSession(QObject *parent)
 
     m_busHelper = new QGstreamerBusHelper(m_bus, this);
     m_busHelper->installSyncEventFilter(this);
-    connect(m_busHelper, SIGNAL(message(QGstreamerMessage)), SLOT(busMessage(QGstreamerMessage)));
+    connect(m_busHelper, SIGNAL(message(QGstreamerMessage)), SLOT(handleBusMessage(QGstreamerMessage)));
     m_audioEncodeControl = new CameraBinAudioEncoder(this);
     m_videoEncodeControl = new CameraBinVideoEncoder(this);
     m_imageEncodeControl = new CameraBinImageEncoder(this);
@@ -181,14 +185,16 @@ CameraBinSession::CameraBinSession(QObject *parent)
     m_cameraFocusControl = new CameraBinFocus(this);
     m_imageProcessingControl = new CameraBinImageProcessing(this);
     m_cameraLocksControl = new CameraBinLocks(this);
-
-    connect(m_cameraLocksControl, SIGNAL(lockStatusChanged(QCamera::LockType,QCamera::LockStatus,QCamera::LockChangeReason)),
-            m_cameraFocusControl, SLOT(_q_updateLockStatus(QCamera::LockType,QCamera::LockStatus,QCamera::LockChangeReason)));
+    m_captureDestinationControl = new CameraBinCaptureDestination(this);
+    m_captureBufferFormatControl = new CameraBinCaptureBufferFormat(this);
 }
 
 CameraBinSession::~CameraBinSession()
 {
     if (m_pipeline) {
+        if (m_viewfinderInterface)
+            m_viewfinderInterface->stopRenderer();
+
         gst_element_set_state(m_pipeline, GST_STATE_NULL);
         gst_element_get_state(m_pipeline, NULL, NULL, GST_CLOCK_TIME_NONE);
         gstUnref(m_pipeline);
@@ -200,15 +206,22 @@ GstPhotography *CameraBinSession::photography()
 {
     if (GST_IS_PHOTOGRAPHY(m_pipeline)) {
         return GST_PHOTOGRAPHY(m_pipeline);
-    } else if (m_videoSrc && GST_IS_PHOTOGRAPHY(m_videoSrc)) {
-        return GST_PHOTOGRAPHY(m_videoSrc);
-    } else {
-        GstElement *src = 0;
-        g_object_get(m_pipeline, VIDEO_SOURCE_PROPERTY, &src, NULL);
-
-        if (src && GST_IS_PHOTOGRAPHY(src))
-            return GST_PHOTOGRAPHY(src);
     }
+
+    if (!m_videoSrc) {
+        m_videoSrc = buildVideoSrc();
+
+        if (m_videoSrc)
+            g_object_set(m_pipeline, VIDEO_SOURCE_PROPERTY, m_videoSrc, NULL);
+        else
+            g_object_get(m_pipeline, VIDEO_SOURCE_PROPERTY, &m_videoSrc, NULL);
+
+        updateVideoSourceCaps();
+        m_videoInputHasChanged = false;
+    }
+
+    if (m_videoSrc && GST_IS_PHOTOGRAPHY(m_videoSrc))
+        return GST_PHOTOGRAPHY(m_videoSrc);
 
     return 0;
 }
@@ -253,24 +266,23 @@ bool CameraBinSession::setupCameraBin()
         m_videoInputHasChanged = false;
     }
 
-    if (m_viewfinderInterface) {
-        if (m_viewfinderHasChanged) {
-            if (m_viewfinderElement)
-                gst_object_unref(GST_OBJECT(m_viewfinderElement));
 
-            m_viewfinderElement = m_viewfinderInterface->videoSink();
+    if (m_viewfinderHasChanged) {
+        if (m_viewfinderElement)
+            gst_object_unref(GST_OBJECT(m_viewfinderElement));
+
+        m_viewfinderElement = m_viewfinderInterface ? m_viewfinderInterface->videoSink() : 0;
 #if CAMERABIN_DEBUG
-            qDebug() << Q_FUNC_INFO << "Viewfinder changed, reconfigure.";
+        qDebug() << Q_FUNC_INFO << "Viewfinder changed, reconfigure.";
 #endif
-            m_viewfinderHasChanged = false;
-            if (!m_viewfinderElement) {
-                qWarning() << "Staring camera without viewfinder available";
-                m_viewfinderElement = gst_element_factory_make("fakesink", NULL);
-            }
-            gst_object_ref(GST_OBJECT(m_viewfinderElement));
-            gst_element_set_state(m_pipeline, GST_STATE_NULL);
-            g_object_set(G_OBJECT(m_pipeline), VIEWFINDER_SINK_PROPERTY, m_viewfinderElement, NULL);
+        m_viewfinderHasChanged = false;
+        if (!m_viewfinderElement) {
+            qWarning() << "Staring camera without viewfinder available";
+            m_viewfinderElement = gst_element_factory_make("fakesink", NULL);
         }
+        gst_object_ref(GST_OBJECT(m_viewfinderElement));
+        gst_element_set_state(m_pipeline, GST_STATE_NULL);
+        g_object_set(G_OBJECT(m_pipeline), VIEWFINDER_SINK_PROPERTY, m_viewfinderElement, NULL);
     }
 
     GstCaps *previewCaps = gst_caps_from_string(PREVIEW_CAPS_4_3);
@@ -307,6 +319,7 @@ void CameraBinSession::setupCaptureResolution()
         }
 
         QString previewCapsString = PREVIEW_CAPS_4_3;
+        QSize viewfinderResolution = VIEWFINDER_RESOLUTION_4x3;
 
         if (!resolution.isEmpty()) {
 #if CAMERABIN_DEBUG
@@ -316,41 +329,55 @@ void CameraBinSession::setupCaptureResolution()
 
             previewCapsString = QString("video/x-raw-rgb, width = (int) %1, height = (int) 480")
                     .arg(resolution.width()*480/resolution.height());
+
+            if (!resolution.isEmpty()) {
+                qreal aspectRatio = qreal(resolution.width()) / resolution.height();
+                if (aspectRatio < 1.4)
+                    viewfinderResolution = VIEWFINDER_RESOLUTION_4x3;
+                else if (aspectRatio > 1.7)
+                    viewfinderResolution = VIEWFINDER_RESOLUTION_16x9;
+                else
+                    viewfinderResolution = VIEWFINDER_RESOLUTION_3x2;
+            }
         }
 
         GstCaps *previewCaps = gst_caps_from_string(previewCapsString.toLatin1());
         g_object_set(G_OBJECT(m_pipeline), PREVIEW_CAPS_PROPERTY, previewCaps, NULL);
         gst_caps_unref(previewCaps);
 
-#ifdef Q_WS_MAEMO_5
-        //it's also necessary to setup video resolution,
-        //which is used for viewfinder
+        //on low res cameras the viewfinder resolution should not be bigger
+        //then capture resolution
+        if (viewfinderResolution.width() > resolution.width())
+            viewfinderResolution = resolution;
 
-        if (cameraRole() == BackCamera) {
-            //this is necessary to set only for the mail camera,
-            //not for face one.
-
-            QSize viewfinderResolution(640, 480);
-            int viewfinderRate = 2993;
-            if (!resolution.isEmpty() && resolution.width()*2 > resolution.height()*3) {
-                viewfinderResolution = QSize(800, 450);
-                viewfinderRate = 2988;
-            }
-
-            g_signal_emit_by_name(G_OBJECT(m_pipeline),
-                                  SET_VIDEO_RESOLUTION_FPS,
-                                  viewfinderResolution.width(),
-                                  viewfinderResolution.height(),
-                                  viewfinderRate,
-                                  100, // framerate denom
-                                  NULL);
-        }
+#if CAMERABIN_DEBUG
+            qDebug() << Q_FUNC_INFO << "set viewfinder resolution" << viewfinderResolution;
 #endif
+        g_signal_emit_by_name(G_OBJECT(m_pipeline),
+                              SET_VIDEO_RESOLUTION_FPS,
+                              viewfinderResolution.width(),
+                              viewfinderResolution.height(),
+                              0, // maximum framerate
+                              1, // framerate denom
+                              NULL);
     }
 
     if (m_captureMode == QCamera::CaptureVideo) {
         QSize resolution = m_videoEncodeControl->videoSettings().resolution();
         qreal framerate = m_videoEncodeControl->videoSettings().frameRate();
+
+        if (resolution.isEmpty()) {
+            //select the hightest supported resolution
+
+            updateVideoSourceCaps();
+            bool continuous = false;
+            QList<QSize> resolutions = supportedResolutions(qMakePair<int,int>(0,0),
+                                                            &continuous,
+                                                            QCamera::CaptureVideo);
+            if (!resolutions.isEmpty())
+                resolution = resolutions.last();
+        }
+
         if (!resolution.isEmpty() || framerate > 0) {
 #if CAMERABIN_DEBUG
             qDebug() << Q_FUNC_INFO << "set video resolution" << resolution;
@@ -360,7 +387,7 @@ void CameraBinSession::setupCaptureResolution()
                                   resolution.width(),
                                   resolution.height(),
                                   0, //framerate nom == max rate
-                                  0, // framerate denom == max rate
+                                  1, // framerate denom == max rate
                                   NULL);
         }
     }
@@ -372,19 +399,32 @@ GstElement *CameraBinSession::buildVideoSrc()
     if (m_videoInputFactory) {
         videoSrc = m_videoInputFactory->buildElement();
     } else {
-        videoSrc = gst_element_factory_make("subdevsrc", "camera_source");
+        QList<QByteArray> candidates;
+        candidates << "subdevsrc"
+                   << "v4l2camsrc"
+                   << "v4l2src"
+                   << "autovideosrc";
+        QByteArray sourceElementName;
 
-        if (!videoSrc)
-            videoSrc = gst_element_factory_make("v4l2camsrc", "camera_source");
+        foreach(sourceElementName, candidates) {
+            videoSrc = gst_element_factory_make(sourceElementName.constData(), "camera_source");
+            if (videoSrc)
+                break;
+        }
 
-        if (!videoSrc)
-            videoSrc = gst_element_factory_make("v4l2src", "camera_source");
-
-        if (!videoSrc)
-            gst_element_factory_make("autovideosrc", "camera_source");
-
-        if (videoSrc && !m_inputDevice.isEmpty() )
-            g_object_set(G_OBJECT(videoSrc), "device", m_inputDevice.toLocal8Bit().constData(), NULL);
+        if (videoSrc && !m_inputDevice.isEmpty()) {
+#if CAMERABIN_DEBUG
+            qDebug() << "set camera device" << m_inputDevice;
+#endif
+            if (sourceElementName == "subdevsrc") {
+                if (m_inputDevice == QLatin1String("secondary"))
+                    g_object_set(G_OBJECT(videoSrc), "camera-device", 1, NULL);
+                else
+                    g_object_set(G_OBJECT(videoSrc), "camera-device", 0, NULL);
+            } else {
+                g_object_set(G_OBJECT(videoSrc), "device", m_inputDevice.toLocal8Bit().constData(), NULL);
+            }
+        }
     }
 
     return videoSrc;
@@ -506,11 +546,15 @@ void CameraBinSession::setVideoInput(QGstreamerElementFactory *videoInput)
 
 bool CameraBinSession::isReady() const
 {
-    return m_viewfinderInterface && m_viewfinderInterface->isReady();
+    //it's possible to use QCamera without any viewfinder attached
+    return !m_viewfinderInterface || m_viewfinderInterface->isReady();
 }
 
 void CameraBinSession::setViewfinder(QObject *viewfinder)
 {
+    if (m_viewfinderInterface)
+        m_viewfinderInterface->stopRenderer();
+
     m_viewfinderInterface = qobject_cast<QGstreamerVideoRendererInterface*>(viewfinder);
     if (!m_viewfinderInterface)
         viewfinder = 0;
@@ -567,26 +611,27 @@ void CameraBinSession::setState(QCamera::State newState)
 
     switch (newState) {
     case QCamera::UnloadedState:
-        //focus is lost at least on n900 when the state is changed from Active to Idle
-        if (m_state == QCamera::ActiveState)
-            emit focusStatusChanged(QCamera::Unlocked, QCamera::LockLost);
-
         if (m_recordingActive)
             stopVideoRecording();
 
+        if (m_viewfinderInterface)
+            m_viewfinderInterface->stopRenderer();
+
         gst_element_set_state(m_pipeline, GST_STATE_NULL);
         m_state = newState;
+        if (m_busy)
+            emit busyChanged(m_busy = false);
+
         emit stateChanged(m_state);
         break;
     case QCamera::LoadedState:
-        //focus is lost at least on n900 when the state is changed from Active to Idle
-        if (m_state == QCamera::ActiveState)
-            emit focusStatusChanged(QCamera::Unlocked, QCamera::LockLost);
-
         if (m_recordingActive)
             stopVideoRecording();
 
         if (m_videoInputHasChanged) {
+            if (m_viewfinderInterface)
+                m_viewfinderInterface->stopRenderer();
+
             gst_element_set_state(m_pipeline, GST_STATE_NULL);
             m_videoSrc = buildVideoSrc();
             g_object_set(m_pipeline, VIDEO_SOURCE_PROPERTY, m_videoSrc, NULL);
@@ -597,6 +642,8 @@ void CameraBinSession::setState(QCamera::State newState)
         gst_element_set_state(m_pipeline, GST_STATE_READY);
 #else
         m_state = QCamera::LoadedState;
+        if (m_viewfinderInterface)
+            m_viewfinderInterface->stopRenderer();
         gst_element_set_state(m_pipeline, GST_STATE_NULL);
         emit stateChanged(m_state);
 #endif
@@ -616,6 +663,28 @@ void CameraBinSession::setState(QCamera::State newState)
                 gst_element_set_state(m_pipeline, GST_STATE_READY);
             }
         }
+    }
+}
+
+bool CameraBinSession::isBusy() const
+{
+    return m_busy;
+}
+
+void CameraBinSession::updateBusyStatus(GObject *o, GParamSpec *p, gpointer d)
+{
+    Q_UNUSED(p);
+    CameraBinSession *session = reinterpret_cast<CameraBinSession *>(d);
+
+    bool idle = false;
+    g_object_get(o, "idle", &idle, NULL);
+    bool busy = !idle;
+
+    if (session->m_busy != busy) {
+        session->m_busy = busy;
+        QMetaObject::invokeMethod(session, "busyChanged",
+                                  Qt::QueuedConnection,
+                                  Q_ARG(bool, busy));
     }
 }
 
@@ -766,35 +835,17 @@ bool CameraBinSession::processSyncMessage(const QGstreamerMessage &message)
             return true;
         }
 
-        if (gst_structure_has_name(gm->structure, GST_PHOTOGRAPHY_AUTOFOCUS_DONE)) {
-            gint status = GST_PHOTOGRAPHY_FOCUS_STATUS_NONE;
-            gst_structure_get_int (gm->structure, "status", &status);
-            switch (status) {
-                case GST_PHOTOGRAPHY_FOCUS_STATUS_FAIL:
-                emit focusStatusChanged(QCamera::Unlocked, QCamera::LockFailed);
-                    break;
-                case GST_PHOTOGRAPHY_FOCUS_STATUS_SUCCESS:
-                    emit focusStatusChanged(QCamera::Locked, QCamera::UserRequest);
-                    break;
-                case GST_PHOTOGRAPHY_FOCUS_STATUS_NONE:
-                    emit focusStatusChanged(QCamera::Unlocked, QCamera::UserRequest);
-                    break;
-                case GST_PHOTOGRAPHY_FOCUS_STATUS_RUNNING:
-                    emit focusStatusChanged(QCamera::Searching, QCamera::UserRequest);
-                    break;
-                default:
-                    break;
-            }
-        }
+        if (gst_structure_has_name(gm->structure, GST_PHOTOGRAPHY_AUTOFOCUS_DONE))
+            m_cameraFocusControl->handleFocusMessage(gm);
 
-        if (GST_MESSAGE_SRC(gm) == GST_OBJECT_CAST(m_viewfinderElement))
+        if (m_viewfinderInterface && GST_MESSAGE_SRC(gm) == GST_OBJECT_CAST(m_viewfinderElement))
             m_viewfinderInterface->handleSyncMessage(gm);
     }
 
     return false;
 }
 
-void CameraBinSession::busMessage(const QGstreamerMessage &message)
+void CameraBinSession::handleBusMessage(const QGstreamerMessage &message)
 {
     GstMessage* gm = message.rawMessage();
 
@@ -811,10 +862,13 @@ void CameraBinSession::busMessage(const QGstreamerMessage &message)
                 qWarning() << "CameraBin error:" << message;
             }
 
-            if (message.isEmpty())
-                message = tr("Camera error");
+            //only report error messager from camerabin
+            if (GST_MESSAGE_SRC(gm) == GST_OBJECT_CAST(m_pipeline)) {
+                if (message.isEmpty())
+                    message = tr("Camera error");
 
-            emit error(int(QMediaRecorder::ResourceError), message);
+                emit error(int(QMediaRecorder::ResourceError), message);
+            }
 
             if (err)
                 g_error_free (err);
@@ -891,36 +945,12 @@ void CameraBinSession::busMessage(const QGstreamerMessage &message)
             //qDebug() << "New session state:" << ENUM_NAME(CameraBinSession,"State",m_state);
         }
 
-        if (GST_MESSAGE_SRC(gm) == GST_OBJECT_CAST(m_viewfinderElement))
+        if (m_viewfinderInterface && GST_MESSAGE_SRC(gm) == GST_OBJECT_CAST(m_viewfinderElement))
             m_viewfinderInterface->handleBusMessage(gm);
+
+        emit busMessage(message);
     }
 }
-
-void CameraBinSession::processSavedImage(const QString &filename)
-{
-    static int signalIndex = metaObject()->indexOfSignal("imageSaved(int,QString)");
-    metaObject()->method(signalIndex).invoke(this,
-                                             Qt::QueuedConnection,
-                                             Q_ARG(int,m_requestId),
-                                             Q_ARG(QString,filename));
-
-    emit focusStatusChanged(QCamera::Unlocked, QCamera::LockLost);
-}
-
-static gboolean imgCaptured(GstElement *camera,
-                        const gchar *filename,
-                        gpointer user_data)
-{
-#if CAMERABIN_DEBUG
-    qDebug() << "Image saved" << filename;
-#endif
-
-    Q_UNUSED(camera);
-    CameraBinSession *session = (CameraBinSession *)user_data;
-    session->processSavedImage(QString::fromUtf8(filename));
-    return true;
-}
-
 
 void CameraBinSession::recordVideo()
 {
@@ -1080,8 +1110,7 @@ static QPair<int,int> valueRange(const GValue *value, bool *continuous)
 
 static bool resolutionLessThan(const QSize &r1, const QSize &r2)
 {
-     return r1.width() < r2.width() ||
-            (r1.width() == r2.width() && r1.height() < r2.height());
+     return r1.width()*r1.height() < r2.width()*r2.height();
 }
 
 
@@ -1195,8 +1224,10 @@ QList<QSize> CameraBinSession::supportedResolutions(QPair<int,int> rate,
         if (mode == QCamera::CaptureStillImage)
             minSize = QSize(640, 480);
 #elif defined(Q_WS_MAEMO_6)
-        if (mode == QCamera::CaptureStillImage)
-            maxSize = QSize(4000, 3000);
+        if (cameraRole() == FrontCamera && maxSize.width() > 640)
+            maxSize = QSize(640, 480);
+        else if (mode == QCamera::CaptureVideo && maxSize.width() > 1280)
+            maxSize = QSize(1280, 720);
 #else
         Q_UNUSED(mode);
 #endif

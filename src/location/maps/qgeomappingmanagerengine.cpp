@@ -53,6 +53,7 @@ QTM_BEGIN_NAMESPACE
     and interacting with maps.
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup maps-impl
 
@@ -61,14 +62,8 @@ QTM_BEGIN_NAMESPACE
     can be used to contain and manage information concerning what a particular
     QGraphicsGeoMap is viewing.
 
-    The functions
-    setSupportedMapTypes(const QList<QGraphicsGeoMap::MapType> &mapTypes),
-    setSupportedConnectivityModes(const QList<QGraphicsGeoMap::ConnectivityMode> &connectivityModes),
-    setMinimumZoomLevel(qreal minimumZoom) and
-    setMaximumZoomLevel(qreal maximumZoom)
-    configure the reported capabilities of the engine.
-
-    It is important that this is done before createMapData() or any of the
+    Most of the other functions configure the reported capabilities of the engine.
+    It is important that these functions are called before createMapData() or any of the
     capability reporting functions are used to prevent incorrect or
     inconsistent behaviour.
 */
@@ -76,6 +71,7 @@ QTM_BEGIN_NAMESPACE
 /*!
     Constructs a new engine with the specified \a parent, using \a parameters
     to pass any implementation specific data to the engine.
+    \since 1.1
 */
 QGeoMappingManagerEngine::QGeoMappingManagerEngine(const QMap<QString, QVariant> &parameters, QObject *parent)
     : QObject(parent),
@@ -106,6 +102,7 @@ QGeoMappingManagerEngine::~QGeoMappingManagerEngine()
 
     The combination of managerName() and managerVersion() should be unique
     amongst plugin implementations.
+    \since 1.1
 */
 void QGeoMappingManagerEngine::setManagerName(const QString &managerName)
 {
@@ -118,6 +115,7 @@ void QGeoMappingManagerEngine::setManagerName(const QString &managerName)
 
     The combination of managerName() and managerVersion() should be unique
     amongst plugin implementations.
+    \since 1.1
 */
 QString QGeoMappingManagerEngine::managerName() const
 {
@@ -129,6 +127,7 @@ QString QGeoMappingManagerEngine::managerName() const
 
     The combination of managerName() and managerVersion() should be unique
     amongst plugin implementations.
+    \since 1.1
 */
 void QGeoMappingManagerEngine::setManagerVersion(int managerVersion)
 {
@@ -140,6 +139,7 @@ void QGeoMappingManagerEngine::setManagerVersion(int managerVersion)
 
     The combination of managerName() and managerVersion() should be unique
     amongst plugin implementations.
+    \since 1.1
 */
 int QGeoMappingManagerEngine::managerVersion() const
 {
@@ -163,10 +163,12 @@ int QGeoMappingManagerEngine::managerVersion() const
     Subclasses of QGeoMappingManagerEngine are free to override this function
     to return subclasses of QGeoMapData in order to customize the
     map.
+    \since 1.1
 */
 
 /*!
     Returns a list of the map types supported by this engine.
+    \since 1.1
 */
 QList<QGraphicsGeoMap::MapType> QGeoMappingManagerEngine::supportedMapTypes() const
 {
@@ -176,6 +178,7 @@ QList<QGraphicsGeoMap::MapType> QGeoMappingManagerEngine::supportedMapTypes() co
 
 /*!
     Returns a list of the connectivity modes supported by this engine.
+    \since 1.1
 */
 QList<QGraphicsGeoMap::ConnectivityMode> QGeoMappingManagerEngine::supportedConnectivityModes() const
 {
@@ -188,6 +191,7 @@ QList<QGraphicsGeoMap::ConnectivityMode> QGeoMappingManagerEngine::supportedConn
 
     Larger values of the zoom level correspond to more detailed views of the
     map.
+    \since 1.1
 */
 qreal QGeoMappingManagerEngine::minimumZoomLevel() const
 {
@@ -200,6 +204,7 @@ qreal QGeoMappingManagerEngine::minimumZoomLevel() const
 
     Larger values of the zoom level correspond to more detailed views of the
     map.
+    \since 1.1
 */
 qreal QGeoMappingManagerEngine::maximumZoomLevel() const
 
@@ -213,6 +218,7 @@ qreal QGeoMappingManagerEngine::maximumZoomLevel() const
 
     Subclasses of QGeoMappingManagerEngine should use this function to ensure
     that supportedMapTypes() provides accurate information.
+    \since 1.1
 */
 void QGeoMappingManagerEngine::setSupportedMapTypes(const QList<QGraphicsGeoMap::MapType> &mapTypes)
 {
@@ -229,6 +235,7 @@ void QGeoMappingManagerEngine::setSupportedMapTypes(const QList<QGraphicsGeoMap:
     If createMapData does not specify a connectivity mode the first mode from
     \a connectivityModes will be used, or QGraphicsGeoMap::NoConnectivity will
     be used if \a connectivityModes is empty.
+    \since 1.1
 */
 void QGeoMappingManagerEngine::setSupportedConnectivityModes(const QList<QGraphicsGeoMap::ConnectivityMode> &connectivityModes)
 {
@@ -244,6 +251,7 @@ void QGeoMappingManagerEngine::setSupportedConnectivityModes(const QList<QGraphi
 
     Subclasses of QGeoMappingManagerEngine should use this function to ensure
     minimumZoomLevel() provides accurate information.
+    \since 1.1
 */
 void QGeoMappingManagerEngine::setMinimumZoomLevel(qreal minimumZoom)
 {
@@ -259,11 +267,150 @@ void QGeoMappingManagerEngine::setMinimumZoomLevel(qreal minimumZoom)
 
     Subclasses of QGeoMappingManagerEngine should use this function to ensure
     maximumZoomLevel() provides accurate information.
+    \since 1.1
 */
 void QGeoMappingManagerEngine::setMaximumZoomLevel(qreal maximumZoom)
 {
     Q_D(QGeoMappingManagerEngine);
     d->maximumZoomLevel = maximumZoom;
+}
+
+/*!
+    Return whether bearing is supported by this engine.
+    \since 1.1
+*/
+bool QGeoMappingManagerEngine::supportsBearing() const
+{
+    Q_D(const QGeoMappingManagerEngine);
+    return d->supportsBearing;
+}
+
+/*!
+    Return whether tilting is supported by this engine.
+    \since 1.2
+*/
+bool QGeoMappingManagerEngine::supportsTilting() const
+{
+    Q_D(const QGeoMappingManagerEngine);
+    return d->supportsTilting;
+}
+
+/*!
+    Returns the minimum tilt supported by this engine.
+
+    Value in degrees where 0 is equivalent to 90 degrees between view and earth's
+    surface i.e. looking straight down to earth.
+    \since 1.2
+*/
+qreal QGeoMappingManagerEngine::minimumTilt() const
+{
+    Q_D(const QGeoMappingManagerEngine);
+    return d->minimumTilt;
+}
+
+/*!
+    Returns the maximum tilt supported by this engine.
+
+    Value in degrees where 0 is equivalent to 90 degrees between view and earth's
+    surface i.e. looking straight down to earth.
+    \since 1.2
+*/
+qreal QGeoMappingManagerEngine::maximumTilt() const
+{
+    Q_D(const QGeoMappingManagerEngine);
+    return d->maximumTilt;
+}
+
+/*!
+    Sets the minimum tilt supported by this engine to \a minimumTilt.
+
+    Value in degrees where 0 is equivalent to 90 degrees between view and earth's
+    surface i.e. looking straight down to earth.
+
+    Subclasses of QGeoMappingManagerEngine should use this function to ensure
+    minimumTilt() provides accurate information. If no minimum value is set
+    by the subclass the value of 0 is used.
+    \since 1.2
+*/
+void QGeoMappingManagerEngine::setMinimumTilt(qreal minimumTilt)
+{
+    Q_D(QGeoMappingManagerEngine);
+    d->minimumTilt = minimumTilt;
+}
+
+/*!
+    Sets the maximum tilt supported by this engine to \a maximumTilt.
+
+    Value in degrees where 0 is equivalent to 90 degrees between view and earth's
+    surface i.e. looking straight down to earth.
+
+    Subclasses of QGeoMappingManagerEngine should use this function to ensure
+    maximumTilt() provides accurate information. If no maximum value is set
+    by the subclass the value of 0 is used.
+    \since 1.2
+*/
+void QGeoMappingManagerEngine::setMaximumTilt(qreal maximumTilt)
+{
+    Q_D(QGeoMappingManagerEngine);
+    d->maximumTilt = maximumTilt;
+}
+
+/*!
+    Sets whether bearing is supported by this engine to \a supportsBearing.
+
+    Subclasses of QGeoMappingManagerEngine should use this function to ensure
+    supportsBearing() provides accurate information. If no value is set
+    by the subclass then bearing support is disabled and supportsBearing set
+    to false.
+    \since 1.2
+*/
+void QGeoMappingManagerEngine::setSupportsBearing(bool supportsBearing)
+{
+    Q_D(QGeoMappingManagerEngine);
+    d->supportsBearing = supportsBearing;
+}
+
+/*!
+    Sets whether tilting is supported by this engine to \a supportsTilting.
+
+    Subclasses of QGeoMappingManagerEngine should use this function to ensure
+    supportsTilting() provides accurate information. If no value is set
+    by the subclass then tilting support is disabled and supportsTilting set
+    to false.
+    \since 1.2
+*/
+void QGeoMappingManagerEngine::setSupportsTilting(bool supportsTilting)
+{
+    Q_D(QGeoMappingManagerEngine);
+    d->supportsTilting = supportsTilting;
+}
+
+/*!
+    Returns whether custom map objects are supported by this engine.
+
+    Custom map objects are map objects based on QGraphicsItem instances, which
+    are hard to support in cases where the map rendering is not being
+    performed by the Qt Graphics View framwork.
+    \since 1.2
+*/
+bool QGeoMappingManagerEngine::supportsCustomMapObjects() const
+{
+    Q_D(const QGeoMappingManagerEngine);
+    return d_ptr->supportsCustomMapObjects;
+}
+
+/*!
+    Sets whether custom map objects are supported by this engine to \a supportsCustomMapObjects.
+
+    Custom map objects are map objects based on QGraphicsItem instances, which
+    are hard to support in cases where the map rendering is not being
+    performed by the Qt Graphics View framwork.
+    \since 1.2
+*/
+void QGeoMappingManagerEngine::setSupportsCustomMapObjects(bool supportsCustomMapObjects)
+{
+    Q_D(QGeoMappingManagerEngine);
+    d_ptr->supportsCustomMapObjects = supportsCustomMapObjects;
 }
 
 /*!
@@ -273,6 +420,7 @@ void QGeoMappingManagerEngine::setMaximumZoomLevel(qreal maximumZoom)
     in different languages, they will be returned in the language of \a locale.
 
     The locale used defaults to the system locale if this is not set.
+    \since 1.2
 */
 void QGeoMappingManagerEngine::setLocale(const QLocale &locale)
 {
@@ -282,6 +430,7 @@ void QGeoMappingManagerEngine::setLocale(const QLocale &locale)
 /*!
     Returns the locale used to hint to this mapping manager about what
     language to use for map labels.
+    \since 1.2
 */
 QLocale QGeoMappingManagerEngine::locale() const
 {
@@ -292,7 +441,14 @@ QLocale QGeoMappingManagerEngine::locale() const
 *******************************************************************************/
 
 QGeoMappingManagerEnginePrivate::QGeoMappingManagerEnginePrivate()
-    : managerVersion(-1) {}
+    : managerVersion(-1),
+    minimumZoomLevel(0.0),
+    maximumZoomLevel(0.0),
+    supportsBearing(false),
+    supportsTilting(false),
+    minimumTilt(0.0),
+    maximumTilt(0.0),
+    supportsCustomMapObjects(false) {}
 
 QGeoMappingManagerEnginePrivate::~QGeoMappingManagerEnginePrivate() {}
 

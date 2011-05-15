@@ -45,8 +45,8 @@
 \section1 Namespace
 
 The QtMobility APIs are placed into the \i{QtMobility} namespace. This is done
-to facilitate the future migration of Mobility APIs into Qt. See the
-\l {Quickstart Example}{Quickstart guide} for an example on how the
+to facilitate the future migration of QtMobility APIs into Qt. See the
+\l {Quickstart guide} for an example on how the
 namespace impacts on application development.
 
 \annotatedlist systeminfo
@@ -83,6 +83,7 @@ gsm, cdma, ethernet etc.
 
 \section3 \bold{Display Information}
 
+This provides height, width, contrast, and other information of the display.
 
 \section3 \bold{Storage Information}
 The presence of various storage devices. Including: none, internal,
@@ -101,10 +102,11 @@ multitouch etc)
 
 \section3 \bold{Screensaver}
 
+This provides the access to the information of the screen saver.
 
 \section1 Building and compiling
 
-To build the library, run \tt qmake and \tt make.
+To build the library, run \tt configure and \tt make.
 
 Linux supports a NetworkManager based backend and generic backend using
 QNetworkInterface only. By default the generic backend is selected.
@@ -123,6 +125,7 @@ The backend selection is expected to disappear once the API is integrated into Q
 
 
 \section1 QML Elements
+
 The Qt SystemInfo offers access to system information through declarative
 UI by providing systeminfo elements. Detailed information can be found
 at \l{QML System Information Plugin}.

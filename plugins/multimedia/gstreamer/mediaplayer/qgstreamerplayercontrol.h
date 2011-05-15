@@ -43,6 +43,7 @@
 #define QGSTREAMERPLAYERCONTROL_H
 
 #include <QtCore/qobject.h>
+#include <QtCore/qstack.h>
 
 #include <qmediaplayercontrol.h>
 #include <qmediaplayer.h>
@@ -59,10 +60,12 @@ QT_USE_NAMESPACE
 
 class QGstreamerPlayerSession;
 class QGstreamerPlayerService;
+class PlayerResourcePolicy;
 
 class QGstreamerPlayerControl : public QMediaPlayerControl
 {
     Q_OBJECT
+    Q_PROPERTY(bool mediaDownloadEnabled READ isMediaDownloadEnabled WRITE setMediaDownloadEnabled)
 
 public:
     QGstreamerPlayerControl(QGstreamerPlayerSession *session, QObject *parent = 0);
@@ -93,6 +96,9 @@ public:
     const QIODevice *mediaStream() const;
     void setMedia(const QMediaContent&, QIODevice *);
 
+    bool isMediaDownloadEnabled() const;
+    void setMediaDownloadEnabled(bool enabled);
+
 public Q_SLOTS:
     void setPosition(qint64 pos);
 
@@ -107,26 +113,35 @@ private Q_SLOTS:
     void writeFifo();
     void fifoReadyWrite(int socket);
 
-    void updateState(QMediaPlayer::State);
-#ifdef Q_WS_MAEMO_6
-    void resourceLost();
-#endif // Q_WS_MAEMO_6
+    void updateSessionState(QMediaPlayer::State state);
+    void updateMediaStatus();
     void processEOS();
     void setBufferProgress(int progress);
+    void applyPendingSeek(bool isSeekable);
 
     void handleInvalidMedia();
+
+    void handleResourcesGranted();
+    void handleResourcesLost();
 
 private:
     bool openFifo();
     void closeFifo();
     void playOrPause(QMediaPlayer::State state);
 
+    void pushState();
+    void popAndNotifyState();
+
     bool m_ownStream;
     QGstreamerPlayerSession *m_session;
     QMediaPlayer::State m_state;
     QMediaPlayer::MediaStatus m_mediaStatus;
+    QStack<QMediaPlayer::State> m_stateStack;
+    QStack<QMediaPlayer::MediaStatus> m_mediaStatusStack;
+
     int m_bufferProgress;
     bool m_seekToStartPending;
+    qint64 m_pendingSeekPosition;
     QMediaContent m_currentResource;
     QIODevice *m_stream;
     QSocketNotifier *m_fifoNotifier;
@@ -135,6 +150,8 @@ private:
     int m_bufferSize;
     int m_bufferOffset;
     char m_buffer[PIPE_BUF];
+
+    PlayerResourcePolicy *m_resources;
 };
 
 #endif

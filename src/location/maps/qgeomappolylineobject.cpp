@@ -52,6 +52,7 @@ QTM_BEGIN_NAMESPACE
     a segmented line on a map.
 
     \inmodule QtLocation
+    \since 1.1
 
     \ingroup maps-mapping-objects
 
@@ -64,7 +65,11 @@ QTM_BEGIN_NAMESPACE
     Constructs a new polyline object.
 */
 QGeoMapPolylineObject::QGeoMapPolylineObject()
-    : d_ptr(new QGeoMapPolylineObjectPrivate()) {}
+    : d_ptr(new QGeoMapPolylineObjectPrivate())
+{
+    setUnits(QGeoMapObject::RelativeArcSecondUnit);
+    setTransformType(QGeoMapObject::ExactTransform);
+}
 
 /*!
     Destroys this polyline object.
@@ -76,6 +81,7 @@ QGeoMapPolylineObject::~QGeoMapPolylineObject()
 
 /*!
     \reimp
+    \since 1.1
 */
 QGeoMapObject::Type QGeoMapPolylineObject::type() const
 {
@@ -95,11 +101,16 @@ QGeoMapObject::Type QGeoMapPolylineObject::type() const
     Invalid coordinates in the list will be ignored, and if the list of
     coordinates contains less than 2 valid coordinates then the polyline object
     will not be displayed.
+    \since 1.1
 */
 void QGeoMapPolylineObject::setPath(const QList<QGeoCoordinate> &path)
 {
     if (d_ptr->path != path) {
         d_ptr->path = path;
+        if (path.size() != 0)
+            setOrigin(path.at(0));
+        else
+            setOrigin(QGeoCoordinate());
         emit pathChanged(d_ptr->path);
     }
 }
@@ -117,6 +128,7 @@ QList<QGeoCoordinate> QGeoMapPolylineObject::path() const
 
     The pen will be treated as a cosmetic pen, which means that the width
     of the pen will be independent of the zoom level of the map.
+    \since 1.1
 */
 void QGeoMapPolylineObject::setPen(const QPen &pen)
 {
@@ -126,8 +138,8 @@ void QGeoMapPolylineObject::setPen(const QPen &pen)
     if (d_ptr->pen == newPen)
         return;
 
-    d_ptr->pen = newPen;
-    emit penChanged(d_ptr->pen);
+    d_ptr->pen = pen;
+    emit penChanged(pen);
 }
 
 QPen QGeoMapPolylineObject::pen() const
@@ -138,19 +150,21 @@ QPen QGeoMapPolylineObject::pen() const
 /*!
 \fn void QGeoMapPolylineObject::pathChanged(const QList<QGeoCoordinate> &path)
 
-    This signal is emitted when the ordered list of coordinates that define 
+    This signal is emitted when the ordered list of coordinates that define
     the polyline to be drawn by this polyline object has changed.
 
     The new value is \a path.
+    \since 1.1
 */
 
 /*!
 \fn void QGeoMapPolylineObject::penChanged(const QPen &pen)
 
-    This signal is emitted when the pen used to draw the edge of this 
+    This signal is emitted when the pen used to draw the edge of this
     polyline object has changed.
 
     The new value is \a pen.
+    \since 1.1
 */
 
 /*******************************************************************************
@@ -158,7 +172,7 @@ QPen QGeoMapPolylineObject::pen() const
 
 QGeoMapPolylineObjectPrivate::QGeoMapPolylineObjectPrivate()
 {
-    pen.setCosmetic(false);
+    pen.setCosmetic(true);
 }
 
 QGeoMapPolylineObjectPrivate::~QGeoMapPolylineObjectPrivate() {}
