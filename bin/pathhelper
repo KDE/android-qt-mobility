@@ -47,7 +47,7 @@ use Cwd "abs_path";
 
 my $path = shift(@ARGV) or usage();
 my $resolvedpath = abs_path($path);
-if ( $resolvedpath == "" )
+if ( $resolvedpath eq "" )
 {
     $resolvedpath = $path;
 }
