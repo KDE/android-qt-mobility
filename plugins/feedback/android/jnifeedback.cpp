@@ -270,7 +270,7 @@ Q_DECL_EXPORT JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/)
 
     m_env= uenv.nativeEnvironment;
     m_javaVM = vm;
-    QtFeedbackJNI::jniMethods.QtFeedbackClassPathName = "eu/licentia/necessitas/mobile/QtFeedback";
+    QtFeedbackJNI::jniMethods.QtFeedbackClassPathName = "org/kde/necessitas/mobile/QtFeedback";
     QtFeedbackJNI::getMethodIDs(m_env,QtFeedbackJNI::jniMethods.QtFeedbackClassPathName);
     return JNI_VERSION_1_4;
 }

@@ -23,7 +23,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QtGui/QPixmap>
 #include <QList>
 using namespace std;
-#define QtCameraClassPathName "eu/licentia/necessitas/mobile/QtCamera"
+#define QtCameraClassPathName "org/kde/necessitas/mobile/QtCamera"
 static JNIEnv *m_env = NULL;
 static JavaVM *m_javaVM = NULL;
 static const int kBufferCount = 4;

@@ -65,8 +65,8 @@ namespace QtSystemInfoJni
         void* venv;
     } UnionJNIEnvToVoid;
 
-    static const char *qtSystemInfoClassPathName = "eu/licentia/necessitas/mobile/QtSystemInfo";
-    static const char *qtBatteryInfoClassPathName= "eu/licentia/necessitas/mobile/BatteryInfo";
+    static const char *qtSystemInfoClassPathName = "org/kde/necessitas/mobile/QtSystemInfo";
+    static const char *qtBatteryInfoClassPathName= "org/kde/necessitas/mobile/BatteryInfo";
 
     struct QtSystemInfoJnistruct
     {

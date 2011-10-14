@@ -1,4 +1,4 @@
-CONFIG(android): CONFIG -= android_qtmain
+android: CONFIG -= android_install android_qtmain
 
 # config.pri specifies the configure options and is pulled in via staticconfig.pri
 include(staticconfig.pri)

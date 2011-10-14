@@ -109,15 +109,15 @@ static JavaContactsGlobalObject<jobject> m_addressDataObject=0;
 static JavaContactsGlobalObject<jobject> m_organizationalDataObject=0;
 static JavaContactsGlobalObject<jobject> m_onlineAccountObject=0;
 
-static const char *QtAndroidContactsClassPathName = "eu/licentia/necessitas/mobile/QtAndroidContacts";
-static const char *QtMyContactsClassPathName = "eu/licentia/necessitas/mobile/MyContacts";
-static const char *QtAllAndroidContactsClassPathName = "eu/licentia/necessitas/mobile/AndroidContacts";
-static const char *QtPhoneNumberClassPathName = "eu/licentia/necessitas/mobile/PhoneNumber";
-static const char *QtEmailDataClassPathName = "eu/licentia/necessitas/mobile/EmailData";
-static const char *QtAddressDataClassPathName = "eu/licentia/necessitas/mobile/AddressData";
-static const char *QtNameDataClassPathName = "eu/licentia/necessitas/mobile/NameData";
-static const char *QtOrganizationalDataClassPathName = "eu/licentia/necessitas/mobile/OrganizationalData";
-static const char *QtOnlineAccountClassPathName = "eu/licentia/necessitas/mobile/OnlineAccount";
+static const char *QtAndroidContactsClassPathName = "org/kde/necessitas/mobile/QtAndroidContacts";
+static const char *QtMyContactsClassPathName = "org/kde/necessitas/mobile/MyContacts";
+static const char *QtAllAndroidContactsClassPathName = "org/kde/necessitas/mobile/AndroidContacts";
+static const char *QtPhoneNumberClassPathName = "org/kde/necessitas/mobile/PhoneNumber";
+static const char *QtEmailDataClassPathName = "org/kde/necessitas/mobile/EmailData";
+static const char *QtAddressDataClassPathName = "org/kde/necessitas/mobile/AddressData";
+static const char *QtNameDataClassPathName = "org/kde/necessitas/mobile/NameData";
+static const char *QtOrganizationalDataClassPathName = "org/kde/necessitas/mobile/OrganizationalData";
+static const char *QtOnlineAccountClassPathName = "org/kde/necessitas/mobile/OnlineAccount";
 
 static QtContactsJNI::FieldID javaFieldIds;
 
@@ -216,33 +216,33 @@ static int registerNativeMethods(JNIEnv* env)
     }
     // Registering java methods
     m_getContactsID = env->GetMethodID((jclass)m_qtAndroidContactsObjects(),"getContacts","()V");
-    m_saveContactsID = env->GetMethodID((jclass)m_qtAndroidContactsObjects(),"saveContact","(Leu/licentia/necessitas/mobile/MyContacts;)Ljava/lang/String;");
-    m_myContactsConstructor = env->GetMethodID((jclass)m_myContactsObject(),"<init>","(Leu/licentia/necessitas/mobile/NameData;[Leu/licentia/necessitas/mobile/PhoneNumber;[Leu/licentia/necessitas/mobile/EmailData;Ljava/lang/String;[Leu/licentia/necessitas/mobile/AddressData;[Leu/licentia/necessitas/mobile/OrganizationalData;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)V");
+    m_saveContactsID = env->GetMethodID((jclass)m_qtAndroidContactsObjects(),"saveContact","(Lorg/kde/necessitas/mobile/MyContacts;)Ljava/lang/String;");
+    m_myContactsConstructor = env->GetMethodID((jclass)m_myContactsObject(),"<init>","(Lorg/kde/necessitas/mobile/NameData;[Lorg/kde/necessitas/mobile/PhoneNumber;[Lorg/kde/necessitas/mobile/EmailData;Ljava/lang/String;[Lorg/kde/necessitas/mobile/AddressData;[Lorg/kde/necessitas/mobile/OrganizationalData;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)V");
     m_phoneNumberConstructor = env->GetMethodID((jclass)m_phoneNumberObject(),"<init>","(Ljava/lang/String;I)V");
     m_emailDataConstructor =  env->GetMethodID((jclass)m_emailDataObject(),"<init>","(Ljava/lang/String;I)V");
     m_organizationalDataConstructor =  env->GetMethodID((jclass)m_organizationalDataObject(),"<init>","(Ljava/lang/String;Ljava/lang/String;I)V");
     m_AddressDataConstructor = env->GetMethodID((jclass)m_addressDataObject(),"<init>","(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)V");
     m_removeContactsID = env->GetMethodID((jclass)m_qtAndroidContactsObjects(),"removeContact","(Ljava/lang/String;)I");
-    m_updateContactsID = env->GetMethodID((jclass)m_qtAndroidContactsObjects(),"updateContact","(Ljava/lang/String;Leu/licentia/necessitas/mobile/MyContacts;)V");
+    m_updateContactsID = env->GetMethodID((jclass)m_qtAndroidContactsObjects(),"updateContact","(Ljava/lang/String;Lorg/kde/necessitas/mobile/MyContacts;)V");
     m_nameDataConstructor = env->GetMethodID((jclass)m_nameDataObject(),"<init>","(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
     // Getting all required fieldIDs from Java
-    javaFieldIds.m_androidContacts_fid = env->GetStaticFieldID((jclass)m_qtAndroidContactsObjects(),"m_androidContacts","Leu/licentia/necessitas/mobile/AndroidContacts;");
-    javaFieldIds.m_myContacts_fid = env->GetFieldID((jclass)m_allContactsObject(),"m_allAndroidContacts","[Leu/licentia/necessitas/mobile/MyContacts;");
+    javaFieldIds.m_androidContacts_fid = env->GetStaticFieldID((jclass)m_qtAndroidContactsObjects(),"m_androidContacts","Lorg/kde/necessitas/mobile/AndroidContacts;");
+    javaFieldIds.m_myContacts_fid = env->GetFieldID((jclass)m_allContactsObject(),"m_allAndroidContacts","[Lorg/kde/necessitas/mobile/MyContacts;");
     javaFieldIds.m_displayName_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_dispalyName","Ljava/lang/String;");
-    javaFieldIds.m_nameData_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_names","Leu/licentia/necessitas/mobile/NameData;");
+    javaFieldIds.m_nameData_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_names","Lorg/kde/necessitas/mobile/NameData;");
     javaFieldIds.m_firstName_fid = (env)->GetFieldID((jclass)m_nameDataObject(),"m_firstName","Ljava/lang/String;");
     javaFieldIds.m_lastName_fid = (env)->GetFieldID((jclass)m_nameDataObject(),"m_lastName","Ljava/lang/String;");
     javaFieldIds.m_middleName_fid = (env)->GetFieldID((jclass)m_nameDataObject(),"m_middleName","Ljava/lang/String;");
     javaFieldIds.m_prefix_fid = (env)->GetFieldID((jclass)m_nameDataObject(),"m_prefix","Ljava/lang/String;");
     javaFieldIds.m_suffix_fid = (env)->GetFieldID((jclass)m_nameDataObject(),"m_suffix","Ljava/lang/String;");
-    javaFieldIds.m_phonenumberobjects_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_phoneNumbers","[Leu/licentia/necessitas/mobile/PhoneNumber;");
+    javaFieldIds.m_phonenumberobjects_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_phoneNumbers","[Lorg/kde/necessitas/mobile/PhoneNumber;");
     javaFieldIds.m_phonenumber_fid = (env)->GetFieldID((jclass)m_phoneNumberObject(),"m_number","Ljava/lang/String;");
     javaFieldIds.m_phonetype_fid = (env)->GetFieldID((jclass)m_phoneNumberObject(),"m_type","I");
-    javaFieldIds.m_emailDataObjects_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_email","[Leu/licentia/necessitas/mobile/EmailData;");
+    javaFieldIds.m_emailDataObjects_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_email","[Lorg/kde/necessitas/mobile/EmailData;");
     javaFieldIds.m_email_fid = env->GetFieldID((jclass)m_emailDataObject(),"m_email","Ljava/lang/String;");
     javaFieldIds.m_emailtype_fid = (env)->GetFieldID((jclass)m_emailDataObject(),"m_type","I");
     javaFieldIds.m_note_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_contactNote","Ljava/lang/String;");
-    javaFieldIds.m_addressDataObject_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_address","[Leu/licentia/necessitas/mobile/AddressData;");
+    javaFieldIds.m_addressDataObject_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_address","[Lorg/kde/necessitas/mobile/AddressData;");
     javaFieldIds.m_pobox_fid = env->GetFieldID((jclass)m_addressDataObject(),"m_pobox","Ljava/lang/String;");
     javaFieldIds.m_street_fid = env->GetFieldID((jclass)m_addressDataObject(),"m_street","Ljava/lang/String;");
     javaFieldIds.m_city_fid = env->GetFieldID((jclass)m_addressDataObject(),"m_city","Ljava/lang/String;");
@@ -250,7 +250,7 @@ static int registerNativeMethods(JNIEnv* env)
     javaFieldIds.m_postCode_fid = env->GetFieldID((jclass)m_addressDataObject(),"m_postCode","Ljava/lang/String;");
     javaFieldIds.m_country_fid = env->GetFieldID((jclass)m_addressDataObject(),"m_country","Ljava/lang/String;");
     javaFieldIds.m_addresstype_fid = (env)->GetFieldID((jclass)m_addressDataObject(),"m_type","I");
-    javaFieldIds.m_organizationalData_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_organizations","[Leu/licentia/necessitas/mobile/OrganizationalData;");
+    javaFieldIds.m_organizationalData_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_organizations","[Lorg/kde/necessitas/mobile/OrganizationalData;");
     javaFieldIds.m_organizaion_fid = (env)->GetFieldID((jclass)m_organizationalDataObject(),"m_organization","Ljava/lang/String;");
     javaFieldIds.m_organizaiontitle_fid = (env)->GetFieldID((jclass)m_organizationalDataObject(),"m_title","Ljava/lang/String;");
     javaFieldIds.m_organizationtype_fid = (env)->GetFieldID((jclass)m_organizationalDataObject(),"m_type","I");
@@ -259,7 +259,7 @@ static int registerNativeMethods(JNIEnv* env)
     javaFieldIds.m_nickName_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_contactNickName","Ljava/lang/String;");
     javaFieldIds.m_url_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_contactUrls","[Ljava/lang/String;");
     javaFieldIds.m_id_fid = (env)->GetFieldID((jclass)m_myContactsObject(),"m_contactID","Ljava/lang/String;");
-    javaFieldIds.m_onlineAccount_fid=(env)->GetFieldID((jclass)m_myContactsObject(),"m_onlineAccount","[Leu/licentia/necessitas/mobile/OnlineAccount;");
+    javaFieldIds.m_onlineAccount_fid=(env)->GetFieldID((jclass)m_myContactsObject(),"m_onlineAccount","[Lorg/kde/necessitas/mobile/OnlineAccount;");
     javaFieldIds.m_onlineAccountUri_fid =  env->GetFieldID((jclass)m_onlineAccountObject(),"m_account","Ljava/lang/String;");
     javaFieldIds.m_onlineAccountStatus_fid = env->GetFieldID((jclass)m_onlineAccountObject(),"m_status","Ljava/lang/String;");
     javaFieldIds.m_onlineAccountCustomProtocol_fid = env->GetFieldID((jclass)m_onlineAccountObject(),"m_customProtocol","Ljava/lang/String;");

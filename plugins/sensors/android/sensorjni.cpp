@@ -91,7 +91,7 @@ namespace QtSensorJNI
     };
 
     //path to the java plugin qtsensors
-    static const char *qtSensorsClassPathName = "eu/licentia/necessitas/mobile/QtSensors";
+    static const char *qtSensorsClassPathName = "org/kde/necessitas/mobile/QtSensors";
     static QtSensorJniStruct qtSensorJni;
 
     static void slotDataAvailable (JNIEnv* env,_jobject /*object*/,jfloatArray data,jlong timeEvent,jint accuracy,jint uniqueId)

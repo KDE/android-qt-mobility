@@ -65,8 +65,8 @@ namespace QtLocationJni
         void* venv;
     } UnionJNIEnvToVoid;
 
-    static const char *qtLocationClassPathName = "eu/licentia/necessitas/mobile/QtLocation";
-    static const char *qtSatInfoClassPathName="eu/licentia/necessitas/mobile/QtSatInfo";
+    static const char *qtLocationClassPathName = "org/kde/necessitas/mobile/QtLocation";
+    static const char *qtSatInfoClassPathName="org/kde/necessitas/mobile/QtSatInfo";
     static const char *GPS_PROVIDER="gps";
     static const char *NETWORK_PROVIDER="network";
 

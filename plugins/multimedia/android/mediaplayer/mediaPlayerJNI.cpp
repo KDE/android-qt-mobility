@@ -106,7 +106,7 @@ public :
 
 static QMap<int,QtMediaPlayerJNI::QAndroidMediaListner*> mapOfListeners;
 static QtMediaPlayerJNI::QAndroidMediaListner *mediaListener;
-static const char *QtMediaPlayerClassPathName = "eu/licentia/necessitas/mobile/QtMediaPlayer";
+static const char *QtMediaPlayerClassPathName = "org/kde/necessitas/mobile/QtMediaPlayer";
 
 struct fields_t {
     jmethodID m_setQtMediaPlayerID;
