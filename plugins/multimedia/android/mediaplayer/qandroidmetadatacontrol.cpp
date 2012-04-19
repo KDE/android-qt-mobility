@@ -30,8 +30,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <QtCore/qdebug.h>
 
-#include <media/mediametadataretriever.h>
-
 #include "qandroidmetadatacontrol.h"
 #include "qandroidplayersession.h"
 #include "mediaPlayerJNI.h"
@@ -60,47 +58,47 @@ bool QAndroidMetaDataControl::isWritable() const
 // Currently not supporting Date
 QVariant QAndroidMetaDataControl::metaData(QtMultimediaKit::MetaData key) const
 {
-    switch(key)
-    {
-    case QtMultimediaKit::Title:
-        return m_session->getMetaData(android::METADATA_KEY_TITLE);
-    case QtMultimediaKit::Author:
-        return m_session->getMetaData(android::METADATA_KEY_AUTHOR);
-    case QtMultimediaKit::Comment:
-        return m_session->getMetaData(android::METADATA_KEY_COMMENT);
-    case QtMultimediaKit::Genre:
-        return m_session->getMetaData(android::METADATA_KEY_GENRE);
-    case QtMultimediaKit::Year:
-        return m_session->getMetaData(android::METADATA_KEY_YEAR);
-    case QtMultimediaKit::MediaType:
-        return m_session->getMetaData(android::METADATA_KEY_MIMETYPE);
-    case QtMultimediaKit::UserRating:
-        return m_session->getMetaData(android::METADATA_KEY_RATING);
-    case QtMultimediaKit::Duration:
-        return m_session->getMetaData(android::METADATA_KEY_DURATION);
-    case QtMultimediaKit::AlbumArtist:
-        return m_session->getMetaData(android::METADATA_KEY_ALBUMARTIST);
-    case QtMultimediaKit::AlbumTitle:
-        return m_session->getMetaData(android::METADATA_KEY_ALBUM);
-    case QtMultimediaKit::AudioBitRate:
-        return m_session->getMetaData(android::METADATA_KEY_BIT_RATE);
-    case QtMultimediaKit::Composer:
-        return m_session->getMetaData(android::METADATA_KEY_COMPOSER);
-    case QtMultimediaKit::TrackNumber:
-        return m_session->getMetaData(android::METADATA_KEY_CD_TRACK_NUMBER);
-    case QtMultimediaKit::Writer:
-        return m_session->getMetaData(android::METADATA_KEY_WRITER);
-    case QtMultimediaKit::AudioCodec:
-        return m_session->getMetaData(android::METADATA_KEY_CODEC);
-    case QtMultimediaKit::VideoFrameRate:
-        return m_session->getMetaData(android::METADATA_KEY_FRAME_RATE);
-    case QtMultimediaKit::Copyright:
-        return m_session->getMetaData(android::METADATA_KEY_COPYRIGHT);
-    case QtMultimediaKit::TrackCount:
-        return m_session->getMetaData(android::METADATA_KEY_NUM_TRACKS);
-    default:
+//    switch(key)
+//    {
+//    case QtMultimediaKit::Title:
+//        return m_session->getMetaData(android::METADATA_KEY_TITLE);
+//    case QtMultimediaKit::Author:
+//        return m_session->getMetaData(android::METADATA_KEY_AUTHOR);
+//    case QtMultimediaKit::Comment:
+//        return m_session->getMetaData(android::METADATA_KEY_COMMENT);
+//    case QtMultimediaKit::Genre:
+//        return m_session->getMetaData(android::METADATA_KEY_GENRE);
+//    case QtMultimediaKit::Year:
+//        return m_session->getMetaData(android::METADATA_KEY_YEAR);
+//    case QtMultimediaKit::MediaType:
+//        return m_session->getMetaData(android::METADATA_KEY_MIMETYPE);
+//    case QtMultimediaKit::UserRating:
+//        return m_session->getMetaData(android::METADATA_KEY_RATING);
+//    case QtMultimediaKit::Duration:
+//        return m_session->getMetaData(android::METADATA_KEY_DURATION);
+//    case QtMultimediaKit::AlbumArtist:
+//        return m_session->getMetaData(android::METADATA_KEY_ALBUMARTIST);
+//    case QtMultimediaKit::AlbumTitle:
+//        return m_session->getMetaData(android::METADATA_KEY_ALBUM);
+//    case QtMultimediaKit::AudioBitRate:
+//        return m_session->getMetaData(android::METADATA_KEY_BIT_RATE);
+//    case QtMultimediaKit::Composer:
+//        return m_session->getMetaData(android::METADATA_KEY_COMPOSER);
+//    case QtMultimediaKit::TrackNumber:
+//        return m_session->getMetaData(android::METADATA_KEY_CD_TRACK_NUMBER);
+//    case QtMultimediaKit::Writer:
+//        return m_session->getMetaData(android::METADATA_KEY_WRITER);
+//    case QtMultimediaKit::AudioCodec:
+//        return m_session->getMetaData(android::METADATA_KEY_CODEC);
+//    case QtMultimediaKit::VideoFrameRate:
+//        return m_session->getMetaData(android::METADATA_KEY_FRAME_RATE);
+//    case QtMultimediaKit::Copyright:
+//        return m_session->getMetaData(android::METADATA_KEY_COPYRIGHT);
+//    case QtMultimediaKit::TrackCount:
+//        return m_session->getMetaData(android::METADATA_KEY_NUM_TRACKS);
+//    default:
         return QVariant();
-    }
+//    }
 }
 
 QList<QtMultimediaKit::MetaData> QAndroidMetaDataControl::availableMetaData() const

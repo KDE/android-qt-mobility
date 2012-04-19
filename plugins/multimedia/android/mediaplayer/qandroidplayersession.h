@@ -47,11 +47,7 @@
 #include <QTimer>
 #include <qmediaplayer.h>
 #include <qmediastreamscontrol.h>
-#include<qmediaplayercontrol.h>
-
-#include <media/mediaplayer.h>
-#include <media/AudioSystem.h>
-#include<media/mediametadataretriever.h>
+#include <qmediaplayercontrol.h>
 
 #include "mediaPlayerJNI.h"
 #include "qandroidvideothread.h"
@@ -127,9 +123,6 @@ signals:
 private slots:
     void setSeekable(bool);
     bool doPlay();
-
-private:
-    android::MediaMetadataRetriever m_metaDataRetriever;
 
 private:
     QNetworkRequest m_request;

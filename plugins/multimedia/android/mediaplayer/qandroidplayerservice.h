@@ -44,7 +44,6 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qiodevice.h>
-#include <media/mediaplayer.h>
 
 #include <qmediaservice.h>
 

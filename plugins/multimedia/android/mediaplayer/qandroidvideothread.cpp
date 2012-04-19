@@ -40,10 +40,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "ffmpeg/libavformat/avformat.h"
-#include "ffmpeg/libavcodec/avcodec.h"
-#include "ffmpeg/libswscale/swscale.h"
-#include "ffmpeg.h"
+#ifndef INT64_C
+# define INT64_C(c) c ## LL
+#endif
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#include <libswscale/swscale.h>
 #ifdef __cplusplus
 }
 #endif
@@ -122,7 +124,7 @@ int QAndroidVideoThread::playVideo()
 
     QByteArray mediaPathByteArray = m_path.toLatin1();
     const char* m_rawpath = mediaPathByteArray.data();
-    if (av_open_input_file(&pFormatCtx, m_rawpath, NULL, 0, NULL) != 0)
+    if (avformat_open_input(&pFormatCtx, m_rawpath, NULL, NULL) != 0)
     {
 
         QANDROID_DEBUG<<"Could not open the file";
@@ -155,7 +157,7 @@ int QAndroidVideoThread::playVideo()
 
     videoStream = -1;
     for (i = 0; i < pFormatCtx->nb_streams; i++)
-        if (pFormatCtx->streams[i]->codec->codec_type == CODEC_TYPE_VIDEO) {
+        if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
         videoStream = i;
         break;
     }
@@ -274,10 +276,7 @@ int QAndroidVideoThread::playVideo()
         m_currentPts = m_timeStamp - m_tsOffset;
         pFrame = avcodec_alloc_frame();
         if (packet.stream_index == videoStream) {
-
-            avcodec_decode_video(pCodecCtx, pFrame, &frameFinished,
-                                 packet.data, packet.size);
-
+            avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
             if (frameFinished) {
                 waitPleaseMutex.lock();
                 frameQueue.enqueue(pFrame);

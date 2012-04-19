@@ -35,7 +35,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QtCore>
 
 #include <jni.h>
-#include <media/mediaplayer.h>
 
 
 QT_USE_NAMESPACE

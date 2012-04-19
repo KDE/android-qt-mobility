@@ -2,20 +2,16 @@ TEMPLATE = lib
 CONFIG += plugin
 TARGET = $$qtLibraryTarget(qtmultimediakit_androidmedia)
 PLUGIN_TYPE=mediaservice
+
 include (../../../../common.pri)
 
 INCLUDEPATH+= . \
              $$SOURCE_DIR/src/multimedia \
              $$SOURCE_DIR/src/multimedia/video \
              $$SOURCE_DIR/src/multimedia/audio \
-             ../core/include/ \
-             ../base/include/ \
-             ../hardware/include/ \
-             ../ \
-             ../ffmpeg
+             $$(FFMPEG_PATH)/include
 
-LIBS += -lQtCore -lQtMultimediaKit -L$$SOURCE_DIR/plugins/multimedia/android/froyolibs -lcutils -lutils -lmedia -lEGL -L$$SOURCE_DIR/plugins/multimedia/android/ffmpeglibs -lffmpeg
-
+LIBS += -lQtCore -lQtMultimediaKit -L$$(FFMPEG_PATH)/lib -lavformat -lswresample -lavfilter -lswscale -lavcodec -lavutil
 
 DEPENDPATH += .
 HEADERS = \
@@ -43,4 +39,3 @@ target.path=$$QT_MOBILITY_PREFIX/plugins/mediaservice
 INSTALLS += target
 CONFIG += mobility
 MOBILITY = multimedia
-

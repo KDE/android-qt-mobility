@@ -35,10 +35,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "ffmpeg/libavformat/avformat.h"
-#include "ffmpeg/libavcodec/avcodec.h"
-#include "ffmpeg/libswscale/swscale.h"
-#include "ffmpeg.h"
+#include <stdint.h>
+
+#ifndef UINT64_C
+# define UINT64_C(c) c ## ULL
+#endif
+
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#include <libswscale/swscale.h>
 #ifdef __cplusplus
 }
 #endif

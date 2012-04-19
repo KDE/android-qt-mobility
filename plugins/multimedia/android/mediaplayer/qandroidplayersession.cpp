@@ -110,7 +110,7 @@ void QAndroidPlayerSession::load(const QNetworkRequest &request)
         m_helper->doTheWork(0,0);
         m_qduration = (qint64)QtMediaPlayerJNI::setQtMediaPlayer(this,m_uniqueID,mediaPath);
         emit durationChanged(m_qduration);
-        m_metaDataRetriever.setDataSource(m_rawDataPath);
+        //m_metaDataRetriever.setDataSource(m_rawDataPath);
         emit tagsChanged();
 
     }
@@ -128,27 +128,28 @@ qint64 QAndroidPlayerSession::duration()
 
 bool QAndroidPlayerSession::isMetaDataAvailable()
 {
-    bool available=false;
-    for(int i=0;i<25;i++)
-    {
-        const char* metaData = m_metaDataRetriever.extractMetadata(i);
-        QString metaDataString(metaData);
-        if(!metaDataString.isEmpty())
-        {
-            available = true;
-            break;
-        }
-    }
-    return available;
+    return false;
+//    bool available=false;
+//    for(int i=0;i<25;i++)
+//    {
+//        const char* metaData = m_metaDataRetriever.extractMetadata(i);
+//        QString metaDataString(metaData);
+//        if(!metaDataString.isEmpty())
+//        {
+//            available = true;
+//            break;
+//        }
+//    }
+//    return available;
 }
 
 
 QVariant QAndroidPlayerSession::getMetaData(int key)
 {
-
-    const char* metaData = m_metaDataRetriever.extractMetadata(key);
-    QVariant ret(tr(metaData));
-    return ret;
+    return QVariant();
+//    const char* metaData = m_metaDataRetriever.extractMetadata(key);
+//    QVariant ret(tr(metaData));
+//    return ret;
 }
 
 QString QAndroidPlayerSession::getPath()
@@ -160,87 +161,87 @@ QString QAndroidPlayerSession::getPath()
 QList<QtMultimediaKit::MetaData> QAndroidPlayerSession::availableMetaData()
 {
     QList<QtMultimediaKit::MetaData> metaDataList;
-    for(int i=0;i<25;i++)
-    {
-        const char* metaData = m_metaDataRetriever.extractMetadata(i);
-        QString metaDataString(metaData);
-        if(!metaDataString.isEmpty())
-        {
-            switch(i)
-            {
-            case 0:
-                metaDataList.append(QtMultimediaKit::TrackNumber);
-                break;
-            case 1:
-                metaDataList.append(QtMultimediaKit::AlbumTitle);
-                break;
-            case 2:
-                break;
-            case 3:
-                metaDataList.append(QtMultimediaKit::Author);
-                break;
-            case 4:
-                metaDataList.append(QtMultimediaKit::Composer);
-                break;
-            case 5:
-                metaDataList.append(QtMultimediaKit::Date);
-                break;
-            case 6:
-                metaDataList.append(QtMultimediaKit::Genre);
-                break;
-            case 7:
-                metaDataList.append(QtMultimediaKit::Title);
-                break;
-            case 8:
-                metaDataList.append(QtMultimediaKit::Year);
-                break;
-            case 9:
-                metaDataList.append(QtMultimediaKit::Duration);
-                break;
-            case 10:
-                metaDataList.append(QtMultimediaKit::TrackCount);
-                break;
-            case 11:
-                break;
-            case 12:
-                metaDataList.append(QtMultimediaKit::AudioCodec);
-                break;
-            case 13:
-                metaDataList.append(QtMultimediaKit::UserRating);
-                break;
-            case 14:
-                metaDataList.append(QtMultimediaKit::Comment);
-                break;
-            case 15:
-                metaDataList.append(QtMultimediaKit::Copyright);
-                break;
-            case 16:
-                metaDataList.append(QtMultimediaKit::AudioBitRate);
-                break;
-            case 17:
-                metaDataList.append(QtMultimediaKit::VideoFrameRate);
-                break;
-            case 18:
-                break;
-            case 19:
-                break;
-            case 20:
-                break;
-            case 21:
-                metaDataList.append(QtMultimediaKit::Writer);
-                break;
-            case 22:
-                metaDataList.append(QtMultimediaKit::MediaType);
-                break;
-            case 23:
-                break;
-            default:
-                metaDataList.append(QtMultimediaKit::AlbumArtist);
-                break;
-            }
-        }
+//    for(int i=0;i<25;i++)
+//    {
+//        const char* metaData = m_metaDataRetriever.extractMetadata(i);
+//        QString metaDataString(metaData);
+//        if(!metaDataString.isEmpty())
+//        {
+//            switch(i)
+//            {
+//            case 0:
+//                metaDataList.append(QtMultimediaKit::TrackNumber);
+//                break;
+//            case 1:
+//                metaDataList.append(QtMultimediaKit::AlbumTitle);
+//                break;
+//            case 2:
+//                break;
+//            case 3:
+//                metaDataList.append(QtMultimediaKit::Author);
+//                break;
+//            case 4:
+//                metaDataList.append(QtMultimediaKit::Composer);
+//                break;
+//            case 5:
+//                metaDataList.append(QtMultimediaKit::Date);
+//                break;
+//            case 6:
+//                metaDataList.append(QtMultimediaKit::Genre);
+//                break;
+//            case 7:
+//                metaDataList.append(QtMultimediaKit::Title);
+//                break;
+//            case 8:
+//                metaDataList.append(QtMultimediaKit::Year);
+//                break;
+//            case 9:
+//                metaDataList.append(QtMultimediaKit::Duration);
+//                break;
+//            case 10:
+//                metaDataList.append(QtMultimediaKit::TrackCount);
+//                break;
+//            case 11:
+//                break;
+//            case 12:
+//                metaDataList.append(QtMultimediaKit::AudioCodec);
+//                break;
+//            case 13:
+//                metaDataList.append(QtMultimediaKit::UserRating);
+//                break;
+//            case 14:
+//                metaDataList.append(QtMultimediaKit::Comment);
+//                break;
+//            case 15:
+//                metaDataList.append(QtMultimediaKit::Copyright);
+//                break;
+//            case 16:
+//                metaDataList.append(QtMultimediaKit::AudioBitRate);
+//                break;
+//            case 17:
+//                metaDataList.append(QtMultimediaKit::VideoFrameRate);
+//                break;
+//            case 18:
+//                break;
+//            case 19:
+//                break;
+//            case 20:
+//                break;
+//            case 21:
+//                metaDataList.append(QtMultimediaKit::Writer);
+//                break;
+//            case 22:
+//                metaDataList.append(QtMultimediaKit::MediaType);
+//                break;
+//            case 23:
+//                break;
+//            default:
+//                metaDataList.append(QtMultimediaKit::AlbumArtist);
+//                break;
+//            }
+//        }
 
-    }
+//    }
     return metaDataList;
 }
 
