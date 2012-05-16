@@ -43,6 +43,9 @@
 #define QBLUETOOTHDEVICEDISCOVERYAGENT_P_H
 
 #include "qbluetoothdevicediscoveryagent.h"
+#ifdef QTM_ANDROID_BLUETOOTH
+#include "android/devicediscoverybroadcastreceiver.h"
+#endif
 
 #include <QVariantMap>
 
@@ -90,7 +93,9 @@ private:
     void allocate();
     uint inquiryTypeToIAC() const;
 #endif
-
+#ifdef QTM_ANDROID_BLUETOOTH
+    DeviceDiscoveryBroadcastReceiver* bReceiver;
+#endif
     QList<QBluetoothDeviceInfo> discoveredDevices;
     QBluetoothDeviceDiscoveryAgent::InquiryType inquiryType;
 

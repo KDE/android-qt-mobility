@@ -120,6 +120,19 @@ symbian {
         bluetooth/qbluetoothtransferreply_bluez.cpp \
         bluetooth/qbluetoothtransfermanager_bluez.cpp \
         bluetooth/ql2capserver_bluez.cpp
+}else:android{
+    include(android/android.pri)
+    DEFINES += QTM_ANDROID_BLUETOOTH
+
+    SOURCES += \
+        bluetooth/qbluetoothdevicediscoveryagent_android.cpp \
+        bluetooth/qbluetoothlocaldevice_android.cpp \
+        bluetooth/qbluetoothserviceinfo_p.cpp \
+        bluetooth/qbluetoothservicediscoveryagent_p.cpp \
+        bluetooth/qbluetoothsocket_android.cpp \
+        bluetooth/ql2capserver_p.cpp \
+        bluetooth/qrfcommserver_p.cpp \
+        bluetooth/qbluetoothtransfermanager_p.cpp
 } else {
     message("Unsupported bluetooth platform, will not build a working QBluetooth library")
     message("Either no Qt dBus found, no bluez headers, or not symbian")

@@ -61,12 +61,26 @@ class OrgBluezAdapterInterface;
 class OrgBluezAgentAdaptor;
 class QDBusPendingCallWatcher;
 #endif
-
+#ifdef QTM_ANDROID_BLUETOOTH
+#include <jni.h>
+#endif
 QT_BEGIN_HEADER
 
 QTM_BEGIN_NAMESPACE
 
 class QBluetoothAddress;
+
+#ifdef QTM_ANDROID_BLUETOOTH
+class QBluetoothLocalDevicePrivate{
+public:
+    static jclass btAdapterClass;
+    static jobject btAdapterObject;
+    static void initialize(JNIEnv *env);
+    static bool startDiscovery();
+    static bool cancelDiscovery();
+    static bool isDiscovering();
+};
+#endif
 
 #ifndef QT_NO_DBUS
 class QBluetoothLocalDevicePrivate : public QObject,

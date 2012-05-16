@@ -43,6 +43,10 @@
 #define QBLUETOOTHSOCKET_P_H
 
 #include "qbluetoothsocket.h"
+#ifdef QTM_ANDROID_BLUETOOTH
+#include "android/inputstreamthread.h"
+#include <jni.h>
+#endif
 
 #ifndef QPRIVATELINEARBUFFER_BUFFERSIZE
 #define QPRIVATELINEARBUFFER_BUFFERSIZE Q_INT64_C(16384)
@@ -93,6 +97,11 @@ public:
     ~QBluetoothSocketPrivate();
 
     void connectToService(const QBluetoothAddress &address, quint16 port, QIODevice::OpenMode openMode);
+#ifdef QTM_ANDROID_BLUETOOTH
+    void connectToServiceConc(const QBluetoothAddress &address, quint16 port, QIODevice::OpenMode openMode);
+    jobject socketObject;
+    jobject remoteDeviceObject;
+#endif
 
     bool ensureNativeSocket(QBluetoothSocket::SocketType type);
 
@@ -177,6 +186,12 @@ public:
     void _q_serviceDiscovered(const QBluetoothServiceInfo &service);
     void _q_discoveryFinished();
 
+#ifdef QTM_ANDROID_BLUETOOTH
+    jobject inputStream;
+    jobject outputStream;
+    InputStreamThread *inputThread;
+    qint32 read();
+#endif
 protected:
     QBluetoothSocket *q_ptr;
 
