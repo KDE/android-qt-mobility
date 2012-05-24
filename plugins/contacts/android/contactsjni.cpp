@@ -651,7 +651,7 @@ namespace QtContactsJNI
         jstring jfirstName;
         if(!savingcontact.m_names.m_firstName.isEmpty())
         {
-            jfirstName = env->NewStringUTF(savingcontact.m_names.m_firstName.toStdString().c_str());
+            jfirstName = env->NewString((jchar*)savingcontact.m_names.m_firstName.constData(), savingcontact.m_names.m_firstName.length());
         }
         else
         {
@@ -660,7 +660,7 @@ namespace QtContactsJNI
         jstring jlastName;
         if(!savingcontact.m_names.m_lastName.isEmpty())
         {
-            jlastName = env->NewStringUTF(savingcontact.m_names.m_lastName.toStdString().c_str());
+            jlastName = env->NewString((jchar*)savingcontact.m_names.m_lastName.constData(), savingcontact.m_names.m_lastName.length());
         }
         else
         {
@@ -669,7 +669,7 @@ namespace QtContactsJNI
         jstring jmiddleName;
         if(!savingcontact.m_names.m_middleName.isEmpty())
         {
-            jmiddleName = env->NewStringUTF(savingcontact.m_names.m_middleName.toStdString().c_str());
+            jmiddleName = env->NewString((jchar*)savingcontact.m_names.m_middleName.constData(), savingcontact.m_names.m_middleName.length());
         }
         else
         {
@@ -678,7 +678,7 @@ namespace QtContactsJNI
         jstring jprefix;
         if(!savingcontact.m_names.m_prefix.isEmpty())
         {
-            jprefix = env->NewStringUTF(savingcontact.m_names.m_prefix.toStdString().c_str());
+            jprefix = env->NewString((jchar*)savingcontact.m_names.m_prefix.constData(), savingcontact.m_names.m_prefix.length());
         }
         else
         {
@@ -687,7 +687,7 @@ namespace QtContactsJNI
         jstring jsuffix;
         if(!savingcontact.m_names.m_suffix.isEmpty())
         {
-            jsuffix = env->NewStringUTF(savingcontact.m_names.m_suffix.toStdString().c_str());
+            jsuffix = env->NewString((jchar*)savingcontact.m_names.m_suffix.constData(), savingcontact.m_names.m_suffix.length());
         }
         else
         {
@@ -707,7 +707,8 @@ namespace QtContactsJNI
             phoneNumbersArray=(jobjectArray)env->NewObjectArray(numberCount,(jclass)m_phoneNumberObject(),NULL);
             for(int i=0;i<numberCount;i++)
             {
-                jstring jNumber = env->NewStringUTF(savingcontact.m_phonenumber[i].m_number.toStdString().c_str());
+                jstring jNumber = env->NewString((jchar*)savingcontact.m_phonenumber[i].m_number.constData(),
+                                                 savingcontact.m_phonenumber[i].m_number.length());
                 jint jType = savingcontact.m_phonenumber[i].m_type;
                 jobject jphoneNumberObject =env->NewObject((jclass)m_phoneNumberObject(),m_phoneNumberConstructor,jNumber,jType);
                 env->DeleteLocalRef(jNumber);
@@ -730,7 +731,8 @@ namespace QtContactsJNI
             emailArray= (jobjectArray)env->NewObjectArray(emailCount,(jclass)m_emailDataObject(),NULL);
             for(int i=0;i<emailCount;i++)
             {
-                jstring jEmail = env->NewStringUTF(savingcontact.m_email[i].m_email.toStdString().c_str());
+                jstring jEmail = env->NewString((jchar*)savingcontact.m_email[i].m_email.constData(),
+                                                savingcontact.m_email[i].m_email.length());
                 jint jType = savingcontact.m_email[i].m_type;
                 jobject jEmailDataObject =env->NewObject((jclass)m_emailDataObject(),m_emailDataConstructor,jEmail,jType);
                 env->DeleteLocalRef(jEmail);
@@ -754,7 +756,8 @@ namespace QtContactsJNI
             jstring jpobox;
             if(!savingcontact.m_address[i].m_pobox.isEmpty())
             {
-                jpobox = env->NewStringUTF(savingcontact.m_address[i].m_pobox.toStdString().c_str());
+                jpobox = env->NewString((jchar*)savingcontact.m_address[i].m_pobox.constData(),
+                                        savingcontact.m_address[i].m_pobox.length());
             }
             else
             {
@@ -763,7 +766,8 @@ namespace QtContactsJNI
             jstring jstreet;
             if(!savingcontact.m_address[i].m_street.isEmpty())
             {
-                jstreet = env->NewStringUTF(savingcontact.m_address[i].m_street.toStdString().c_str());
+                jstreet = env->NewString((jchar*)savingcontact.m_address[i].m_street.constData(),
+                                         savingcontact.m_address[i].m_street.length());
             }
             else
             {
@@ -772,7 +776,8 @@ namespace QtContactsJNI
             jstring jcity;
             if(!savingcontact.m_address[i].m_city.isEmpty())
             {
-                jcity = env->NewStringUTF(savingcontact.m_address[i].m_city.toStdString().c_str());
+                jcity = env->NewString((jchar*)savingcontact.m_address[i].m_city.constData(),
+                                       savingcontact.m_address[i].m_city.length());
             }
             else
             {
@@ -781,7 +786,8 @@ namespace QtContactsJNI
             jstring jregion;
             if(!savingcontact.m_address[i].m_region.isEmpty())
             {
-                jregion = env->NewStringUTF(savingcontact.m_address[i].m_region.toStdString().c_str());
+                jregion = env->NewString((jchar*)savingcontact.m_address[i].m_region.constData(),
+                                         savingcontact.m_address[i].m_region.length());
             }
             else
             {
@@ -790,7 +796,8 @@ namespace QtContactsJNI
             jstring jpostCode;
             if(!savingcontact.m_address[i].m_postCode.isEmpty())
             {
-                jpostCode = env->NewStringUTF(savingcontact.m_address[i].m_postCode.toStdString().c_str());
+                jpostCode = env->NewString((jchar*)savingcontact.m_address[i].m_postCode.constData(),
+                                           savingcontact.m_address[i].m_postCode.length());
             }
             else
             {
@@ -799,7 +806,8 @@ namespace QtContactsJNI
             jstring jcountry;
             if(!savingcontact.m_address[i].m_country.isEmpty())
             {
-                jcountry = env->NewStringUTF(savingcontact.m_address[i].m_country.toStdString().c_str());
+                jcountry = env->NewString((jchar*)savingcontact.m_address[i].m_country.constData(),
+                                          savingcontact.m_address[i].m_country.length());
             }
             else
             {
@@ -824,7 +832,8 @@ namespace QtContactsJNI
             jstring jOrganization;
             if(!savingcontact.m_organization[i].m_organization.isEmpty())
             {
-                jOrganization = env->NewStringUTF(savingcontact.m_organization[i].m_organization.toStdString().c_str());
+                jOrganization = env->NewString((jchar*)savingcontact.m_organization[i].m_organization.constData(),
+                                               savingcontact.m_organization[i].m_organization.length());
             }
             else
             {
@@ -833,7 +842,8 @@ namespace QtContactsJNI
             jstring jOrganizationTitle;
             if(!savingcontact.m_organization[i].m_title.isEmpty())
             {
-                jOrganizationTitle = env->NewStringUTF(savingcontact.m_organization[i].m_title.toStdString().c_str());
+                jOrganizationTitle = env->NewString((jchar*)savingcontact.m_organization[i].m_title.constData(),
+                                                    savingcontact.m_organization[i].m_title.length());
             }
             else
             {
@@ -852,7 +862,8 @@ namespace QtContactsJNI
             urlsArray= (jobjectArray)env->NewObjectArray(urlCount,env->FindClass("java/lang/String"),NULL);
             for(int i=0;i<urlCount;i++)
             {
-                env->SetObjectArrayElement(urlsArray,i,env->NewStringUTF(savingcontact.m_url[i].toStdString().c_str()));
+                env->SetObjectArrayElement(urlsArray,i,env->NewString((jchar*)savingcontact.m_url[i].constData(),
+                                                                      savingcontact.m_url[i].length()));
             }
         }
         else
@@ -863,7 +874,8 @@ namespace QtContactsJNI
         jstring jNote;
         if(!savingcontact.m_note.isEmpty())
         {
-            jNote = env->NewStringUTF(savingcontact.m_note.toStdString().c_str());
+            jNote = env->NewString((jchar*)savingcontact.m_note.constData(),
+                                   savingcontact.m_note.length());
         }
         else
         {
@@ -872,7 +884,8 @@ namespace QtContactsJNI
         jstring jBirthday;
         if(!savingcontact.m_birthday.isEmpty())
         {
-            jBirthday = env->NewStringUTF(savingcontact.m_birthday.toStdString().c_str());
+            jBirthday = env->NewString((jchar*)savingcontact.m_birthday.constData(),
+                                       savingcontact.m_birthday.length());
         }
         else
         {
@@ -881,7 +894,8 @@ namespace QtContactsJNI
         jstring jAnniversary;
         if(!savingcontact.m_anniverasary.isEmpty())
         {
-            jAnniversary = env->NewStringUTF(savingcontact.m_anniverasary.toStdString().c_str());
+            jAnniversary = env->NewString((jchar*)savingcontact.m_anniverasary.constData(),
+                                          savingcontact.m_anniverasary.length());
         }
         else
         {
@@ -890,7 +904,8 @@ namespace QtContactsJNI
         jstring jNickName;
         if(!savingcontact.m_nickName.isEmpty())
         {
-            jNickName = env->NewStringUTF(savingcontact.m_nickName.toStdString().c_str());
+            jNickName = env->NewString((jchar*)savingcontact.m_nickName.constData(),
+                                       savingcontact.m_nickName.length());
         }
         else
         {
