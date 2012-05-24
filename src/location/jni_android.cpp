@@ -166,7 +166,7 @@ namespace QtLocationJni
     qint64 getSupportedPositioningMethods (JNIEnv* env)
     {
 
-        qint64 retPositionMethod= env->CallIntMethod(qtLocationJni.m_locationObject (),
+        qint64 retPositionMethod= env->CallLongMethod(qtLocationJni.m_locationObject (),
                                                      qtLocationJni.m_getsupportedPositioningMethodsID);
         return retPositionMethod;
     }
