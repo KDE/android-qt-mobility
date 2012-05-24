@@ -41,7 +41,7 @@ extern "C" {
  * Method:    jniOnReceive
  * Signature: (ILandroid/content/Context;Landroid/content/Intent;)V
  */
-JNIEXPORT void JNICALL Java_eu_licentia_necessitas_industrius_QtBroadcastReceiver_jniOnReceive
+JNIEXPORT void JNICALL Java_org_kde_necessitas_mobile_QtBroadcastReceiver_jniOnReceive
   (JNIEnv *, jobject, jint, jobject, jobject);
 
 #ifdef __cplusplus
@@ -65,7 +65,7 @@ public:
     static void loadJavaClass(JNIEnv*);
 
 private:
-    friend void Java_eu_licentia_necessitas_industrius_QtBroadcastReceiver_jniOnReceive(JNIEnv *, jobject, jint, jobject, jobject);
+    friend void Java_org_kde_necessitas_mobile_QtBroadcastReceiver_jniOnReceive(JNIEnv *, jobject, jint, jobject, jobject);
     virtual void onReceive(JNIEnv *env, jobject context, jobject intent)=0;
 
     void unregisterReceiver();

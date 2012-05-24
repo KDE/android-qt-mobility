@@ -33,7 +33,7 @@
 
 
 static JNINativeMethod methods[] = {
-    {"jniOnReceive",    "(ILandroid/content/Context;Landroid/content/Intent;)V",                    (void *)&Java_eu_licentia_necessitas_industrius_QtBroadcastReceiver_jniOnReceive},
+    {"jniOnReceive",    "(ILandroid/content/Context;Landroid/content/Intent;)V",                    (void *)&Java_org_kde_necessitas_mobile_QtBroadcastReceiver_jniOnReceive},
 };
 
 jobject AndroidBroadcastReceiver::jActivityObject = NULL;
@@ -52,9 +52,9 @@ void AndroidBroadcastReceiver::initialize(JNIThreadHelper& env, jclass appClass,
 
 void AndroidBroadcastReceiver::loadJavaClass(JNIEnv *env)
 {
-    jQtBroadcastReceiverClass = env->FindClass("org/kde/necessitas/industrius/QtBroadcastReceiver");
+    jQtBroadcastReceiverClass = env->FindClass("org/kde/necessitas/mobile/QtBroadcastReceiver");
     if(jQtBroadcastReceiverClass == NULL){
-        __android_log_print(ANDROID_LOG_FATAL,"Qt","Cannot find org/kde/necessitas/industrius/QtBroadcastReceiver");
+        __android_log_print(ANDROID_LOG_FATAL,"Qt","Cannot find org/kde/necessitas/mobile/QtBroadcastReceiver");
         env->ExceptionClear();
     }
 }
@@ -129,7 +129,7 @@ void AndroidBroadcastReceiver::addAction(QString action){
 #ifdef __cplusplus
 extern "C" {
 #endif
-JNIEXPORT void JNICALL Java_eu_licentia_necessitas_industrius_QtBroadcastReceiver_jniOnReceive
+JNIEXPORT void JNICALL Java_org_kde_necessitas_mobile_QtBroadcastReceiver_jniOnReceive
   (JNIEnv *env, jobject javaObject, jint qtObject, jobject context, jobject intent){
     Q_UNUSED(javaObject);
     reinterpret_cast<AndroidBroadcastReceiver*>(qtObject)->onReceive(env, context, intent);
