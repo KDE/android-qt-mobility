@@ -3,3 +3,4 @@
 #for example: bluez_enabled = yes|no
 
 build_tools = no
+CONFIG+= QTDIR_build
