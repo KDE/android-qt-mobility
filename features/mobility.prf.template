@@ -1,4 +1,5 @@
 !isEmpty(QT_MOBILITY_BUILD_TREE):CONFIG+=mobility_build
+android: load(android)
 
 defineTest(qtMobilityAddLibrary) {
     # If we are currently building Mobility itself, do not add the install
