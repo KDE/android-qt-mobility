@@ -86,12 +86,12 @@ namespace QtSensorJNI
         jmethodID m_getSensorConstructorID;
         jmethodID m_getSensorStopID;
         jmethodID m_getSensorRegisterSensorsID;
-        QMap<int,QPair<jobject,SensorAndroidListener *> > m_sensorBackendMapper;
+        QMap<int,QPair< jobject, SensorAndroidListener *> > m_sensorBackendMapper;
         SensorGlobalObject<jobject> m_sensorsClass;
     };
 
     //path to the java plugin qtsensors
-    static const char *qtSensorsClassPathName = "org/kde/necessitas/mobile/QtSensors";
+    static const char qtSensorsClassPathName[] = "org/kde/necessitas/mobile/QtSensors";
     static QtSensorJniStruct qtSensorJni;
 
     static void slotDataAvailable (JNIEnv* env,_jobject /*object*/,jfloatArray data,jlong timeEvent,jint accuracy,jint uniqueId)
@@ -134,10 +134,9 @@ namespace QtSensorJNI
         }
 
         qtSensorJni.m_sensorsClass = clazz;
-        qtSensorJni.m_getSensorConstructorID=env->GetMethodID((jclass)qtSensorJni.m_sensorsClass (),"<init>","(III)V");
+        qtSensorJni.m_getSensorConstructorID=env->GetMethodID((jclass)qtSensorJni.m_sensorsClass(),"<init>","(III)V");
         qtSensorJni.m_getSensorStopID = env->GetMethodID((jclass)qtSensorJni.m_sensorsClass(), "stop", "()V");
         qtSensorJni.m_getSensorRegisterSensorsID=env->GetStaticMethodID((jclass)qtSensorJni.m_sensorsClass(), "registerSensors", "()V");
-
         return JNI_TRUE;
     }
 
@@ -164,7 +163,7 @@ namespace QtSensorJNI
                                    , qtSensorJni.m_getSensorConstructorID
                                    ,uniqueID,datarate,sensorType);
 
-            qtSensorJni.m_sensorBackendMapper[uniqueID].first=sensorsInstance;
+            qtSensorJni.m_sensorBackendMapper[uniqueID].first=env->NewGlobalRef(sensorsInstance);
             qtSensorJni.m_sensorBackendMapper[uniqueID].second=sensorAndroidListner;
         }
 
@@ -186,9 +185,9 @@ namespace QtSensorJNI
 
         if(qtSensorJni.m_sensorBackendMapper.contains(uniqueID))
         {
-            env->CallVoidMethod((jobject)qtSensorJni.m_sensorBackendMapper[uniqueID].first
+            env->CallVoidMethod(qtSensorJni.m_sensorBackendMapper[uniqueID].first
                                 ,qtSensorJni.m_getSensorStopID);
-
+            env->DeleteGlobalRef(qtSensorJni.m_sensorBackendMapper[uniqueID].first);
             qtSensorJni.m_sensorBackendMapper.remove(uniqueID);
 
         }
@@ -200,16 +199,13 @@ namespace QtSensorJNI
     void  registerSensor()
     {
         JNIEnv* env;
-
         if (m_javaVM->AttachCurrentThread(&env, NULL)<0)
         {
             qCritical()<<"AttachCurrentThread failed";
             return ;
         }
-
-        env->CallVoidMethod((jobject)qtSensorJni.m_sensorsClass ()
+        env->CallStaticVoidMethod((jclass)qtSensorJni.m_sensorsClass()
                             ,qtSensorJni.m_getSensorRegisterSensorsID);
-
         m_javaVM->DetachCurrentThread();
     }
 }
@@ -230,5 +226,6 @@ Q_DECL_EXPORT JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/)
 
     QtSensorJNI::registerNativeMethods(m_env,QtSensorJNI::qtSensorsClassPathName
                                        ,QtSensorJNI::methods,1);
+
     return JNI_VERSION_1_4;
 }
